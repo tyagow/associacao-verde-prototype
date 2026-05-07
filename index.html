@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Associação Verde | Protótipo Operacional</title>
+    <link
+      rel="icon"
+      href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="10" fill="%233f6b4a"/><text x="32" y="39" text-anchor="middle" font-family="Arial" font-size="22" font-weight="700" fill="white">AV</text></svg>'
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="rail" aria-label="Navegação principal">
+        <div class="brand">
+          <div class="brand-mark">AV</div>
+          <div>
+            <strong>Associação Verde</strong>
+            <span>Central diária</span>
+          </div>
+        </div>
+
+        <nav class="nav-list">
+          <button class="nav-item active" data-view="dashboard">
+            <span data-icon="layout-dashboard"></span>
+            Painel
+          </button>
+          <button class="nav-item" data-view="patients">
+            <span data-icon="users-round"></span>
+            Pacientes
+          </button>
+          <button class="nav-item" data-view="grow">
+            <span data-icon="sprout"></span>
+            Plantio
+          </button>
+          <button class="nav-item" data-view="orders">
+            <span data-icon="package-check"></span>
+            Pedidos
+          </button>
+          <button class="nav-item" data-view="triage">
+            <span data-icon="clipboard-list"></span>
+            Triagem
+          </button>
+        </nav>
+
+        <div class="assistant-note">
+          <span data-icon="sparkles"></span>
+          <p>Assistente operacional para reduzir digitação manual e manter receita, estoque, pedido e envio no mesmo fluxo.</p>
+        </div>
+      </aside>
+
+      <main>
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Protótipo baseado nos áudios de 07/05/2026</p>
+            <h1 id="view-title">Painel da associação</h1>
+          </div>
+          <div class="top-actions">
+            <button class="ghost-button" id="reset-demo">
+              <span data-icon="rotate-ccw"></span>
+              Restaurar demo
+            </button>
+            <button class="primary-button" data-open-dialog="order-dialog">
+              <span data-icon="plus"></span>
+              Novo pedido
+            </button>
+          </div>
+        </header>
+
+        <section class="view active" id="dashboard">
+          <div class="metrics-grid" id="metrics"></div>
+
+          <div class="split-layout">
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Hoje</p>
+                  <h2>Fila operacional</h2>
+                </div>
+                <span class="status-pill amber">Atenção</span>
+              </div>
+              <div class="task-list" id="daily-tasks"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Risco</p>
+                  <h2>Receitas e carteirinhas</h2>
+                </div>
+                <button class="icon-button" data-view-jump="patients" aria-label="Abrir pacientes">
+                  <span data-icon="arrow-up-right"></span>
+                </button>
+              </div>
+              <div class="expiry-list" id="expiry-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="patients">
+          <div class="section-grid">
+            <section class="panel wide-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Cadastro D9 substituído</p>
+                  <h2>Pacientes, responsáveis e receita</h2>
+                </div>
+                <button class="primary-button" data-open-dialog="patient-dialog">
+                  <span data-icon="user-plus"></span>
+                  Novo paciente
+                </button>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Paciente</th>
+                      <th>Responsável</th>
+                      <th>Receita</th>
+                      <th>Carteirinha</th>
+                      <th>Pedido ativo</th>
+                    </tr>
+                  </thead>
+                  <tbody id="patient-table"></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="panel card-preview">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Emissão</p>
+                  <h2>Carteirinha</h2>
+                </div>
+              </div>
+              <div class="member-card" id="member-card"></div>
+              <button class="ghost-button full-width" id="cycle-card">
+                <span data-icon="badge-check"></span>
+                Ver próximo associado
+              </button>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="grow">
+          <div class="section-grid">
+            <section class="panel wide-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Do seed ao estoque</p>
+                  <h2>Plantio por semana</h2>
+                </div>
+                <button class="primary-button" data-open-dialog="batch-dialog">
+                  <span data-icon="sprout"></span>
+                  Entrada de semente
+                </button>
+              </div>
+              <div class="kanban" id="grow-board"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Estoque vivo</p>
+                  <h2>Flores disponíveis</h2>
+                </div>
+              </div>
+              <div class="stock-list" id="stock-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="orders">
+          <div class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Pedido diminui estoque</p>
+                <h2>Separação, pagamento e Melhor Envio</h2>
+              </div>
+              <button class="primary-button" data-open-dialog="order-dialog">
+                <span data-icon="plus"></span>
+                Novo pedido
+              </button>
+            </div>
+            <div class="order-board" id="order-board"></div>
+          </div>
+        </section>
+
+        <section class="view" id="triage">
+          <div class="section-grid">
+            <section class="panel wide-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Atendimento médico online</p>
+                  <h2>Triagem assistida por IA</h2>
+                </div>
+                <span class="status-pill green">Preparado para integração</span>
+              </div>
+              <div class="triage-flow">
+                <article>
+                  <span data-icon="message-square-text"></span>
+                  <h3>Coleta inicial</h3>
+                  <p>Queixa, histórico, uso atual, documentos e responsável quando o paciente for menor.</p>
+                </article>
+                <article>
+                  <span data-icon="shield-check"></span>
+                  <h3>Checklist Anvisa</h3>
+                  <p>Campos obrigatórios para triagem, receita, indicação, validade e rastreabilidade.</p>
+                </article>
+                <article>
+                  <span data-icon="stethoscope"></span>
+                  <h3>Fila médica</h3>
+                  <p>Encaminha casos completos para consulta online e devolve receita válida ao cadastro.</p>
+                </article>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Assistente</p>
+                  <h2>Próximas perguntas</h2>
+                </div>
+              </div>
+              <div class="assistant-chat">
+                <p><strong>IA:</strong> Confirme o diagnóstico principal e anexos antes de liberar a fila médica.</p>
+                <p><strong>Operação:</strong> Receita aprovada atualiza validade da carteirinha automaticamente.</p>
+              </div>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="patient-dialog">
+      <form method="dialog" class="dialog-card" id="patient-form">
+        <header>
+          <h2>Novo paciente</h2>
+          <button class="icon-button" type="button" data-close-dialog aria-label="Fechar"><span data-icon="x"></span></button>
+        </header>
+        <label>Nome do paciente <input name="name" required placeholder="Ex.: Laura Mendes" /></label>
+        <label>Responsável <input name="guardian" placeholder="Obrigatório para menor de idade" /></label>
+        <label>Validade da receita <input name="prescription" type="date" required /></label>
+        <label>Observação <input name="note" placeholder="Documento, dose ou alerta" /></label>
+        <button class="primary-button" value="default">Salvar cadastro</button>
+      </form>
+    </dialog>
+
+    <dialog id="batch-dialog">
+      <form method="dialog" class="dialog-card" id="batch-form">
+        <header>
+          <h2>Entrada de semente</h2>
+          <button class="icon-button" type="button" data-close-dialog aria-label="Fechar"><span data-icon="x"></span></button>
+        </header>
+        <label>Cultivar <input name="strain" required placeholder="Ex.: 24k" /></label>
+        <label>Semana atual <input name="week" type="number" min="1" max="12" value="1" required /></label>
+        <label>Quantidade <input name="plants" type="number" min="1" value="12" required /></label>
+        <button class="primary-button" value="default">Adicionar lote</button>
+      </form>
+    </dialog>
+
+    <dialog id="order-dialog">
+      <form method="dialog" class="dialog-card" id="order-form">
+        <header>
+          <h2>Novo pedido</h2>
+          <button class="icon-button" type="button" data-close-dialog aria-label="Fechar"><span data-icon="x"></span></button>
+        </header>
+        <label>Paciente <select name="patient" required id="order-patient"></select></label>
+        <label>Produto <select name="product" required id="order-product"></select></label>
+        <label>Gramas <input name="grams" type="number" min="1" value="10" required /></label>
+        <label>Envio <select name="shipping"><option>GED Log via Melhor Envio</option><option>Correios via Melhor Envio</option><option>Retirada</option></select></label>
+        <button class="primary-button" value="default">Criar e baixar estoque</button>
+      </form>
+    </dialog>
+
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
