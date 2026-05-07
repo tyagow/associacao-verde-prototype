@@ -191,7 +191,7 @@ function render() {
 
 document.querySelector("#access-form").addEventListener("submit", (event) => {
   event.preventDefault();
-  const code = document.querySelector("#access-code").value.trim().toUpperCase();
+  const code = document.querySelector("#access-code").value.trim().toUpperCase().replace(/[\s-]/g, "");
   if (code !== ACCESS_CODE) {
     alert("Codigo invalido para esta demo.");
     return;
