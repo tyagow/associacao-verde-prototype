@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex,nofollow,noarchive,nosnippet" />
+    <meta name="googlebot" content="noindex,nofollow,noarchive,nosnippet" />
+    <title>Apoiar Reserva | Pedido exclusivo para associados</title>
+    <link
+      rel="icon"
+      href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="10" fill="%23257e4a"/><text x="32" y="41" text-anchor="middle" font-family="Arial" font-size="30" font-weight="800" fill="%23facc14">A</text></svg>'
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,650;9..144,750&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./mvp.css" />
+  </head>
+  <body>
+    <div class="access-gate" id="access-gate">
+      <section class="gate-card" aria-labelledby="gate-title">
+        <p class="kicker">Área reservada Apoiar Brasil</p>
+        <h1 id="gate-title">Pedidos exclusivos para pacientes associados</h1>
+        <p>
+          Este mock simula uma página não listada, liberada somente para quem recebeu o link e o código de acesso.
+        </p>
+        <form id="access-form">
+          <label>
+            Código de acesso
+            <input id="access-code" autocomplete="off" placeholder="Digite o código enviado" />
+          </label>
+          <button class="yellow-button" type="submit">Entrar na página de pedidos</button>
+          <span class="hint">Demo: APOIAR2026</span>
+        </form>
+      </section>
+    </div>
+
+    <div class="site-shell" id="site-shell" hidden>
+      <header class="hero">
+        <nav class="top-nav" aria-label="Navegação">
+          <a class="brand" href="#">
+            <span class="brand-symbol">A</span>
+            <span>
+              <strong>Apoiar Reserva</strong>
+              <small>Pedidos para associados</small>
+            </span>
+          </a>
+          <div class="nav-actions">
+            <button class="text-button" id="admin-toggle">Estoque</button>
+            <button class="cart-button" id="cart-toggle">
+              Carrinho
+              <span id="cart-count">0</span>
+            </button>
+          </div>
+        </nav>
+
+        <div class="hero-grid">
+          <section class="hero-copy">
+            <p class="kicker">Acesso seguro e controlado</p>
+            <h1>Catálogo de pedidos para pacientes da Apoiar Brasil</h1>
+            <p>
+              Escolha os itens autorizados, revise o pedido e envie para separação. O estoque diminui automaticamente quando
+              a compra é confirmada.
+            </p>
+            <div class="hero-actions">
+              <a class="yellow-button" href="#catalogo">Ver catálogo</a>
+              <button class="outline-button" id="copy-link">Copiar link do paciente</button>
+            </div>
+          </section>
+
+          <aside class="trust-panel">
+            <span>Fluxo MVP</span>
+            <ul>
+              <li>Link não listado</li>
+              <li>Código de acesso por paciente</li>
+              <li>Estoque editável pela equipe</li>
+              <li>Pedido baixa estoque na confirmação</li>
+            </ul>
+          </aside>
+        </div>
+      </header>
+
+      <main>
+        <section class="notice-bar">
+          <strong>Importante:</strong>
+          <span>Mock de validação. Para produção, o acesso deve usar login real, associação ativa e receita válida.</span>
+        </section>
+
+        <section class="admin-panel" id="admin-panel" hidden>
+          <div>
+            <p class="kicker">Equipe Apoiar</p>
+            <h2>Adicionar estoque</h2>
+            <p>Atualize o saldo disponível antes de liberar o link para pacientes.</p>
+          </div>
+          <form id="stock-form" class="stock-form">
+            <label>
+              Produto
+              <select id="stock-product"></select>
+            </label>
+            <label>
+              Quantidade
+              <input id="stock-amount" type="number" min="1" value="10" />
+            </label>
+            <button class="green-button" type="submit">Adicionar ao estoque</button>
+          </form>
+        </section>
+
+        <section class="catalog-section" id="catalogo">
+          <div class="section-heading">
+            <div>
+              <p class="kicker">Catálogo</p>
+              <h2>Produtos disponíveis</h2>
+            </div>
+            <button class="outline-button" id="reset-demo">Restaurar demo</button>
+          </div>
+          <div class="product-grid" id="product-grid"></div>
+        </section>
+
+        <aside class="cart-drawer" id="cart-drawer" aria-label="Carrinho de pedido">
+          <div class="drawer-header">
+            <div>
+              <p class="kicker">Pedido</p>
+              <h2>Resumo do carrinho</h2>
+            </div>
+            <button class="icon-button" id="close-cart" aria-label="Fechar carrinho">×</button>
+          </div>
+          <div class="cart-items" id="cart-items"></div>
+          <form id="checkout-form" class="checkout-form">
+            <label>
+              Nome do paciente
+              <input id="patient-name" required placeholder="Nome completo" />
+            </label>
+            <label>
+              Código de associado
+              <input id="member-code" required placeholder="Ex.: APO-1024" />
+            </label>
+            <label>
+              Entrega
+              <select id="delivery-method">
+                <option>GED Log via Melhor Envio</option>
+                <option>Correios via Melhor Envio</option>
+                <option>Retirada combinada</option>
+              </select>
+            </label>
+            <button class="yellow-button" type="submit">Confirmar compra</button>
+          </form>
+        </aside>
+
+        <section class="orders-section">
+          <div class="section-heading">
+            <div>
+              <p class="kicker">Operação</p>
+              <h2>Pedidos confirmados</h2>
+            </div>
+          </div>
+          <div class="orders-list" id="orders-list"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="./mvp.js"></script>
+  </body>
+</html>

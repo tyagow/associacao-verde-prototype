@@ -15,6 +15,32 @@ Static browser prototype for a cannabis association operations system, based on 
 
 All data is demo-only and stored in browser `localStorage`.
 
+## MVP Sales Mock
+
+The client-requested MVP-only mock is:
+
+```text
+mvp-apoiareserva-7f3c9.html
+```
+
+It demonstrates:
+
+- A sales/order page for associated patients.
+- A link/code gate for demo access.
+- A product catalog.
+- Admin stock entry.
+- Cart checkout that automatically decrements stock.
+- Confirmed order history.
+- `noindex` metadata plus `robots.txt` to reduce search discovery.
+
+Demo access code:
+
+```text
+APOIAR2026
+```
+
+Important: GitHub Pages is public hosting. The noindex and code gate make the mock less discoverable, but they are not real patient-grade access control. A production MVP should use authentication and server-side authorization.
+
 ## Run Locally
 
 ```bash
@@ -50,4 +76,3 @@ demo.associacaoverde.com.br
 5. Open `Pedidos`, create a new order, and show the stock decreasing immediately.
 6. Advance the order through payment, separation, Melhor Envio, and sent.
 7. Open `Triagem` to show the integration slot for the medical platform.
-
