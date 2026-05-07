@@ -16,7 +16,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,650;9..144,750&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./mvp.css?v=78ccae4" />
+    <link rel="stylesheet" href="./mvp.css?v=20260507-4" />
   </head>
   <body>
     <div class="access-gate" id="access-gate">
@@ -48,7 +48,7 @@
             </span>
           </a>
           <div class="nav-actions">
-            <button class="text-button" id="admin-toggle">Estoque</button>
+            <button class="text-button" id="admin-toggle">Estoque da equipe</button>
             <button class="cart-button" id="cart-toggle">
               Carrinho
               <span id="cart-count">0</span>
@@ -88,11 +88,13 @@
           <span>Mock de validação. Para produção, o acesso deve usar login real, associação ativa e receita válida.</span>
         </section>
 
-        <section class="admin-panel" id="admin-panel" hidden>
-          <div>
-            <p class="kicker">Equipe Apoiar</p>
-            <h2>Adicionar estoque</h2>
-            <p>Atualize o saldo disponível antes de liberar o link para pacientes.</p>
+        <section class="admin-panel" id="admin-panel">
+          <div class="section-heading compact-heading">
+            <div>
+              <p class="kicker">Equipe Apoiar</p>
+              <h2>Estoque operacional</h2>
+              <p>Adicione entrada, acompanhe saldo por produto e veja cada baixa gerada por compra.</p>
+            </div>
           </div>
           <form id="stock-form" class="stock-form">
             <label>
@@ -103,8 +105,19 @@
               Quantidade
               <input id="stock-amount" type="number" min="1" value="10" />
             </label>
+            <label>
+              Observação
+              <input id="stock-note" placeholder="Ex.: lote seco, ajuste conferido" />
+            </label>
             <button class="green-button" type="submit">Adicionar ao estoque</button>
           </form>
+          <div class="stock-dashboard">
+            <div class="inventory-grid" id="inventory-grid"></div>
+            <div class="movement-ledger">
+              <h3>Movimentação do estoque</h3>
+              <div id="movement-list"></div>
+            </div>
+          </div>
         </section>
 
         <section class="catalog-section" id="catalogo">
@@ -127,6 +140,7 @@
             <button class="icon-button" id="close-cart" aria-label="Fechar carrinho">×</button>
           </div>
           <div class="cart-items" id="cart-items"></div>
+          <div class="stock-impact" id="stock-impact"></div>
           <form id="checkout-form" class="checkout-form">
             <label>
               Nome do paciente
@@ -160,6 +174,7 @@
       </main>
     </div>
 
-    <script src="./mvp.js?v=78ccae4"></script>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="./mvp.js?v=20260507-4"></script>
   </body>
 </html>
