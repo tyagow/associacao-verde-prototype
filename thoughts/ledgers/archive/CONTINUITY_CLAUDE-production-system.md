@@ -1,4 +1,11 @@
 # Session: production-system
+
+> **ARCHIVED 2026-05-08.** Superseded by
+> `thoughts/ledgers/CONTINUITY_CLAUDE-redesign-roadmap.md`, which closed
+> the Calm Clinical Modern redesign (Phases 0–12 shipped, Phase 13 docs
+> close-out). This file is kept for historical decision context only —
+> do not write to it.
+
 Updated: 2026-05-08T07:57:08Z
 
 ## Goal

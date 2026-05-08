@@ -1,6 +1,78 @@
 # Session: redesign-roadmap
-Updated: 2026-05-08T13:00:00.000Z
+Updated: 2026-05-08T15:30:00.000Z
+Status: **CLOSED** (Phase 13 docs close-out shipped 2026-05-08)
 Source of truth: **YES** (this ledger supersedes CONTINUITY_CLAUDE-production-system.md as the active roadmap)
+
+## Closing Summary (2026-05-08)
+
+The Calm Clinical Modern redesign initiative is **closed**. Phase 13 (this
+docs close-out) shipped the README, delivery plan + runbook refresh, the
+locked-aesthetic spec under `docs/redesign/locked-aesthetic.md`, and this
+ledger update.
+
+### Stats
+
+- **Phases shipped**: 13 of 14 (Phase 11 public landing deferred per
+  operator direction; tracked as `UX-009` in
+  `docs/production-delivery-plan.md`).
+- **Phase 1 was sliced** into 1a / 1b / 1c / 1d (4 sub-slices).
+- **Commits across the redesign**: 65 (counting from `a234760` "import
+  existing app code as baseline"; the four Phase 13 docs commits land at
+  the head of the branch).
+- **Test count delta**: 38 baseline → **58 final** (+20). Additions:
+  Phase 2 inventory race + paid-after-expiry-conflict + smoke oversell,
+  Phase 3 team activity Route Handler (×3), Phase 5 fulfillment status
+  (×5), Phase 6 inventory lots (×2), Phase 7 support thread (×2),
+  Phase 10 audit timeline grouping (×4), plus a few smaller paths.
+- **Surfaces redesigned**: 8 authenticated surfaces — `/paciente`,
+  `/equipe`, `/equipe/pacientes`, `/equipe/estoque`, `/equipe/pedidos`,
+  `/equipe/fulfillment`, `/equipe/suporte`, `/admin`. Public home (`/`)
+  intentionally not redesigned (deferred).
+- **Schema versions**: v1 (initial JSON state) and v15
+  (`support_messages_thread`); append-only `SCHEMA_MIGRATIONS` ledger
+  in `src/sqlite-store.ts`.
+- **New libraries**: `framer-motion`, `lucide-react`, `cmdk`, `recharts`,
+  `@dnd-kit/core`, `@dnd-kit/sortable`, `qrcode.react`.
+- **Frozen-server bridges** in service: `/api/team/activity` (P3),
+  `/api/team/orders/status` (P5), `/api/team/support-replies` and
+  `/api/team/support-thread` (P7).
+- **Mobile contract**: 390x844 + 1440x950 verified in widened E2E
+  responsive overflow check across all 8 redesigned routes; Phase 12
+  contact sheet at
+  `artifacts/visual-e2e/redesign/p12-mobile-overview-grid.png`.
+
+### Explicitly deferred
+
+- **Phase 11 / `UX-009` Public landing redesign** — deferred per operator
+  direction. Existing public home is retained and contains no internal
+  status leaks. Future scheduling tracked in
+  `docs/production-delivery-plan.md`.
+
+### Remaining release gates (operations only)
+
+The application UX is shipped. The release gate
+(`npm run readiness:release-gate`) still refuses on:
+
+- `PAY-001` provider approval (business)
+- `PAY-003` final provider signature contract
+- `DEP-001` host/topology decision
+- `DEP-002` real TLS/domain + offsite backup schedule + production
+  `Secure` cookie evidence
+- `DEP-003` post-deploy smoke + rollback drill
+- `INV-003` lot allocation strategy on payment confirmation
+- `CMP-001` LGPD policy + data export/deletion process
+- `OPS-001` patient onboarding lifecycle polish
+
+### Pointers for future work
+
+- `README.md` — top-level orientation
+- `docs/redesign/locked-aesthetic.md` — visual contract
+- `docs/redesign/tokens.md` — canonical token reference
+- `docs/production-delivery-plan.md` — task board with current statuses
+- `docs/production-runbook.md` — operational procedures
+- `.superpowers/brainstorm/70960-1778242539/content/all-pages.html` —
+  20-screen mock contract
+- `CLAUDE.md` — frozen-server policy and src/ boundary
 
 ## Goal
 
@@ -188,7 +260,7 @@ finds the current `[→]`, completes its acceptance criteria, then advances.
          consider promoting `validity` and `origin` to first-class
          fields on the lot record so cultivation handoff carries
          provenance through audit.
-- Now: [→] Phase 11 — Public home redesign (and Phase 13 follow-up)
+- Now: (initiative complete — see Closing Summary below)
 - Done in this batch:
   - [x] Phase 5 — Fulfillment kanban (dnd-kit)
         (febf520 chore(deps) @dnd-kit/core+sortable · 0240e11
@@ -348,7 +420,9 @@ finds the current `[→]`, completes its acceptance criteria, then advances.
         input). next build clean. Screenshots:
         artifacts/visual-e2e/redesign/p10-admin-{audit,users}-desktop.png
         via scripts/p10-screenshots.py.
-  - [ ] Phase 11 — Public home redesign
+  - [~] Phase 11 — Public home redesign (DEFERRED per operator direction;
+        existing public home retained, no internal status leaks; tracked
+        as `UX-009` in `docs/production-delivery-plan.md`)
   - [x] Phase 12 — Mobile polish sweep
         (c89a780 chore(mobile): patient experience 390/320 sweep —
          globals.css 540px/360px safety nets for monospace ids, pix
@@ -399,7 +473,41 @@ finds the current `[→]`, completes its acceptance criteria, then advances.
         Skipped: Phase 12 commit-3 (`chore(mobile): admin 390/320
         sweep`) had no work — Phase 9's admin.module.css and
         ReleaseProgress.module.css already drop to 1-col below 720px.
-  - [ ] Phase 13 — Handoff, README, runbook, delivery plan
+  - [x] Phase 13 — Handoff, README, runbook, delivery plan
+        (811a28b README · a2bf8ec delivery plan + runbook · ddf3564
+         locked-aesthetic spec · this commit ledger close).
+        README rewritten to reflect Calm Clinical Modern aesthetic, the
+        full feature list (mode-based patient app, TeamShell + ⌘K, kanban
+        fulfillment, support workbench, admin readiness redesign, audit
+        timeline grouping, schema v15, watchdog), the phase screenshot
+        regeneration table (artifacts/ is gitignored — scripts regenerate),
+        the Dev Quickstart pointing at scripts/dev-watchdog.sh and
+        scripts/add-dev-user.mjs (TIAGO/TIAGO), and links to
+        docs/redesign/tokens.md + docs/redesign/locked-aesthetic.md.
+        docs/production-delivery-plan.md: marked UX-001/002/003/005/006/
+        007/008, INV-001, ARCH-002, OPS-003, QA-002 as complete with phase
+        commit references; FUL-001 partial (kanban shipped, carrier still
+        open); INV-003 partial (lot traceability shipped, allocation still
+        open); UX-004 in progress (copy inventory still open); UX-009
+        (public landing) deferred per operator direction. Added Redesign
+        Initiative Status section listing operations-only remaining gates
+        (PAY-001, PAY-003, DEP-001, DEP-002, DEP-003, OPS-001, CMP-001,
+        INV-003, UX-009). Replaced Immediate Next Sprint with the new
+        operations-only sequence.
+        docs/production-runbook.md: added Dev Environment section (watchdog
+        + add-dev-user.mjs), Frozen-Server Bridge Pattern section listing
+        the four Route Handler bridges in service, and Schema Migrations
+        section documenting the append-only SCHEMA_MIGRATIONS ledger.
+        docs/redesign/locked-aesthetic.md: new file documenting the
+        Calm Clinical Modern visual contract — aesthetic principles,
+        locked tokens (cross-ref to docs/redesign/tokens.md), locked
+        layout primitives (`.app-shell`, `.app-sidebar`, etc.),
+        per-surface primitives (PatientShell, TeamShell, Kanban,
+        ProductLedger, Workbench, ReleaseProgress, AuditTimeline, …),
+        mock cross-reference table, reduced-motion contract, mobile
+        contract, what is NOT part of the aesthetic.
+        Verification: npm run check + npm test (58/58) green after each
+        of the four atomic commits. No app/test/script changes.
 
 ---
 
