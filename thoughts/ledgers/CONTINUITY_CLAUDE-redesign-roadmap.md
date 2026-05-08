@@ -161,7 +161,28 @@ finds the current `[→]`, completes its acceptance criteria, then advances.
 - Next:
   - [ ] Phase 6 — Estoque & cultivo (single ledger + lot detail)
   - [ ] Phase 7 — Support workbench
-  - [ ] Phase 8 — Command palette ⌘K
+  - [x] Phase 8 — Command palette ⌘K
+        (4b57c3e CommandPalette component using cmdk · 5f87e12 wire ⌘K
+         binding in TeamShell + mount palette globally · this commit
+         screenshot + ledger close).
+        Component: app/equipe/components/CommandPalette.jsx (.tx-* CSS
+        Module). Mounted by TeamShell so every /equipe/* route gets
+        the palette (and the topbar kbd hint, now a real button, opens
+        it). Global keydown listener on window with metaKey||ctrlKey
+        + lowercase 'k' + preventDefault, listener cleaned up on
+        unmount. Sources: navigation (8 hard-coded jumps), patients
+        (top 30 from dashboard.patients), orders (top 30), and actions
+        derived from dashboard payload — Reconcile Pix per pending
+        payment, Print labels when ready_to_ship orders exist, Reset
+        invite per blocked patient, Open audit per patient. Recents
+        (8 cap) and starred persist in localStorage under
+        tx.cmdk.recents.v1 / tx.cmdk.starred.v1. useReducedMotion
+        respected (data-reduce-motion on overlay). Screenshot at
+        artifacts/visual-e2e/redesign/p8-cmdk-desktop.png via
+        scripts/p8-screenshots.py (artifacts/ is gitignored).
+        next build clean. Tests unaffected (the sqlite-store test
+        failure observed during this phase is from concurrent Phase 7
+        WIP changes to src/sqlite-store.ts, not from Phase 8).
   - [x] Phase 9 — Admin readiness redesign
         (scaffold def05b8 · redesign 6ee2fe4 · screenshots + ledger close pending commit)
   - [ ] Phase 10 — Audit timeline + Team users
