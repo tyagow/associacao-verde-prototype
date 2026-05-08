@@ -1,0 +1,21 @@
+/* Phase 5 — Fulfillment kanban grid (.tx-* namespace).
+ *
+ * Four columns by default; flex-wraps on narrower viewports so phase 12
+ * mobile sweep can revisit per-column swipe without breaking the grid.
+ */
+
+.txKanban {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: var(--sp-3);
+  align-items: stretch;
+  overflow-x: auto;
+  padding-bottom: var(--sp-3);
+}
+
+@media (max-width: 1024px) {
+  .txKanban {
+    flex-wrap: wrap;
+  }
+}
