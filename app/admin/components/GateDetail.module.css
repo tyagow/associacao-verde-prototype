@@ -105,7 +105,7 @@
 .run {
   margin: 0;
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--paper-warm, #f7f9f6);
   border: 1px dashed var(--line-strong, #c7d3cc);
   font-size: 12.5px;

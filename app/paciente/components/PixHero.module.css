@@ -124,7 +124,7 @@
 .px-hero__product-thumb {
   width: 40px;
   height: 40px;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: #0d1f17;
   color: var(--gold, #d6b56a);
   display: flex;

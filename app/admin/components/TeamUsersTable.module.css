@@ -26,7 +26,7 @@
   font: inherit;
   padding: 8px 10px;
   border: 1px solid var(--line, #e3ebe6);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: #fff;
 }
 
@@ -35,7 +35,7 @@
   font: inherit;
   font-size: 13px;
   padding: 10px 16px;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: var(--green, #1d8c52);
   color: #fff;
   border: 1px solid var(--green-deep, #135b35);
