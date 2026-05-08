@@ -49,3 +49,19 @@ incremental work owned by future phases.
 - Style is enforced by Prettier (`prettier.config.mjs`) and ESLint
   (`eslint.config.mjs`). Run `npm run check` before committing.
 - Tests live in `test/*.test.mjs` and are run via `node --import tsx --test`.
+
+## E2E harness
+
+`npm run e2e` self-bootstraps an isolated production-mode server. It runs
+`next build` if `.next/BUILD_ID` is missing, then spawns the server with
+`NEXT_DEV=false` on a free port and tears it down on exit. Production mode
+is required because React must hydrate for Playwright clicks to fire event
+handlers — Next.js dev mode's HMR WebSocket fails under Playwright and
+leaves the app non-interactive.
+
+A first run on a fresh clone pays a one-time `next build` cost (~30–60s).
+Subsequent runs reuse the build until something invalidates `.next/`.
+
+Smoke (`npm run smoke`) requires an external server already listening on
+`SMOKE_BASE_URL` — it does not bootstrap. Use `npm run verify:isolated` for
+the self-bootstrapping CI-equivalent (smoke + readiness drills).
