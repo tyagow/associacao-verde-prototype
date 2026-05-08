@@ -39,7 +39,7 @@
   gap: var(--sp-2);
   padding: var(--sp-1) var(--sp-3);
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   background: var(--soft);
   font-size: var(--fs-xs);
   letter-spacing: var(--tracking-overline);
@@ -118,7 +118,7 @@
   font-size: var(--fs-xs);
   font-weight: 600;
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   background: var(--soft-2);
   color: var(--muted);
   border: 1px solid var(--line);

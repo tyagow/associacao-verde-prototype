@@ -75,7 +75,7 @@
   appearance: none;
   border: 1px solid var(--line);
   background: var(--paper);
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   width: 36px;
   height: 36px;
   display: inline-flex;

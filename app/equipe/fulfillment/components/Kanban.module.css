@@ -39,7 +39,7 @@
     padding: 4px;
     background: var(--paper-warm, #f3f5f1);
     border: 1px solid var(--line);
-    border-radius: 999px;
+    border-radius: var(--r-pill);
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
@@ -59,7 +59,7 @@
     letter-spacing: 0.04em;
     text-transform: uppercase;
     padding: 8px 12px;
-    border-radius: 999px;
+    border-radius: var(--r-pill);
     cursor: pointer;
     white-space: nowrap;
     flex: 0 0 auto;
@@ -79,7 +79,7 @@
     min-width: 20px;
     height: 18px;
     padding: 0 6px;
-    border-radius: 999px;
+    border-radius: var(--r-pill);
     background: var(--line);
     color: var(--ink);
     font-size: 10px;
