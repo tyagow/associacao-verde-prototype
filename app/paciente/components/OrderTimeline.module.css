@@ -1,0 +1,70 @@
+.px-timeline {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0;
+  padding: var(--sp-2) 0 var(--sp-3);
+  position: relative;
+}
+
+.px-stage {
+  text-align: center;
+  position: relative;
+  font-size: var(--fs-xs, 11px);
+  color: var(--muted);
+  min-width: 0;
+}
+
+.px-stage strong {
+  display: block;
+  font-size: var(--fs-xs, 11.5px);
+  color: var(--ink);
+  font-weight: 500;
+  margin-top: var(--sp-2);
+  line-height: 1.25;
+  word-break: break-word;
+}
+
+.px-stage::before {
+  content: "";
+  display: block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--line-strong, #d6dfd9);
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.px-stage--done::before {
+  background: var(--green);
+  border-color: var(--green);
+}
+
+.px-stage--current::before {
+  background: var(--gold, var(--warn));
+  border-color: var(--gold-deep, var(--warn));
+  box-shadow: 0 0 0 4px rgba(214, 169, 26, 0.18);
+}
+
+.px-stage:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  width: 100%;
+  height: 2px;
+  background: var(--line-strong, #d6dfd9);
+  z-index: 0;
+}
+
+.px-stage--done:not(:last-child)::after {
+  background: var(--green);
+}
+
+@media (max-width: 380px) {
+  .px-stage strong {
+    font-size: 10px;
+  }
+}

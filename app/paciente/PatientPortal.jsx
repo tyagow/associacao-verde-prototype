@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import CatalogDrawer from "./components/CatalogDrawer";
 import PatientShell from "./components/PatientShell";
 import PatientTabs, { PATIENT_TABS } from "./components/PatientTabs";
+import PixHero from "./components/PixHero";
 import ProfileDrawer from "./components/ProfileDrawer";
 import Toast from "./components/Toast";
 
@@ -427,13 +428,20 @@ export default function PatientPortal() {
         {/* ---- Tab: Pedido ---- */}
         <div data-patient-section="pedido" style={hidden(isPedido)}>
           <section className="patient-current-order" aria-label="Proxima acao do paciente">
-            <PatientNextAction
-              order={latestOrder}
-              cartCount={cartCount}
-              hasPrivacyConsent={hasPrivacyConsent}
-              onRefresh={loadOrders}
-              onCopyPix={copyPix}
-            />
+            {hasPrivacyConsent &&
+            latestOrder &&
+            (latestOrder.paymentStatus === "pending" ||
+              latestOrder.status === "awaiting_payment") ? (
+              <PixHero order={latestOrder} onMarkPaid={loadOrders} onCopyPix={copyPix} />
+            ) : (
+              <PatientNextAction
+                order={latestOrder}
+                cartCount={cartCount}
+                hasPrivacyConsent={hasPrivacyConsent}
+                onRefresh={loadOrders}
+                onCopyPix={copyPix}
+              />
+            )}
           </section>
 
           <article className="patient-order-card">
