@@ -1335,7 +1335,7 @@ export class ProductionSystem {
     const now = this.now();
     let changed = false;
     for (const reservation of this.state.stockReservations) {
-      if (reservation.status === "active" && new Date(reservation.expiresAt) <= now) {
+      if (reservation.status === "active" && !this.isActiveReservation(reservation)) {
         reservation.status = "expired";
         reservation.expiredAt = now.toISOString();
         const order = this.state.orders.find((item) => item.id === reservation.orderId);
@@ -1387,17 +1387,26 @@ export class ProductionSystem {
     });
   }
 
-  availableStock(productId) {
-    const product = this.productById(productId);
-    const reserved = this.state.stockReservations
-      .filter(
-        (reservation) =>
-          reservation.status === "active" && new Date(reservation.expiresAt) > this.now(),
-      )
+  // INVENTORY INVARIANT (Phase 2):
+  //   availableStock(productId) = onHandStock(productId) − sum(activeReservations.items.quantity)
+  // where active = reservation.status === "active" AND reservation.expiresAt > now().
+  // Every read of availableStock MUST go through this method so the derivation
+  // stays unified. Do not recompute the formula elsewhere.
+  isActiveReservation(reservation) {
+    return reservation.status === "active" && new Date(reservation.expiresAt) > this.now();
+  }
+
+  reservedQuantity(productId) {
+    return this.state.stockReservations
+      .filter((reservation) => this.isActiveReservation(reservation))
       .flatMap((reservation) => reservation.items)
       .filter((item) => item.productId === productId)
       .reduce((sum, item) => sum + item.quantity, 0);
-    return product.stock - reserved;
+  }
+
+  availableStock(productId) {
+    const product = this.productById(productId);
+    return product.stock - this.reservedQuantity(productId);
   }
 
   productById(productId) {
