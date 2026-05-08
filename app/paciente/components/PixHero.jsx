@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useReducedMotion } from "framer-motion";
 import { QRCodeSVG } from "qrcode.react";
 import OrderTimeline from "./OrderTimeline";
 import styles from "./PixHero.module.css";
@@ -24,6 +25,7 @@ function formatCountdown(seconds) {
 export default function PixHero({ order, onMarkPaid, onCopyPix }) {
   const expiresAt = order?.paymentExpiresAt;
   const [secondsLeft, setSecondsLeft] = useState(() => computeSecondsLeft(expiresAt));
+  const reduce = useReducedMotion();
 
   useEffect(() => {
     setSecondsLeft(computeSecondsLeft(expiresAt));
@@ -57,6 +59,7 @@ export default function PixHero({ order, onMarkPaid, onCopyPix }) {
     <section
       className={styles["px-hero"]}
       data-expired={expired ? "true" : "false"}
+      data-reduce-motion={reduce ? "true" : "false"}
       aria-label="Pagamento Pix"
     >
       <header className={styles["px-hero__bar"]}>

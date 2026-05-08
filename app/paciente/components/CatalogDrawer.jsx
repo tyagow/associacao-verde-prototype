@@ -12,7 +12,7 @@
    conditional unmounting of children. */
 
 import { useEffect, useRef } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import styles from "./CatalogDrawer.module.css";
 
 export default function CatalogDrawer({
@@ -25,6 +25,11 @@ export default function CatalogDrawer({
 }) {
   const closeRef = useRef(null);
   const panelRef = useRef(null);
+  const reduce = useReducedMotion();
+  const backdropTransition = reduce ? { duration: 0 } : { duration: 0.18 };
+  const panelTransition = reduce
+    ? { duration: 0 }
+    : { type: "spring", damping: 30, stiffness: 240 };
 
   // Esc-to-close, focus the close button when opened.
   useEffect(() => {
@@ -48,7 +53,7 @@ export default function CatalogDrawer({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.18 }}
+            transition={backdropTransition}
             onClick={onClose}
             aria-label="Fechar"
             tabIndex={-1}
@@ -67,7 +72,7 @@ export default function CatalogDrawer({
         aria-label={ariaLabel}
         initial={false}
         animate={{ x: open ? 0 : "100%" }}
-        transition={{ type: "spring", damping: 30, stiffness: 240 }}
+        transition={panelTransition}
       >
         <header className={styles.header}>
           <div>
