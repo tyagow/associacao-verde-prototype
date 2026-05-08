@@ -15,12 +15,19 @@ import {
   assertLoginAllowed,
   recordLoginFailure,
   clearLoginAttempts,
+  ipFromRequest,
+  assertRateLimit,
+  recordRateLimitHit,
 } from "../../../../src/route-helpers.ts";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request) {
   try {
+    const ip = ipFromRequest(request);
+    const rateKey = `patient-login:${ip}`;
+    assertRateLimit(rateKey, 30, 30 * 60_000);
+    recordRateLimitHit(rateKey);
     const { system } = getSystem();
     const payload = await readJsonBody(request);
     const key = loginAttemptKey(request, "patient", payload.memberCode);
