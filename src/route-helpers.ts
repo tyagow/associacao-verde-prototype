@@ -1,13 +1,10 @@
 // @ts-nocheck
-// Shared helpers for Next.js Route Handlers + server.mjs:
+// Shared helpers for Next.js Route Handlers:
 //   - readSessionCookie: parse `Cookie:` header, find `av_session=`, verify HMAC
 //   - signSessionCookie: produce HMAC-signed cookie value
 //   - sessionCookieHeader: build a Set-Cookie line for av_session
 //   - jsonResponse: build a same-shape JSON response with no-store cache
 //   - errorResponse: convert thrown { status, message } / Error into JSON
-//
-// These mirror server.mjs's helpers byte-for-byte so a Route Handler that
-// uses them is indistinguishable on the wire from a legacy switch handler.
 
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { getSystem } from "./system-instance.ts";
@@ -90,10 +87,8 @@ export async function readJsonBody(request) {
   }
 }
 
-// Login-throttling — mirrors server.mjs's in-memory loginAttempts map. Cached
-// on globalThis so server.mjs and Route Handlers share one map (otherwise
-// brute-force lockout could be bypassed by alternating between the two
-// surfaces during the migration).
+// Login-throttling — in-memory loginAttempts map cached on globalThis so
+// every Route Handler module graph shares the same lockout state.
 const LOGIN_KEY = "__avLoginAttempts";
 function attempts() {
   const g = globalThis;

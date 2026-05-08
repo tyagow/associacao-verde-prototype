@@ -65,12 +65,11 @@ Implemented production work:
 
 - Node server with SQLite persistence; schema versioned through migration
   v15 with append-only `SCHEMA_MIGRATIONS` ledger in `src/sqlite-store.ts`.
-- Next.js private route surfaces for patient and team operations, served by
-  the same Node process as the authenticated API. `server.mjs` is frozen;
-  new endpoints land as Route Handlers under `app/api/` and are delegated
-  via the `appRoutes` allow-list (Phase 3 `/api/team/activity`, Phase 5
-  `/api/team/orders/status`, Phase 7 `/api/team/support-replies` and
-  `/api/team/support-thread`).
+- Pure Next.js process: every endpoint is a Route Handler under `app/api/`,
+  with `middleware.ts` owning origin/CSRF + protected-page enforcement and
+  `next.config.mjs::headers()` returning security headers on every
+  response. The legacy `server.mjs` wrapper was deleted at the Stage 3
+  cutover (`0f033d9`).
 - Team login with hashed password storage; team self-service password
   rotation; admin temporary-password reset with old-session revocation.
 - Patient invite/member-code login and eligibility checks; patient consent
@@ -238,7 +237,7 @@ password and revoke other sessions`.
   same-origin/CSRF protection, logout, idle expiry, and brute-force throttling.
 - Evidence: production cookies use `HttpOnly`, `SameSite=Lax`, and `Secure`;
   every login issues a new server session id; logout clears the session; expired
-  sessions are rejected; same-origin mutation guard is in `server.mjs`; login
+  sessions are rejected; same-origin mutation guard is in `middleware.ts`; login
   throttling locks repeated failures per IP plus identifier; smoke verifies
   repeated bad team login returns `429`. `npm run readiness:session-security`
   records non-secret cookie evidence and the release gate blocks production
@@ -360,7 +359,7 @@ environment gates` covers the endpoint; `npm run e2e` asserts the admin route
 - Status: complete
 - Acceptance: unpaid expired Pix orders release stock reservations safely and
   leave a visible order/payment state for support.
-- Evidence: `server.mjs` runs `system.expireReservations()` on an interval;
+- Evidence: `src/system-instance.ts` runs `system.expireReservations()` on a 60-second interval;
   `expireReservations()` marks reservation, order, and payment expired and
   writes `reservation_expired`; test `expired reservation releases stock and
 expires order plus payment` covers release behavior.

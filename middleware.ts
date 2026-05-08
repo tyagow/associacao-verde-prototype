@@ -1,20 +1,18 @@
-// Stage B of server.mjs → Next.js migration: edge middleware that mirrors
-// server.mjs's two non-bypassable request-level policies for paths Next.js
-// handles (Route Handlers + protected pages):
+// Edge middleware: the two non-bypassable request-level policies for paths
+// Next.js handles (Route Handlers + protected pages):
 //
 //  1. Same-origin enforcement on POST /api/* — denies requests whose
-//     Origin/Referer doesn't match Host. Mirrors `assertSameOrigin` in
-//     server.mjs (post-`05fa251` hardening: missing Origin AND Referer = 403).
+//     Origin/Referer doesn't match Host. Missing Origin AND Referer = 403,
+//     except for same-host loopback (server-to-server readiness scripts).
 //
 //  2. Page protection for /equipe/* (sub-routes) and /admin — redirects
-//     unauthenticated requests to /equipe (the sign-in entry). Mirrors
-//     `protectedAppRoutes` in server.mjs. Cookie *presence* is enough at
-//     the middleware layer; the page itself enforces the signed-cookie +
-//     role check via system.getSession (defense-in-depth).
+//     unauthenticated requests to /equipe (the sign-in entry). Cookie
+//     *presence* is enough at the middleware layer; the page itself
+//     enforces the signed-cookie + role check via system.getSession
+//     (defense-in-depth).
 //
-// server.mjs's `setSecurityHeaders` and `assertSameOrigin` STAY for now
-// (defense-in-depth). For requests that Next.js handles, the headers from
-// next.config.mjs::headers() take effect.
+// Security response headers (CSP, HSTS, X-Frame-Options, ...) live in
+// next.config.mjs::headers() and are returned on every response.
 //
 // Note: this file uses .ts extension because Next.js looks for middleware.ts
 // before middleware.js, but we keep it free of TS-only syntax so the
@@ -42,7 +40,7 @@ export function middleware(request) {
     return NextResponse.next();
   }
 
-  // 1. Same-origin enforcement for POST /api/* (mirrors server.mjs::assertSameOrigin)
+  // 1. Same-origin enforcement for POST /api/*.
   //    Allows missing Origin/Referer ONLY when the host header is a same-host
   //    loopback (127.0.0.1:* / localhost:*), which is how Node fetch from
   //    server-to-server readiness scripts reaches the app. Browsers always
@@ -73,7 +71,7 @@ export function middleware(request) {
     }
   }
 
-  // 2. Protected page redirect (mirrors server.mjs::protectedAppRoutes).
+  // 2. Protected page redirect.
   //    Cookie *presence* is enough here; the page itself re-checks signed
   //    cookie + role via system.getSession().
   if (PROTECTED_PAGE_PATHS.has(pathname)) {

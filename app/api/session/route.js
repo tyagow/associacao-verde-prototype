@@ -1,7 +1,7 @@
 // GET /api/session — return the current session descriptor.
 //
-// Reads from the shared singleton (Stage 1 globalThis cache) so the
-// session map matches server.mjs's view exactly.
+// Reads from the shared singleton (globalThis-cached) so the session map
+// is consistent across every Route Handler module graph.
 
 import { getSystem } from "../../../src/system-instance.ts";
 import { readSessionCookie, jsonResponse, errorResponse } from "../../../src/route-helpers.ts";

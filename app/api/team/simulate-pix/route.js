@@ -1,5 +1,5 @@
 // POST /api/team/simulate-pix — dev-only Pix simulator.
-// Refuses to run when production=true (matches legacy server.mjs guard).
+// Refuses to run when production=true.
 
 import { getSystem } from "../../../../src/system-instance.ts";
 import {

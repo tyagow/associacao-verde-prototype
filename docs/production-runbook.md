@@ -204,22 +204,14 @@ node scripts/add-dev-user.mjs http://127.0.0.1:4184
 Override credentials via `DEV_PATIENT_CODE`, `DEV_PATIENT_INVITE`, and
 `DEV_PATIENT_NAME`.
 
-## Frozen-Server Bridge Pattern
+## Endpoint Architecture
 
-`server.mjs` is **frozen** — no new endpoints land in it directly. New API
-endpoints are implemented as Next.js Route Handlers under `app/api/` and
-wired into `server.mjs` only by adding a single string to the `appRoutes`
-allow-list (the dispatch returns `404` for `/api/*` paths not in that
-list). Bridge endpoints in service today:
-
-- `GET /api/team/activity` (Phase 3) — live activity feed polling
-- `POST /api/team/orders/status` (Phase 5) — kanban drag-and-drop
-- `POST /api/team/support-replies` (Phase 7) — workbench reply box
-- `GET /api/team/support-thread` (Phase 7) — workbench thread fetch
-
-Phase 5/7 also delegate to thin `*_raw` endpoints inside `server.mjs`
-(NOT in `appRoutes`) where the in-process domain singleton call lives.
-See `CLAUDE.md` for the full policy.
+Every endpoint is a Next.js Route Handler under `app/api/<path>/route.js`.
+The legacy `server.mjs` wrapper was deleted at the Stage 3 cutover
+(`0f033d9`); the app now runs on `next start` (production) / `next dev`
+(development) directly. `middleware.ts` owns origin/CSRF + protected-page
+enforcement; `next.config.mjs::headers()` returns security headers on
+every response. See `CLAUDE.md` for the full architectural boundaries.
 
 ## Schema Migrations
 

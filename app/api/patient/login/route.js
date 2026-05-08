@@ -1,6 +1,5 @@
 // POST /api/patient/login — patient sign-in.
 //
-// Mirrors the legacy server.mjs handler exactly:
 //   1. Throttle login attempts by (ip, memberCode).
 //   2. Call system.loginPatient — returns { sessionId, patient } on success.
 //   3. On success: clear the throttle bucket and emit signed av_session cookie.

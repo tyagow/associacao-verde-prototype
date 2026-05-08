@@ -20,7 +20,7 @@ function buildSystem({ now = "2026-05-08T12:00:00-03:00" } = {}) {
 }
 
 function loginTeam(system) {
-  // Ensure a baseline admin team user exists, mirroring server.mjs bootstrap.
+  // Ensure a baseline admin team user exists (boot-time seeding).
   system.ensureTeamUser({
     email: "equipe-test@example.test",
     password: "Sup3rSenh@!",

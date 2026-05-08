@@ -1,19 +1,16 @@
 // @ts-nocheck
-// Stage 1 of TRUE single-process Next.js migration: shared singleton.
+// Shared domain singleton for the Next.js process.
 //
-// server.mjs (run via `node --import tsx`) and Next.js Route Handlers
-// (bundled through Turbopack) load this file in DIFFERENT module graphs.
-// Module-local `cached` would therefore yield TWO ProductionSystem +
-// SqliteStateStore instances on the same DB file, racing on writes.
+// Next.js Route Handlers, pages, and tsx-loaded scripts (e.g. readiness
+// probes) can each trigger a different module graph for this file. A
+// module-local `cached` would therefore yield multiple ProductionSystem
+// + SqliteStateStore instances on the same DB file, racing on writes.
 //
-// Solution: we cache the built system on `globalThis` (the same object
-// across every module graph in the same Node process). Both server.mjs
-// and Route Handlers see the same instance — the SqliteStateStore +
-// reservation-expiry timer + team-user seeding run exactly once, and
-// every getSystem() call returns the same handle.
-//
-// This is the architectural foundation that lets Route Handlers do real
-// state-touching work without proxying back to server.mjs over fetch.
+// Solution: cache the built system on `globalThis` (the same object
+// across every module graph in the same Node process). Every consumer
+// sees the same instance — the SqliteStateStore + reservation-expiry
+// timer + team-user seeding run exactly once, and every getSystem()
+// call returns the same handle.
 
 import { join } from "node:path";
 import { createAsaasPixProvider, ProductionSystem } from "./production-system.ts";
@@ -26,7 +23,7 @@ function requiredEnv(name, fallback) {
 }
 
 // Repo root resolution: prefer explicit env (set by deployment), else
-// process.cwd() (server.mjs and `next start` both run from repo root).
+// process.cwd() (`next start` and tsx-run scripts both launch from repo root).
 // Avoid `new URL(".", import.meta.url)` because Turbopack cannot
 // statically analyze it when this module is imported from a Route Handler.
 const repoRoot = process.env.AV_REPO_ROOT || process.cwd();
@@ -34,11 +31,11 @@ const repoRoot = process.env.AV_REPO_ROOT || process.cwd();
 const GLOBAL_KEY = "__avSystemInstance";
 
 function build() {
-  // After server.mjs deletion: `next start` forces NODE_ENV=production
-  // inside its workers regardless of what we pass. We must NOT gate the
-  // live-provider requirement on NODE_ENV — it would block every E2E /
-  // dev `next start` invocation. Instead an explicit flag (set in real
-  // production deploys: docker, k8s, vercel) controls fail-closed mode.
+  // `next start` forces NODE_ENV=production inside its workers regardless
+  // of what we pass. We must NOT gate the live-provider requirement on
+  // NODE_ENV — it would block every E2E / dev `next start` invocation.
+  // Instead an explicit flag (set in real production deploys: docker, k8s,
+  // vercel) controls fail-closed mode.
   const production = process.env.AV_REQUIRE_LIVE_PROVIDER === "true";
   const dbFile = process.env.DB_FILE || join(repoRoot, "data", "associacao-verde.sqlite");
   const documentStorageDir =

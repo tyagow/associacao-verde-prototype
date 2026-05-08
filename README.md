@@ -76,12 +76,12 @@ The production application implements:
 
 ## Architecture Notes
 
-- `server.mjs` is **frozen** to its existing endpoint surface. New API
-  endpoints land as Next.js Route Handlers under `app/api/` and are
-  delegated to via the `appRoutes` allow-list inside `server.mjs`. See
-  `CLAUDE.md` for the frozen-server policy and the bridge pattern reused
-  by Phase 5 (`/api/team/orders/status`), Phase 7 (`/api/team/support-replies`,
-  `/api/team/support-thread`), and Phase 3 (`/api/team/activity`).
+- The app runs on pure Next.js (`next start` / `next dev`); the legacy
+  `server.mjs` wrapper was deleted at the Stage 3 cutover (`0f033d9`).
+  Every endpoint is now a Next.js Route Handler under `app/api/`, with
+  `middleware.ts` owning origin/CSRF + protected-page enforcement and
+  `next.config.mjs::headers()` returning security headers. See
+  `CLAUDE.md` for the architectural boundaries.
 - Domain logic lives in `src/production-system.ts` and is reused by the
   HTTP surface and Route Handlers via a shared singleton.
 - Persistence migrations follow an append-only `SCHEMA_MIGRATIONS` array in
@@ -101,11 +101,12 @@ npm install
 tmux new-session -d -s associacao-verde-watchdog "bash scripts/dev-watchdog.sh"
 
 # Or one-shot (if you don't need the watchdog):
-PORT=4184 \
-  DB_FILE=/tmp/associacao-verde-dev.sqlite \
+DB_FILE=/tmp/associacao-verde-dev.sqlite \
   DOCUMENT_STORAGE_DIR=/tmp/associacao-verde-dev-docs \
-  NEXT_DEV=true \
-  node --import tsx server.mjs
+  TEAM_PASSWORD=apoio-equipe-dev \
+  PIX_WEBHOOK_SECRET=dev-webhook-secret \
+  SESSION_SECRET=dev-session-secret-change-me \
+  npx next dev -p 4184
 
 # Ensure TIAGO/TIAGO patient exists (idempotent helper).
 node scripts/add-dev-user.mjs http://127.0.0.1:4184

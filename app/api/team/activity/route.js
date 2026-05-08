@@ -1,15 +1,7 @@
-// Phase 3 — GET /api/team/activity?since=<isoTimestamp>
+// GET /api/team/activity?since=<isoTimestamp>
 //
-// Next.js Route Handler. Returns audit events filtered by `since` so the
-// command center can poll for new activity without re-rendering the entire
-// dashboard.
-//
-// Bridge note (CLAUDE.md frozen-server policy): this is the FIRST Next.js
-// Route Handler in the app. server.mjs's pathname switch-statement does not
-// reach Next for /api/* paths unless the path is included in `appRoutes`
-// (the Next allow-list). We add `/api/team/activity` to that allow-list as
-// a one-line routing-policy delegation, NOT as new business logic in
-// server.mjs. The behavior lives entirely in this Route Handler.
+// Returns audit events filtered by `since` so the command center can poll
+// for new activity without re-rendering the entire dashboard.
 //
 // We reuse the existing /api/team/dashboard endpoint (which already returns
 // auditLog) by forwarding the session cookie. This keeps zero new endpoints

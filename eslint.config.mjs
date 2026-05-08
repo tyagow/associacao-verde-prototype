@@ -72,7 +72,7 @@ export default [
             {
               group: ["next", "next/*", "react", "react-dom", "react-dom/*"],
               message:
-                "src/ must remain framework-agnostic. Move framework code into app/ (server.mjs is frozen).",
+                "src/ must remain framework-agnostic. Move framework code into app/ (Next.js App Router: Route Handlers, pages, layouts).",
             },
           ],
         },

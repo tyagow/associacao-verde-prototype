@@ -2,9 +2,8 @@
 //
 // system.createCheckout runs the inventory reservation under a
 // `BEGIN IMMEDIATE` transaction in SqliteStateStore (Phase 2 race
-// coverage). Because Stage 1 collapsed the singleton on globalThis,
-// this Route Handler reaches the SAME store instance server.mjs uses;
-// no second SqliteStateStore is constructed.
+// coverage). The system singleton lives on globalThis, so this Route
+// Handler shares one SqliteStateStore with every other consumer.
 
 import { getSystem } from "../../../src/system-instance.ts";
 import {

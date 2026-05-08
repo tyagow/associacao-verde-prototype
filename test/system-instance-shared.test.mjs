@@ -4,10 +4,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
-// Stage 1 — verify getSystem() returns the SAME instance even when imported
-// through cache-busting query strings (which Node treats as distinct module
-// specifiers, simulating the situation where server.mjs's module graph and
-// Next.js's bundled module graph each load src/system-instance.ts).
+// Verify getSystem() returns the SAME instance even when imported through
+// cache-busting query strings (which Node treats as distinct module
+// specifiers, simulating the situation where Next.js Route Handlers,
+// pages, and tsx-loaded scripts each load src/system-instance.ts in their
+// own module graph).
 //
 // Without globalThis caching, two import realms would each call build() and
 // produce two SqliteStateStore + ProductionSystem instances on the same DB

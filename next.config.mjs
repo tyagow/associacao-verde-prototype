@@ -1,12 +1,6 @@
-// Stage B of server.mjs → Next.js migration: Next.js-level security
-// response headers. Mirrors server.mjs::securityHeaders() so Route Handlers
-// and pages emit the same X-Content-Type-Options / X-Frame-Options /
-// Referrer-Policy / Permissions-Policy / CSP / HSTS (production) headers
-// that the legacy server emits.
-//
-// server.mjs::setSecurityHeaders stays for now — defense-in-depth covers
-// requests that legacy switch handles, and Next overrides for handlers it
-// owns.
+// Next.js-level security response headers. Route Handlers and pages emit
+// X-Content-Type-Options / X-Frame-Options / Referrer-Policy /
+// Permissions-Policy / CSP / HSTS (production-only) on every response.
 
 const production = process.env.NODE_ENV === "production";
 
