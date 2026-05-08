@@ -2,7 +2,7 @@ node_modules
 .next
 artifacts
 data
-public/app.css
+app/globals.css
 package-lock.json
 *.sqlite
 *.sqlite-*

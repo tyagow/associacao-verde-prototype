@@ -9,7 +9,7 @@ export default [
       ".next/**",
       "artifacts/**",
       "data/**",
-      "public/app.css",
+      "app/globals.css",
       "thoughts/**",
       "*.sqlite",
       "*.sqlite-*",
