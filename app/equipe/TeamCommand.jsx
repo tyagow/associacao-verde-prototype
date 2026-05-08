@@ -1,17 +1,36 @@
 "use client";
 
 import Brand from "../components/Brand";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-const TEAM_ROUTES = [
-  ["/equipe", "Comando"],
-  ["/equipe/pacientes", "Pacientes"],
-  ["/equipe/estoque", "Estoque"],
-  ["/equipe/pedidos", "Pedidos"],
-  ["/equipe/fulfillment", "Fulfillment"],
-  ["/equipe/suporte", "Suporte"],
-  ["/admin", "Admin"],
-];
+import TeamShell from "./components/TeamShell";
+import KpiSpark from "./components/KpiSpark";
+import ActivityFeed from "./components/ActivityFeed";
+import PixByHour from "./components/PixByHour";
+import PriorityQueue from "./components/PriorityQueue";
+
+const ROLE_LABELS = {
+  admin: "Administrador",
+  operations: "Operacoes",
+  stock: "Estoque",
+  fulfillment: "Fulfillment",
+  support: "Suporte",
+};
+
+const PERMISSION_LABELS = {
+  "dashboard:view": "painel",
+  "patients:write": "pacientes",
+  "prescriptions:write": "receitas",
+  "products:write": "produtos",
+  "stock:write": "estoque",
+  "cultivation:write": "cultivo",
+  "fulfillment:write": "fulfillment",
+  "shipments:write": "envios",
+  "support:write": "suporte",
+  "payments:simulate": "Pix dev",
+  "payments:reconcile": "conciliacao",
+  "team:write": "usuarios",
+};
 
 export default function TeamCommand() {
   const [session, setSession] = useState(null);
@@ -19,6 +38,8 @@ export default function TeamCommand() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
 
   const isTeam = session?.role === "team";
 
@@ -49,20 +70,25 @@ export default function TeamCommand() {
     };
   }, [loadDashboard, loadSession]);
 
+  // Auto-refresh dashboard every 30s when authenticated to keep KPIs fresh.
+  useEffect(() => {
+    if (!isTeam) return undefined;
+    const id = setInterval(() => {
+      loadDashboard().catch(() => {});
+    }, 30_000);
+    return () => clearInterval(id);
+  }, [isTeam, loadDashboard]);
+
   async function handleLogin(event) {
     event.preventDefault();
     setBusy(true);
     setError("");
     setMessage("");
-
     const form = new FormData(event.currentTarget);
     try {
       await api("/api/team/login", {
         method: "POST",
-        body: {
-          email: form.get("email"),
-          password: form.get("password"),
-        },
+        body: { email: form.get("email"), password: form.get("password") },
       });
       const nextSession = await loadSession();
       if (nextSession?.role === "team") {
@@ -105,6 +131,7 @@ export default function TeamCommand() {
       setSession(null);
       setDashboard(null);
       setMessage("Sessao da equipe encerrada.");
+      setProfileOpen(false);
     } catch (nextError) {
       setError(nextError.message);
     } finally {
@@ -112,147 +139,360 @@ export default function TeamCommand() {
     }
   }
 
+  function openProfile() {
+    setProfileOpen(true);
+    setTimeout(() => profileRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+  }
+
   const queues = useMemo(() => buildQueues(dashboard), [dashboard]);
 
-  return (
-    <>
-      <header className="topbar">
-        <Brand />
-        <nav aria-label={isTeam ? "Areas da equipe" : "Entrada da equipe"}>
-          <a className="ghost" href="/">
-            Inicio
-          </a>
-          <a className="ghost" href="/paciente">
-            Paciente
-          </a>
-          <a className="ghost active" href="/equipe" aria-current="page">
-            Equipe
-          </a>
-          {isTeam ? (
-            <>
-              <a className="ghost" href="/equipe/pacientes">
-                Pacientes
-              </a>
-              <a className="ghost" href="/equipe/estoque">
-                Estoque
-              </a>
-              <a className="ghost" href="/equipe/pedidos">
-                Pedidos
-              </a>
-              <a className="ghost" href="/equipe/suporte">
-                Suporte
-              </a>
-              <a className="ghost" href="/admin">
-                Admin
-              </a>
-            </>
-          ) : null}
-        </nav>
-      </header>
-
-      <main>
-        <div className={`app-layout ${isTeam ? "" : "login-layout"}`.trim()}>
-          {isTeam ? (
-            <aside className="side-nav" aria-label="Rotas da equipe">
-              {TEAM_ROUTES.map(([href, label]) => (
-                <a
-                  key={href}
-                  href={href}
-                  className={href === "/equipe" ? "active" : undefined}
-                  aria-current={href === "/equipe" ? "page" : undefined}
-                >
-                  {label}
-                </a>
-              ))}
-            </aside>
-          ) : null}
-
-          <section className="surface-stack">
-            <article className="panel">
-              <div className="panel-heading">
-                <div>
-                  <p className="kicker">Equipe Apoiar</p>
-                  <h2>{isTeam ? "Comando da operacao" : "Acesso da equipe"}</h2>
-                  <p className="muted">
-                    {isTeam
-                      ? "Fila diaria, alertas, reservas, pagamentos e itens que precisam de acao."
-                      : "Entre com credenciais individuais para abrir a area operacional."}
-                  </p>
-                </div>
-                <span className="status" id="team-status">
-                  {isTeam ? "equipe autenticada" : "acesso restrito"}
-                </span>
-              </div>
-
-              <form
-                id="team-login"
-                className="inline-form auth-form"
-                hidden={isTeam}
-                onSubmit={handleLogin}
-              >
-                <div className="auth-intro">
-                  <strong>Acesso restrito da equipe</strong>
-                  <span>
-                    Use credenciais individuais. Tentativas repetidas sao bloqueadas e auditadas.
+  if (!isTeam) {
+    return (
+      <>
+        <header className="topbar">
+          <Brand />
+          <nav aria-label="Entrada da equipe">
+            <a className="ghost" href="/">
+              Inicio
+            </a>
+            <a className="ghost" href="/paciente">
+              Paciente
+            </a>
+            <a className="ghost active" href="/equipe" aria-current="page">
+              Equipe
+            </a>
+          </nav>
+        </header>
+        <main>
+          <div className="app-layout login-layout">
+            <section className="surface-stack">
+              <article className="panel">
+                <div className="panel-heading">
+                  <div>
+                    <p className="kicker">Equipe Apoiar</p>
+                    <h2>Acesso da equipe</h2>
+                    <p className="muted">
+                      Entre com credenciais individuais para abrir a area operacional.
+                    </p>
+                  </div>
+                  <span className="status" id="team-status">
+                    acesso restrito
                   </span>
                 </div>
-                <label>
-                  Email da equipe
-                  <input
-                    name="email"
-                    type="email"
-                    autoComplete="username"
-                    placeholder="pessoa@associacao.org"
-                    required
-                  />
-                </label>
-                <label>
-                  Senha da equipe
-                  <input
-                    name="password"
-                    type="password"
-                    autoComplete="current-password"
-                    placeholder="Senha individual"
-                    required
-                  />
-                </label>
-                <button className="primary" type="submit" disabled={busy}>
-                  {busy ? "Entrando..." : "Entrar como equipe"}
-                </button>
-              </form>
 
-              {message ? <p className="status">{message}</p> : null}
-              {error ? <p className="pill danger">{error}</p> : null}
+                <form
+                  id="team-login"
+                  className="inline-form auth-form"
+                  hidden={false}
+                  onSubmit={handleLogin}
+                >
+                  <div className="auth-intro">
+                    <strong>Acesso restrito da equipe</strong>
+                    <span>
+                      Use credenciais individuais. Tentativas repetidas sao bloqueadas e auditadas.
+                    </span>
+                  </div>
+                  <label>
+                    Email da equipe
+                    <input
+                      name="email"
+                      type="email"
+                      autoComplete="username"
+                      placeholder="pessoa@associacao.org"
+                      required
+                    />
+                  </label>
+                  <label>
+                    Senha da equipe
+                    <input
+                      name="password"
+                      type="password"
+                      autoComplete="current-password"
+                      placeholder="Senha individual"
+                      required
+                    />
+                  </label>
+                  <button className="primary" type="submit" disabled={busy}>
+                    {busy ? "Entrando..." : "Entrar como equipe"}
+                  </button>
+                </form>
 
-              <div id="team-dashboard" className="stack">
-                {!isTeam ? (
+                {message ? <p className="status">{message}</p> : null}
+                {error ? <p className="pill danger">{error}</p> : null}
+
+                <div id="team-dashboard" className="stack">
                   <p className="muted">
                     Apos a autenticacao, o servidor libera as filas internas de pagamento, estoque,
                     documentos e atendimento.
                   </p>
-                ) : !dashboard ? (
-                  <p className="muted">Carregando fila da equipe...</p>
-                ) : (
-                  <>
-                    <TeamAccountPanel
-                      session={session}
-                      busy={busy}
-                      onPasswordChange={handlePasswordChange}
-                      onLogout={logout}
-                    />
-                    <TeamDashboard dashboard={dashboard} queues={queues} />
-                  </>
-                )}
-              </div>
-            </article>
-          </section>
+                </div>
+              </article>
+            </section>
+          </div>
+        </main>
+      </>
+    );
+  }
+
+  return (
+    <TeamShell
+      session={session}
+      dashboard={dashboard}
+      currentRoute="/equipe"
+      onLogout={logout}
+      onOpenProfile={openProfile}
+      busy={busy}
+    >
+      <div className="panel-heading" style={{ marginBottom: "var(--sp-5)" }}>
+        <div>
+          <p className="kicker">Equipe Apoiar</p>
+          <h2>Comando da operacao</h2>
+          <p className="muted">
+            Fila diaria, alertas, reservas, pagamentos e itens que precisam de acao.
+          </p>
         </div>
-      </main>
+        {/*
+         * #team-status is asserted by the E2E harness (must contain
+         * 'equipe autenticada'). Keep the id and exact text.
+         */}
+        <span className="status" id="team-status">
+          equipe autenticada
+        </span>
+      </div>
+
+      {/*
+       * #team-login must exist in the DOM so the E2E
+       * `expect(page.locator('#team-login')).to_be_hidden()` assertion has a
+       * target. Hidden when authenticated.
+       */}
+      <form
+        id="team-login"
+        className="inline-form auth-form"
+        hidden
+        onSubmit={handleLogin}
+        aria-hidden="true"
+      >
+        <input name="email" type="email" autoComplete="username" />
+        <input name="password" type="password" autoComplete="current-password" />
+      </form>
+
+      {message ? <p className="status">{message}</p> : null}
+      {error ? <p className="pill danger">{error}</p> : null}
+
+      <div id="team-dashboard" className="stack">
+        {!dashboard ? (
+          <p className="muted">Carregando fila da equipe...</p>
+        ) : (
+          <CommandSurface
+            dashboard={dashboard}
+            queues={queues}
+            session={session}
+            busy={busy}
+            profileOpen={profileOpen}
+            profileRef={profileRef}
+            onPasswordChange={handlePasswordChange}
+            onLogout={logout}
+            onCloseProfile={() => setProfileOpen(false)}
+          />
+        )}
+      </div>
+    </TeamShell>
+  );
+}
+
+function CommandSurface({
+  dashboard,
+  queues,
+  session,
+  busy,
+  profileOpen,
+  profileRef,
+  onPasswordChange,
+  onLogout,
+  onCloseProfile,
+}) {
+  const activeReservations = (dashboard.reservations || []).filter(
+    (item) => item.status === "active",
+  );
+  const rows = priorityRows(queues, activeReservations);
+  const billedWeek = sumBilledLastSevenDays(dashboard.payments);
+  const billedSeries = billedDailySeries(dashboard.payments);
+  const pendingSeries = pendingPaymentsTrend(dashboard.payments);
+  const fulfillmentSeries = fulfillmentTrend(dashboard.orders);
+  const blocksSeries = blockedTrend(dashboard.patients);
+
+  return (
+    <>
+      <section
+        aria-label="Indicadores da operacao"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+          gap: "var(--sp-4)",
+        }}
+      >
+        <KpiSpark
+          label="Pix pendentes"
+          value={queues.pendingPayments.length}
+          tone={queues.pendingPayments.length ? "warn" : "good"}
+          data={pendingSeries}
+          help="Pix aguardando baixa do webhook."
+        />
+        <KpiSpark
+          label="Separacao/envio"
+          value={queues.paidFulfillment.length}
+          tone={queues.paidFulfillment.length ? "warn" : "good"}
+          data={fulfillmentSeries}
+          help="Pedidos pagos aguardando picking ou rastreio."
+        />
+        <KpiSpark
+          label="Bloqueios"
+          value={queues.blockedPatients.length}
+          tone={queues.blockedPatients.length ? "danger" : "good"}
+          data={blocksSeries}
+          help="Pacientes sem elegibilidade."
+        />
+        <KpiSpark
+          label="Faturado semana"
+          value={billedWeek.count}
+          unit={`· R$ ${(billedWeek.totalCents / 100).toFixed(2)}`}
+          tone="good"
+          data={billedSeries}
+          help="Pix confirmados nos ultimos 7 dias."
+        />
+      </section>
+
+      <section
+        style={{
+          display: "grid",
+          gridTemplateColumns: "minmax(0, 1.4fr) minmax(0, 1fr)",
+          gap: "var(--sp-4)",
+          marginTop: "var(--sp-5)",
+        }}
+        aria-label="Atividade ao vivo e Pix por hora"
+      >
+        <PixByHour payments={dashboard.payments} />
+        <ActivityFeed initialEvents={dashboard.auditLog || []} />
+      </section>
+
+      <section style={{ marginTop: "var(--sp-6)" }}>
+        <PriorityQueue rows={rows} />
+      </section>
+
+      <section style={{ marginTop: "var(--sp-6)" }}>
+        <h3 style={{ fontFamily: "var(--font-display)" }}>Validades e excecoes</h3>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+            gap: "var(--sp-4)",
+          }}
+        >
+          <ExceptionCard
+            label="Validades proximas"
+            value={queues.expiringPatients.length}
+            tone={queues.expiringPatients.length ? "warn" : "good"}
+            detail={
+              queues.expiringPatients[0]
+                ? `${queues.expiringPatients.length} paciente(s) com receita ou carteirinha em ate 30 dias.`
+                : "Receitas e carteirinhas sem alerta de 30 dias."
+            }
+          />
+          <ExceptionCard
+            label="Reservas ativas"
+            value={(dashboard.reservations || []).filter((r) => r.status === "active").length}
+            tone={
+              (dashboard.reservations || []).some((r) => r.status === "active") ? "warn" : "good"
+            }
+            detail="Reservas seguram estoque ate o Pix confirmar ou expirar."
+          />
+          <ExceptionCard
+            label="Suporte aberto"
+            value={
+              (dashboard.supportTickets || []).filter(
+                (t) => t.status === "open" || t.status === "pending",
+              ).length
+            }
+            tone={
+              (dashboard.supportTickets || []).some(
+                (t) => t.status === "open" || t.status === "pending",
+              )
+                ? "warn"
+                : "good"
+            }
+            detail="Tickets de paciente aguardando resposta da equipe."
+          />
+          <ExceptionCard
+            label="Estoque baixo"
+            value={queues.lowStock.length}
+            tone={queues.lowStock.length ? "warn" : "good"}
+            detail={
+              queues.lowStock[0]
+                ? `${queues.lowStock[0].name} esta com ${queues.lowStock[0].availableStock} ${queues.lowStock[0].unit} disponivel.`
+                : "Sem produto abaixo do limite operacional."
+            }
+          />
+        </div>
+      </section>
+
+      {profileOpen ? (
+        <div ref={profileRef} style={{ marginTop: "var(--sp-7)" }}>
+          <TeamAccountPanel
+            session={session}
+            busy={busy}
+            onPasswordChange={onPasswordChange}
+            onLogout={onLogout}
+            onClose={onCloseProfile}
+          />
+        </div>
+      ) : null}
     </>
   );
 }
 
-function TeamAccountPanel({ session, busy, onPasswordChange, onLogout }) {
+function ExceptionCard({ label, value, tone = "", detail }) {
+  return (
+    <article
+      style={{
+        border: "1px solid var(--line)",
+        borderRadius: "var(--r-md)",
+        background: "var(--paper-warm)",
+        padding: "var(--sp-4)",
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--sp-2)",
+      }}
+    >
+      <span
+        style={{
+          fontSize: "var(--fs-xs)",
+          letterSpacing: "var(--tracking-overline)",
+          textTransform: "uppercase",
+          color: "var(--muted)",
+        }}
+      >
+        {label}
+      </span>
+      <strong
+        style={{
+          fontFamily: "var(--font-display)",
+          fontSize: "var(--fs-h2)",
+          color:
+            tone === "danger"
+              ? "var(--danger)"
+              : tone === "warn"
+                ? "var(--warn-ink)"
+                : "var(--ink)",
+        }}
+      >
+        {value}
+      </strong>
+      <span style={{ fontSize: "var(--fs-sm)", color: "var(--muted)" }}>{detail}</span>
+    </article>
+  );
+}
+
+function TeamAccountPanel({ session, busy, onPasswordChange, onLogout, onClose }) {
   const user = session?.user;
   const permissions = user?.permissions || [];
   return (
@@ -261,7 +501,7 @@ function TeamAccountPanel({ session, busy, onPasswordChange, onLogout }) {
         <span className="kicker">Operador autenticado</span>
         <h3>{user?.name || "Equipe Apoiar"}</h3>
         <p>
-          {user?.email || "email nao informado"} · {roleLabel(user?.role)}
+          {user?.email || "email nao informado"} · {ROLE_LABELS[user?.role] || "Equipe"}
         </p>
         <div className="team-account-meta">
           <span>{user?.status === "active" ? "usuario ativo" : "usuario inativo"}</span>
@@ -275,13 +515,14 @@ function TeamAccountPanel({ session, busy, onPasswordChange, onLogout }) {
       <div className="team-permission-card">
         <span className="kicker">Escopo de acesso</span>
         <div className="permission-chip-row">
-          {(permissions.includes("*") ? ["todas as areas"] : permissions.map(permissionLabel)).map(
-            (permission) => (
-              <span className="pill" key={permission}>
-                {permission}
-              </span>
-            ),
-          )}
+          {(permissions.includes("*")
+            ? ["todas as areas"]
+            : permissions.map((p) => PERMISSION_LABELS[p] || p)
+          ).map((permission) => (
+            <span className="pill" key={permission}>
+              {permission}
+            </span>
+          ))}
         </div>
       </div>
 
@@ -321,208 +562,98 @@ function TeamAccountPanel({ session, busy, onPasswordChange, onLogout }) {
           <button className="mini" type="button" disabled={busy} onClick={onLogout}>
             Sair
           </button>
+          {onClose ? (
+            <button className="mini" type="button" onClick={onClose}>
+              Fechar
+            </button>
+          ) : null}
         </div>
       </form>
     </section>
   );
 }
 
-function TeamDashboard({ dashboard, queues }) {
-  const activeReservations = dashboard.reservations.filter((item) => item.status === "active");
-  const rows = priorityRows(queues, activeReservations);
-  const riskItems = operationalRiskItems(queues, activeReservations);
+// ===== series helpers =====
 
-  return (
-    <>
-      <section className="ops-kpi-strip" aria-label="Indicadores da operacao">
-        <Metric
-          label="Pix pendentes"
-          value={queues.pendingPayments.length}
-          tone={queues.pendingPayments.length ? "warn" : ""}
-        />
-        <Metric
-          label="Separacao/envio"
-          value={queues.paidFulfillment.length}
-          tone={queues.paidFulfillment.length ? "good" : ""}
-        />
-        <Metric
-          label="Baixo estoque"
-          value={queues.lowStock.length}
-          tone={queues.lowStock.length ? "warn" : ""}
-        />
-        <Metric
-          label="Bloqueios"
-          value={queues.blockedPatients.length}
-          tone={queues.blockedPatients.length ? "danger" : ""}
-        />
-        <Metric
-          label="Validades"
-          value={queues.expiringPatients.length}
-          tone={queues.expiringPatients.length ? "warn" : ""}
-        />
-        <Metric label="Reservas" value={activeReservations.length} />
-      </section>
-
-      <section className="ops-exception-strip" aria-label="Excecoes operacionais">
-        {riskItems.map((item) => (
-          <article className={item.tone} key={item.label}>
-            <span>{item.label}</span>
-            <strong>{item.value}</strong>
-            <p>{item.detail}</p>
-          </article>
-        ))}
-      </section>
-
-      <h3>Fila de acao agora</h3>
-      <section className="ops-board" aria-label="Fila de acao agora">
-        <div className="ops-board-head">
-          <span>Prioridade</span>
-          <span>Fila</span>
-          <span>Referencia</span>
-          <span>SLA / vencimento</span>
-          <span>Acao</span>
-        </div>
-        {rows.map((row) => (
-          <article className={`ops-row ${row.tone}`.trim()} key={row.label}>
-            <span className="pill">{row.priority}</span>
-            <div>
-              <strong>{row.label}</strong>
-              <p>{row.detail}</p>
-            </div>
-            <span>{row.reference}</span>
-            <span>{row.sla}</span>
-            <a className="mini" href={row.href}>
-              {row.action}
-            </a>
-          </article>
-        ))}
-      </section>
-
-      <h3>Areas operacionais</h3>
-      <section className="shortcut-grid">
-        {[
-          [
-            "/equipe/pedidos",
-            "Pedidos e Pix",
-            `${queues.pendingPayments.length} Pix pendente(s) e ${activeReservations.length} reserva(s) ativa(s).`,
-          ],
-          [
-            "/equipe/fulfillment",
-            "Fulfillment",
-            `${queues.paidFulfillment.length} pedido(s) em separacao ou envio.`,
-          ],
-          [
-            "/equipe/pacientes",
-            "Pacientes e receitas",
-            `${queues.blockedPatients.length} bloqueio(s), ${queues.expiringPatients.length} validade(s) proximas.`,
-          ],
-          [
-            "/equipe/estoque",
-            "Estoque e cultivo",
-            `${queues.lowStock.length} alerta(s) de estoque, ${dashboard.cultivationBatches.length} lote(s) de cultivo.`,
-          ],
-          [
-            "/equipe/suporte",
-            "Suporte ao paciente",
-            "Contexto de acesso, pedido, pagamento, envio e documentos.",
-          ],
-          ["/admin", "Admin e compliance", "Readiness, auditoria, papeis e gates de producao."],
-        ].map(([href, label, detail]) => (
-          <a className="shortcut-card" href={href} key={href}>
-            <div>
-              <strong>{label}</strong>
-              <p>{detail}</p>
-            </div>
-            <span className="pill">Abrir</span>
-          </a>
-        ))}
-      </section>
-    </>
-  );
+function billedDailySeries(payments) {
+  const days = lastNDayKeys(7);
+  const map = new Map(days.map((key) => [key, 0]));
+  for (const payment of payments || []) {
+    if (payment.status !== "paid" && payment.status !== "reconciled") continue;
+    const at = payment.paidAt || payment.confirmedAt || payment.updatedAt;
+    if (!at) continue;
+    const key = dayKeyInSP(new Date(at));
+    if (map.has(key)) map.set(key, map.get(key) + 1);
+  }
+  return days.map((key) => ({ name: key, value: map.get(key) || 0 }));
 }
 
-function roleLabel(role) {
-  return (
-    {
-      admin: "Administrador",
-      operations: "Operacoes",
-      stock: "Estoque",
-      fulfillment: "Fulfillment",
-      support: "Suporte",
-    }[role] || "Equipe"
-  );
+function sumBilledLastSevenDays(payments) {
+  const days = new Set(lastNDayKeys(7));
+  let count = 0;
+  let totalCents = 0;
+  for (const payment of payments || []) {
+    if (payment.status !== "paid" && payment.status !== "reconciled") continue;
+    const at = payment.paidAt || payment.confirmedAt || payment.updatedAt;
+    if (!at || !days.has(dayKeyInSP(new Date(at)))) continue;
+    count += 1;
+    totalCents += Number(payment.amountCents || payment.amount || 0);
+  }
+  return { count, totalCents };
 }
 
-function permissionLabel(permission) {
-  return (
-    {
-      "dashboard:view": "painel",
-      "patients:write": "pacientes",
-      "prescriptions:write": "receitas",
-      "products:write": "produtos",
-      "stock:write": "estoque",
-      "cultivation:write": "cultivo",
-      "fulfillment:write": "fulfillment",
-      "shipments:write": "envios",
-      "support:write": "suporte",
-      "payments:simulate": "Pix dev",
-      "payments:reconcile": "conciliacao",
-      "team:write": "usuarios",
-    }[permission] || permission
-  );
+function pendingPaymentsTrend(payments) {
+  // Approximation: count of payments in 'pending' state created on each of the
+  // last 7 days. Sparkline is an indicator of incoming Pix volume.
+  const days = lastNDayKeys(7);
+  const map = new Map(days.map((key) => [key, 0]));
+  for (const payment of payments || []) {
+    const at = payment.createdAt || payment.requestedAt;
+    if (!at) continue;
+    const key = dayKeyInSP(new Date(at));
+    if (map.has(key)) map.set(key, map.get(key) + 1);
+  }
+  return days.map((key) => ({ name: key, value: map.get(key) || 0 }));
 }
 
-function Metric({ label, value, tone = "" }) {
-  return (
-    <article className={`ops-kpi ${tone}`.trim()}>
-      <span className="kicker">{label}</span>
-      <h2>{value}</h2>
-    </article>
-  );
+function fulfillmentTrend(orders) {
+  const days = lastNDayKeys(7);
+  const map = new Map(days.map((key) => [key, 0]));
+  for (const order of orders || []) {
+    const at = order.paidAt || order.updatedAt || order.createdAt;
+    if (!at) continue;
+    const key = dayKeyInSP(new Date(at));
+    if (map.has(key)) map.set(key, map.get(key) + 1);
+  }
+  return days.map((key) => ({ name: key, value: map.get(key) || 0 }));
 }
 
-function operationalRiskItems(queues, activeReservations) {
-  return [
-    {
-      label: "Atencao critica",
-      value: queues.blockedPatients.length + queues.pendingPayments.length,
-      detail:
-        queues.blockedPatients.length || queues.pendingPayments.length
-          ? "Bloqueios de elegibilidade e Pix pendentes precisam ser tratados antes de liberar atendimento."
-          : "Sem bloqueio critico de paciente ou pagamento na leitura atual.",
-      tone: queues.blockedPatients.length || queues.pendingPayments.length ? "warn" : "good",
-    },
-    {
-      label: "Dinheiro em aberto",
-      value: queues.pendingPayments.length,
-      detail: queues.pendingPayments[0]
-        ? `Proximo vencimento: ${formatDateTime(queues.pendingPayments[0].expiresAt)}.`
-        : "Nenhum Pix aguardando baixa.",
-      tone: queues.pendingPayments.length ? "warn" : "good",
-    },
-    {
-      label: "Estoque comprometido",
-      value: activeReservations.length,
-      detail: activeReservations[0]
-        ? `Reserva mais proxima: ${activeReservations[0].orderId}.`
-        : "Nenhum estoque reservado por pedido pendente.",
-      tone: activeReservations.length ? "warn" : "good",
-    },
-    {
-      label: "Acesso do paciente",
-      value: queues.blockedPatients.length + queues.expiringPatients.length,
-      detail:
-        queues.blockedPatients.length || queues.expiringPatients.length
-          ? "Revise bloqueios, receitas e carteirinhas antes de orientar novo pedido."
-          : "Acesso sem alerta de bloqueio ou validade proxima.",
-      tone: queues.blockedPatients.length
-        ? "danger"
-        : queues.expiringPatients.length
-          ? "warn"
-          : "good",
-    },
-  ];
+function blockedTrend(patients) {
+  // Point-in-time gauge; flat at current count.
+  const blocked = (patients || []).filter((p) => !p.eligibility?.allowed).length;
+  return Array.from({ length: 7 }, (_, i) => ({ name: `d${i}`, value: blocked }));
 }
+
+function lastNDayKeys(n) {
+  const keys = [];
+  const today = new Date();
+  for (let i = n - 1; i >= 0; i -= 1) {
+    const d = new Date(today.getTime() - i * 86_400_000);
+    keys.push(dayKeyInSP(d));
+  }
+  return keys;
+}
+
+function dayKeyInSP(date) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+// ===== priority + queue helpers =====
 
 function priorityRows(queues, activeReservations) {
   return [
