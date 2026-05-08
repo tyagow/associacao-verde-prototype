@@ -1,5 +1,5 @@
 // @ts-nocheck
-// TODO(phase-0a-ts): incrementally type — escape hatch during strict:false migration
+// TODO(phase-6 + phase-7): incrementally type — Phase 6 owns inventory/lots schema; Phase 7 adds support_messages table (schema v15). Removing this requires both phases done.
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";

@@ -1,5 +1,5 @@
 // @ts-nocheck
-// TODO(phase-0a-ts): incrementally type — escape hatch during strict:false migration
+// TODO(phase-2 + phase-6): incrementally type — Phase 2 owns inventory/concurrency math; Phase 6 owns lots/cultivo. Removing this requires both phases done.
 import { createHash, randomBytes, randomUUID, scryptSync, timingSafeEqual } from "node:crypto";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
