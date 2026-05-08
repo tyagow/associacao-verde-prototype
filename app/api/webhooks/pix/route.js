@@ -6,12 +6,23 @@
 
 import { timingSafeEqual } from "node:crypto";
 import { getSystem } from "../../../../src/system-instance.ts";
-import { readJsonBody, jsonResponse, errorResponse } from "../../../../src/route-helpers.ts";
+import {
+  readJsonBody,
+  jsonResponse,
+  errorResponse,
+  ipFromRequest,
+  assertRateLimit,
+  recordRateLimitHit,
+} from "../../../../src/route-helpers.ts";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request) {
   try {
+    const ip = ipFromRequest(request);
+    const rateKey = `webhook-pix:${ip}`;
+    assertRateLimit(rateKey, 200, 60_000);
+    recordRateLimitHit(rateKey);
     const { system, webhookSecret } = getSystem();
     const provided = String(request.headers.get("x-webhook-secret") || "");
     const expected = String(webhookSecret || "");
