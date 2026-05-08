@@ -35,6 +35,13 @@ export function middleware(request) {
   const { pathname } = request.nextUrl;
   const method = request.method.toUpperCase();
 
+  // 1a. Webhook endpoints are exempt from same-origin (provider posts cross-origin).
+  //     Authenticity is enforced inside the handler via timingSafeEqual on the
+  //     shared X-Webhook-Secret header — see app/api/webhooks/pix/route.js.
+  if (method === "POST" && pathname.startsWith("/api/webhooks/")) {
+    return NextResponse.next();
+  }
+
   // 1. Same-origin enforcement for POST /api/* (mirrors server.mjs::assertSameOrigin)
   //    Allows missing Origin/Referer ONLY when the host header is a same-host
   //    loopback (127.0.0.1:* / localhost:*), which is how Node fetch from

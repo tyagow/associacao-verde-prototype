@@ -92,6 +92,7 @@ const appRoutes = new Set([
   "/api/catalog",
   "/api/my-orders",
   "/api/checkout",
+  "/api/webhooks/pix",
   // Phase 7 bridge: support workbench Route Handlers proxy back into
   // server.mjs's raw system calls (/api/team/support-replies/_raw,
   // /api/team/support-thread/_raw) which are NOT allow-listed and stay
@@ -392,19 +393,6 @@ const server = createServer(async (request, response) => {
         response,
         200,
         await system.reconcilePayment(readCookie(request, "av_session"), await body(request)),
-      );
-    }
-    if (url.pathname === "/api/webhooks/pix" && request.method === "POST") {
-      const provided = String(request.headers["x-webhook-secret"] || "");
-      const expected = String(webhookSecret || "");
-      const a = Buffer.from(provided);
-      const b = Buffer.from(expected);
-      if (a.length !== b.length || !timingSafeEqual(a, b))
-        throw httpError(401, "Webhook Pix sem assinatura valida.");
-      return json(
-        response,
-        200,
-        system.confirmPixPayment(normalizePixWebhook(await body(request))),
       );
     }
     if (url.pathname === "/api/team/simulate-pix" && request.method === "POST") {
