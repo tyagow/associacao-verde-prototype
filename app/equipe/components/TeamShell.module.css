@@ -1,0 +1,197 @@
+/* Phase 3 — Team experience shell (.tx-* namespace). Legacy .team-* selectors
+ * stay untouched so E2E selectors (#team-login/#team-status/#team-dashboard)
+ * keep working through the rebuilt /equipe surface. */
+
+.txShell {
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    "topbar topbar"
+    "sidebar main"
+    "sidebar footer";
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.txTopbar {
+  grid-area: topbar;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-5);
+  padding: var(--sp-4) var(--sp-7);
+  border-bottom: 1px solid var(--line);
+  background: var(--paper-warm);
+}
+
+.txTopbarLeft,
+.txTopbarRight {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+}
+
+.txRoleChip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--soft);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.txRoleChip strong {
+  color: var(--ink);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  font-size: var(--fs-sm);
+}
+
+.txKbdHint {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+}
+
+.txKbdHint kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: var(--r-xs);
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.txSidebar {
+  grid-area: sidebar;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-6) var(--sp-4);
+  border-right: 1px solid var(--line);
+  background: var(--paper-warm);
+}
+
+.txSidebar > a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-sm);
+  color: var(--ink-soft);
+  text-decoration: none;
+  font-size: var(--fs-base);
+  font-weight: 500;
+  transition:
+    background 120ms ease,
+    color 120ms ease;
+}
+
+.txSidebar > a:hover {
+  background: var(--soft);
+  color: var(--ink);
+}
+
+.txSidebar > a.active {
+  background: var(--green-tint);
+  color: var(--ink);
+  border: 1px solid var(--green-soft);
+}
+
+.txBadge {
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--soft-2);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  min-width: 22px;
+  text-align: center;
+}
+
+.txBadge.warn {
+  background: var(--warn-soft);
+  color: var(--warn-ink);
+  border-color: transparent;
+}
+
+.txBadge.danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border-color: var(--danger-line);
+}
+
+.txMain {
+  grid-area: main;
+  padding: var(--sp-7);
+  min-width: 0;
+}
+
+.txFooter {
+  grid-area: footer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-4) var(--sp-6);
+  border-top: 1px solid var(--line);
+  background: var(--paper-warm);
+  font-size: var(--fs-sm);
+  color: var(--muted);
+}
+
+.txFooterMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.txFooterActions {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.txFooterActions button {
+  font-size: var(--fs-sm);
+}
+
+@media (max-width: 1024px) {
+  .txShell {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "topbar"
+      "sidebar"
+      "main"
+      "footer";
+  }
+  .txSidebar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .txSidebar > a {
+    flex: 1 0 auto;
+  }
+  .txMain {
+    padding: var(--sp-5);
+  }
+}
