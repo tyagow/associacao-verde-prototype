@@ -133,6 +133,178 @@ export default function HomePage() {
             </article>
           </div>
         </section>
+
+        <section
+          id="programas"
+          className={`${styles.lxSection} ${styles.lxSectionAlt}`}
+          aria-labelledby="lx-programas-title"
+        >
+          <header className={styles.lxSectionHead}>
+            <div>
+              <p className={styles.lxSectionEyebrow}>Programas</p>
+              <h2 id="lx-programas-title" className={styles.lxSectionTitle}>
+                O que oferecemos a quem chega ate nos.
+              </h2>
+            </div>
+            <p className={styles.lxSectionLead}>
+              Cada programa parte do mesmo principio: cuidar de pessoas reais, com tempo e
+              responsabilidade. Conheca os caminhos pelos quais a associacao acompanha pacientes e
+              familias.
+            </p>
+          </header>
+
+          <div className={styles.lxProgramsGrid}>
+            <article className={styles.lxProgramCard}>
+              <span className={styles.lxProgramTag}>Acolhimento</span>
+              <h3 className={styles.lxProgramTitle}>Primeira escuta, sem pressa</h3>
+              <p className={styles.lxProgramText}>
+                Toda jornada comeca por uma conversa com a equipe de acolhimento, que entende a
+                indicacao terapeutica, o contexto da familia e os proximos passos.
+              </p>
+              <ul className={styles.lxProgramDetails}>
+                <li>Atendimento humano por telefone, e-mail ou presencial.</li>
+                <li>Orientacao sobre receita medica e documentos.</li>
+                <li>Encaminhamento a profissionais quando faz sentido clinico.</li>
+              </ul>
+            </article>
+
+            <article className={styles.lxProgramCard}>
+              <span className={styles.lxProgramTag}>Acesso autorizado</span>
+              <h3 className={styles.lxProgramTitle}>Tratamento legal, com qualidade rastreavel</h3>
+              <p className={styles.lxProgramText}>
+                Para quem ja possui prescricao medica, viabilizamos o acesso regular ao medicamento
+                dentro do enquadramento autorizado pelas autoridades sanitarias.
+              </p>
+              <ul className={styles.lxProgramDetails}>
+                <li>Cadastro do paciente vinculado a receita e a documentos medicos.</li>
+                <li>Pedido com pagamento seguro via Pix.</li>
+                <li>Entrega rastreada e sigilosa.</li>
+              </ul>
+            </article>
+
+            <article className={styles.lxProgramCard}>
+              <span className={styles.lxProgramTag}>Plano de cuidado</span>
+              <h3 className={styles.lxProgramTitle}>Continuidade ao longo do tratamento</h3>
+              <p className={styles.lxProgramText}>
+                Acompanhamos a jornada completa, do primeiro pedido a renovacao de receita, com um
+                plano de cuidado pensado para que o tratamento nao seja interrompido.
+              </p>
+              <ul className={styles.lxProgramDetails}>
+                <li>Lembretes para renovacao de receita e dosagem.</li>
+                <li>Suporte dedicado em caso de duvidas terapeuticas.</li>
+                <li>Acompanhamento clinico em parceria com a familia.</li>
+              </ul>
+            </article>
+
+            <article className={styles.lxProgramCard}>
+              <span className={styles.lxProgramTag}>Atendimento</span>
+              <h3 className={styles.lxProgramTitle}>Suporte humano em cada etapa</h3>
+              <p className={styles.lxProgramText}>
+                Quando algo foge do roteiro, uma pessoa da equipe esta disponivel para conversar,
+                retomar o caso e encaminhar o que for preciso, com sigilo e respeito.
+              </p>
+              <ul className={styles.lxProgramDetails}>
+                <li>Canal direto para pacientes e familiares.</li>
+                <li>Apoio em casos de urgencia clinica.</li>
+                <li>Escuta tambem para profissionais de referencia.</li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <section
+          id="como-acessar"
+          className={styles.lxSection}
+          aria-labelledby="lx-como-acessar-title"
+        >
+          <header className={styles.lxSectionHead}>
+            <div>
+              <p className={styles.lxSectionEyebrow}>Como acessar</p>
+              <h2 id="lx-como-acessar-title" className={styles.lxSectionTitle}>
+                Tres passos para iniciar o cuidado.
+              </h2>
+            </div>
+            <p className={styles.lxSectionLead}>
+              Tornamos a entrada simples para quem ja recebeu indicacao medica e acolhedora para
+              quem esta no comeco da jornada. A equipe caminha com voce em cada etapa.
+            </p>
+          </header>
+
+          <div className={styles.lxStepsGrid}>
+            <article className={styles.lxStepCard}>
+              <span className={styles.lxStepKicker}>Conversa inicial</span>
+              <h3 className={styles.lxStepTitle}>Fale com a equipe de acolhimento</h3>
+              <p className={styles.lxStepText}>
+                Por e-mail ou telefone, uma pessoa da equipe ouve sua situacao, entende o quadro e
+                orienta os documentos medicos necessarios.
+              </p>
+            </article>
+
+            <article className={styles.lxStepCard}>
+              <span className={styles.lxStepKicker}>Cadastro clinico</span>
+              <h3 className={styles.lxStepTitle}>Receita medica e documentos</h3>
+              <p className={styles.lxStepText}>
+                Com a receita medica em maos, fazemos o cadastro do paciente associado, validamos os
+                documentos e construimos o plano de cuidado em conjunto.
+              </p>
+            </article>
+
+            <article className={styles.lxStepCard}>
+              <span className={styles.lxStepKicker}>Acompanhamento</span>
+              <h3 className={styles.lxStepTitle}>Tratamento continuo, com suporte</h3>
+              <p className={styles.lxStepText}>
+                A partir dai, cada pedido e cada renovacao acontece dentro do portal do paciente,
+                com pagamento seguro, entrega rastreada e contato humano sempre que precisar.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section
+          id="parceiros"
+          className={`${styles.lxSection} ${styles.lxSectionAlt}`}
+          aria-labelledby="lx-parceiros-title"
+        >
+          <header className={styles.lxSectionHead}>
+            <div>
+              <p className={styles.lxSectionEyebrow}>Profissionais e parceiros</p>
+              <h2 id="lx-parceiros-title" className={styles.lxSectionTitle}>
+                Trabalhamos em rede com quem cuida.
+              </h2>
+            </div>
+            <p className={styles.lxSectionLead}>
+              Medicos, equipes multiprofissionais e organizacoes parceiras encontram aqui um caminho
+              claro para encaminhar pacientes e construir cuidado junto com a associacao.
+            </p>
+          </header>
+
+          <div className={styles.lxStakeholderGrid}>
+            <article className={styles.lxStakeholderCard}>
+              <span className={styles.lxStakeholderTag}>Para profissionais de saude</span>
+              <h3 className={styles.lxStakeholderTitle}>Encaminhe um paciente com seguranca</h3>
+              <p className={styles.lxStakeholderText}>
+                Recebemos prescricoes de medicos cadastrados e mantemos um canal tecnico aberto para
+                esclarecer duvidas sobre o medicamento, a titulacao e o acompanhamento conjunto do
+                paciente.
+              </p>
+              <a className={styles.lxStakeholderLink} href="mailto:profissionais@apoiarbrasil.org">
+                Falar com a equipe clinica
+              </a>
+            </article>
+
+            <article className={styles.lxStakeholderCard}>
+              <span className={styles.lxStakeholderTag}>Para parceiros</span>
+              <h3 className={styles.lxStakeholderTitle}>Construa um programa em conjunto</h3>
+              <p className={styles.lxStakeholderText}>
+                Instituicoes, clinicas e organizacoes da sociedade civil podem desenhar com a
+                associacao programas de acolhimento, formacao e acesso ampliado em suas comunidades.
+              </p>
+              <a className={styles.lxStakeholderLink} href="mailto:parcerias@apoiarbrasil.org">
+                Propor uma parceria
+              </a>
+            </article>
+          </div>
+        </section>
       </main>
 
       <footer className={styles.lxFooter} id="contato">
