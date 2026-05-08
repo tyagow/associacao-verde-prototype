@@ -220,6 +220,15 @@ const server = createServer(async (request, response) => {
     if (url.pathname === "/api/team/dashboard" && request.method === "GET") {
       return json(response, 200, system.dashboard(readCookie(request, "av_session")));
     }
+    if (url.pathname === "/api/team/inventory-ledger" && request.method === "GET") {
+      return json(response, 200, system.listProductLots(readCookie(request, "av_session")));
+    }
+    if (url.pathname === "/api/team/product-meta" && request.method === "POST") {
+      assertSameOrigin(request);
+      return json(response, 200, {
+        product: system.updateProductMeta(readCookie(request, "av_session"), await body(request)),
+      });
+    }
     if (url.pathname === "/api/team/readiness" && request.method === "GET") {
       system.requireTeam(readCookie(request, "av_session"), "dashboard:view");
       return json(response, 200, readinessReport());
