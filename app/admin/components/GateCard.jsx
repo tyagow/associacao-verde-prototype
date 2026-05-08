@@ -12,6 +12,8 @@ import styles from "./GateCard.module.css";
  *   tone     "good" | "warn" | "danger" | "pending"
  *   pillText label for the right-side pill
  *   tag      optional lowercase descriptor (e.g. "webhook drill") rendered as a small overline
+ *   caption  optional secondary line under detail (e.g. evidence summary). Always rendered when
+ *            provided so E2E and a11y can reach the text without expanding the card.
  *   selected whether this card is currently expanded
  *   onSelect click handler (id)
  */
@@ -22,6 +24,7 @@ export default function GateCard({
   tone = "pending",
   pillText,
   tag,
+  caption,
   selected,
   onSelect,
 }) {
@@ -42,6 +45,7 @@ export default function GateCard({
         {tag ? <span className={styles.tag}>{tag}</span> : null}
         <strong className={styles.label}>{label}</strong>
         <small className={styles.detail}>{detail}</small>
+        {caption ? <small className={styles.caption}>{caption}</small> : null}
       </div>
       <span className={pillClass}>{pillText || labelFor(tone)}</span>
     </button>

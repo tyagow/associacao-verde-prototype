@@ -469,19 +469,24 @@ function ReadinessSection({
 
       {gates.length ? (
         <section className={adminStyles.readinessGrid} aria-label="Gates de readiness">
-          {gates.map((gate) => (
-            <GateCard
-              key={gate.label}
-              id={gate.label}
-              label={gate.label}
-              detail={gate.detail}
-              tone={toneFor(gate)}
-              pillText={gate.status === "ok" ? "Passa" : "Pendente"}
-              tag={GATE_TAGS[gate.label] || ""}
-              selected={selectedGate === gate.label}
-              onSelect={(id) => onSelectGate(id === selectedGate ? null : id)}
-            />
-          ))}
+          {gates.map((gate) => {
+            const gateDetail = buildDetailForGate(gate, readiness);
+            const caption = gateDetail.summary || "";
+            return (
+              <GateCard
+                key={gate.label}
+                id={gate.label}
+                label={gate.label}
+                detail={gate.detail}
+                tone={toneFor(gate)}
+                pillText={gate.status === "ok" ? "Passa" : "Pendente"}
+                tag={GATE_TAGS[gate.label] || ""}
+                caption={caption !== gate.detail ? caption : ""}
+                selected={selectedGate === gate.label}
+                onSelect={(id) => onSelectGate(id === selectedGate ? null : id)}
+              />
+            );
+          })}
         </section>
       ) : (
         <p className="muted">Readiness nao carregado.</p>
