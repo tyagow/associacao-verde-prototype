@@ -548,6 +548,25 @@ await step("patient login and checkout", async () => {
   globalThis.smokeCancelledOrderId = cancelledCheckout.order.id;
 });
 
+await step("oversell guard rejects checkout beyond availableStock", async () => {
+  // Phase 2 — server must reject reservations larger than availableStock with
+  // a structured 409 carrying code: 'OUT_OF_STOCK' or the legacy "Estoque
+  // insuficiente" message. The smoke FAILS if the request succeeds, because
+  // a successful response would mean the server allowed an over-reservation.
+  const oversell = await patient.requestRaw("/api/checkout", {
+    method: "POST",
+    body: {
+      deliveryMethod: "Retirada combinada",
+      items: [{ productId: globalThis.smokeProductId, quantity: 9999 }],
+    },
+  });
+  assert(oversell.status === 409, `oversell must be rejected with 409, got ${oversell.status}`);
+  assert(
+    /Estoque insuficiente/.test(oversell.text || JSON.stringify(oversell.payload || {})),
+    "oversell rejection must carry the structured Estoque insuficiente error",
+  );
+});
+
 await step("team cancels unpaid order and releases reservation", async () => {
   const cancelled = await team.request("/api/team/orders/cancel", {
     method: "POST",
