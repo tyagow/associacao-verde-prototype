@@ -4,6 +4,7 @@ import { createHash, randomBytes, randomUUID, scryptSync, timingSafeEqual } from
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_RESERVATION_MINUTES = 30;
+const AUDIT_LOG_MAX = 20_000;
 const ROLE_PERMISSIONS = {
   admin: ["*"],
   operations: [
@@ -1700,6 +1701,9 @@ export class ProductionSystem {
       details,
       at: this.now().toISOString(),
     });
+    if (this.state.auditLog.length > AUDIT_LOG_MAX) {
+      this.state.auditLog.splice(0, this.state.auditLog.length - AUDIT_LOG_MAX);
+    }
   }
 
   persist() {
