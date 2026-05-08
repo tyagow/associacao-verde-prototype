@@ -7,6 +7,7 @@ import GateCard from "./components/GateCard";
 import GateDetail from "./components/GateDetail";
 import AuditTimeline from "./components/AuditTimeline";
 import AuditEventModal from "./components/AuditEventModal";
+import TeamUsersTable from "./components/TeamUsersTable";
 import adminStyles from "./admin.module.css";
 
 const initialFilters = { adminQuery: "", adminStatus: "all" };
@@ -264,102 +265,12 @@ export default function AdminPage() {
                         <h3>Acesso operacional</h3>
                       </div>
                     </div>
-                    <form id="team-user-form" className="inline-form" onSubmit={onCreateUser}>
-                      <label>
-                        Nome
-                        <input name="name" placeholder="Nome completo" required />
-                      </label>
-                      <label>
-                        Email
-                        <input
-                          name="email"
-                          type="email"
-                          placeholder="pessoa@associacao.org"
-                          required
-                        />
-                      </label>
-                      <label>
-                        Senha temporaria
-                        <input
-                          name="password"
-                          type="password"
-                          placeholder="Senha inicial"
-                          required
-                        />
-                      </label>
-                      <label>
-                        Papel
-                        <select name="role" defaultValue="support">
-                          <option value="admin">Admin</option>
-                          <option value="operations">Operacoes</option>
-                          <option value="support">Suporte</option>
-                        </select>
-                      </label>
-                      <button className="primary" type="submit">
-                        Criar usuario
-                      </button>
-                    </form>
-                    <div className="team-users-table">
-                      <div className="team-users-head">
-                        <span>Nome</span>
-                        <span>Email</span>
-                        <span>Papel</span>
-                        <span>Status</span>
-                        <span>Acoes</span>
-                      </div>
-                      {(dashboard?.teamUsers || []).map((user) => (
-                        <article className="team-user-row" key={user.id || user.email}>
-                          <strong>{user.name}</strong>
-                          <span>{user.email}</span>
-                          <span>{user.role}</span>
-                          <span
-                            className={`pill ${user.status === "active" ? "" : "danger"}`.trim()}
-                          >
-                            {user.status}
-                          </span>
-                          <div className="admin-row-actions">
-                            {user.status === "active" ? (
-                              <button
-                                className="mini danger"
-                                type="button"
-                                onClick={() => onTeamUserStatus(user.id, "inactive")}
-                              >
-                                Desativar
-                              </button>
-                            ) : (
-                              <button
-                                className="mini"
-                                type="button"
-                                onClick={() => onTeamUserStatus(user.id, "active")}
-                              >
-                                Reativar
-                              </button>
-                            )}
-                            <details className="row-action-drawer">
-                              <summary>Senha</summary>
-                              <form
-                                className="team-password-reset"
-                                onSubmit={(event) => onTeamUserPassword(event, user.id)}
-                              >
-                                <label>
-                                  Nova senha temporaria
-                                  <input
-                                    name="password"
-                                    type="password"
-                                    placeholder="Minimo 10 caracteres"
-                                    minLength={10}
-                                    required
-                                  />
-                                </label>
-                                <button className="mini" type="submit">
-                                  Redefinir senha
-                                </button>
-                              </form>
-                            </details>
-                          </div>
-                        </article>
-                      ))}
-                    </div>
+                    <TeamUsersTable
+                      users={dashboard?.teamUsers || []}
+                      onCreateUser={onCreateUser}
+                      onStatusChange={onTeamUserStatus}
+                      onPasswordReset={onTeamUserPassword}
+                    />
                   </section>
 
                   <section className="panel">
