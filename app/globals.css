@@ -40,8 +40,8 @@
   --danger-soft:    #f4dad6;
 
   /* ---- type ---- */
-  --font-ui:      "Outfit", "Inter", "Avenir Next", "Segoe UI", sans-serif;
-  --font-display: "Playfair Display", "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-ui:      var(--font-ui-next), "Inter", "Avenir Next", "Segoe UI", sans-serif;
+  --font-display: var(--font-display-next), "Outfit", "Avenir Next", Georgia, sans-serif;
   --font-mono:    "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
   /* ---- shadow / depth ---- */
