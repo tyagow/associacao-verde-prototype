@@ -102,9 +102,10 @@ finds the current `[→]`, completes its acceptance criteria, then advances.
   - [x] Stack libs installed (framer-motion, lucide-react, cmdk, recharts; dnd-kit pending)
   - [x] **Phase 0a — Foundation cleanup** (see section below)
   - [x] **Phase 0 — Design system foundation** (commit f5d8e85)
-- Now: [→] **Phase 1 — Patient experience rebuild**
+  - [x] **Phase 1 — Patient experience rebuild**
+        (1a 00d5fed · 1b 8e3858c · 1c ac0d7d1 · 1d a910bf6 / 3fac042 / 83ee92c / 6e1c48f / + screenshots)
+- Now: [→] **Phase 2 — Inventory invariant + concurrency safety**
 - Next:
-  - [ ] Phase 2 — Inventory invariant + concurrency safety
   - [ ] Phase 3 — Team shell + Command center
   - [ ] Phase 4 — Pedidos & Pix ledgers
   - [ ] Phase 5 — Fulfillment kanban (dnd-kit)
@@ -206,7 +207,45 @@ the system here means visual consistency across phases without drift.
 
 ---
 
-### Phase 1 — Patient experience rebuild
+### Phase 1 — Patient experience rebuild ✓
+
+**Sliced into four atomic commits** (all verified `npm run check` + 38/38 tests):
+
+- **1a (00d5fed)** — Patient shell foundation. PatientShell, PatientTabs, Toast.
+- **1b (8e3858c)** — CatalogDrawer + ProfileDrawer (always-mounted children so
+  E2E selectors stay reachable behind framer-motion transforms).
+- **1c (ac0d7d1)** — PixHero takeover with live countdown + 5-stage timeline +
+  initial QR placeholder.
+- **1d** (4 commits) — closing slice:
+  - `a910bf6` real qrcode.react QR encoder (replaces placeholder pattern;
+    +1 dep, no transitive deps) and per-line price fix in PixHero (use
+    `subtotalCents` / `unitPriceCents` from order serializer; the previous
+    `priceCents` field never existed on order line items).
+  - `3fac042` extract six components from PatientPortal.jsx into named
+    files: EmptyHero, CartHero, HistoryList, SupportThread,
+    PrivacyConsentGate, AccessIssueScreen — each in its own CSS Module
+    under `app/paciente/components/`. PatientPortal becomes a thin glue.
+    All E2E selectors and texts preserved verbatim.
+  - `83ee92c` honor `prefers-reduced-motion` in CatalogDrawer + ProfileDrawer
+    (spring transition collapses to duration:0 when `useReducedMotion()`
+    returns true). PixHero exposes the value as `data-reduce-motion`.
+  - `6e1c48f` mobile sweep at 320px: additive rules in @media (max-width:
+    540px) shrink `.patient-order-card` padding, force `#checkout select`
+    to width:100% min-width:0, allow submit-button text to wrap. Audit
+    after fix: "no overflow detected".
+- **Screenshots**: 22 captured at `artifacts/visual-e2e/redesign/p1-patient-*`
+  via `scripts/p1-screenshots.py` (spins up an isolated production-mode
+  server because the long-lived dev server with NEXT_DEV=true does not
+  hydrate React under Playwright). Caveats logged in `p1-NOTE.md`:
+  - `consent-mobile.png` shows the post-consent state (sqlite seeds the
+    patient with consent already accepted; the desktop iteration runs
+    first and consents the patient, so by mobile iteration the panel
+    already shows "Consentimento registrado").
+  - `cart-mobile.png` may show the PixHero takeover instead of CartHero
+    when a previous state ("pix-tracking") left an open Pix-pending order;
+    PixHero takes precedence over the cart preview.
+
+
 
 **Scope.**
 - Rebuild `app/paciente/PatientPortal.jsx` as a mode-based dashboard:
