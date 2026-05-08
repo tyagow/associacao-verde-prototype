@@ -1,5 +1,5 @@
 # Session: redesign-roadmap
-Updated: 2026-05-08T15:30:00.000Z
+Updated: 2026-05-08T21:24:19.000Z
 Status: **CLOSED** (Phase 13 docs close-out shipped 2026-05-08)
 Source of truth: **YES** (this ledger supersedes CONTINUITY_CLAUDE-production-system.md as the active roadmap)
 
@@ -20,11 +20,14 @@ ledger update.
 - **Commits across the redesign**: 65 (counting from `a234760` "import
   existing app code as baseline"; the four Phase 13 docs commits land at
   the head of the branch).
-- **Test count delta**: 38 baseline → **58 final** (+20). Additions:
+- **Test count delta**: 38 baseline → **59 final** (+21). Additions:
   Phase 2 inventory race + paid-after-expiry-conflict + smoke oversell,
   Phase 3 team activity Route Handler (×3), Phase 5 fulfillment status
   (×5), Phase 6 inventory lots (×2), Phase 7 support thread (×2),
-  Phase 10 audit timeline grouping (×4), plus a few smaller paths.
+  Phase 10 audit timeline grouping (×4), shared-singleton Route Handler
+  test (`getSystem()` shares one instance across distinct module-cache
+  realms, added in `053b2df` during the Next.js cutover prep), plus a
+  few smaller paths.
 - **Surfaces redesigned**: 9 surfaces — `/paciente`, `/equipe`,
   `/equipe/pacientes`, `/equipe/estoque`, `/equipe/pedidos`,
   `/equipe/fulfillment`, `/equipe/suporte`, `/admin`, plus the public
