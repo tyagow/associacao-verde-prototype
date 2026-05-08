@@ -188,7 +188,7 @@ finds the current `[→]`, completes its acceptance criteria, then advances.
          consider promoting `validity` and `origin` to first-class
          fields on the lot record so cultivation handoff carries
          provenance through audit.
-- Now: [→] (advance to Phase 7 / 10 / 11 once concurrent agents finish)
+- Now: [→] Phase 11 — Public home redesign (and Phase 13 follow-up)
 - Done in this batch:
   - [x] Phase 5 — Fulfillment kanban (dnd-kit)
         (febf520 chore(deps) @dnd-kit/core+sortable · 0240e11
@@ -349,7 +349,56 @@ finds the current `[→]`, completes its acceptance criteria, then advances.
         artifacts/visual-e2e/redesign/p10-admin-{audit,users}-desktop.png
         via scripts/p10-screenshots.py.
   - [ ] Phase 11 — Public home redesign
-  - [ ] Phase 12 — Mobile polish sweep
+  - [x] Phase 12 — Mobile polish sweep
+        (c89a780 chore(mobile): patient experience 390/320 sweep —
+         globals.css 540px/360px safety nets for monospace ids, pix
+         codes, toast safe area, surface-toolbar input stretch, narrow-
+         phone padding/font shrink. · a69d5b2 chore(mobile): team
+         workspace 390/320 sweep — TeamShell.module.css 540px rules so
+         the shell caps to 100vw, topbar wraps with shrunken padding,
+         kbd hint hides, sidebar becomes a horizontally scrollable
+         strip with fixed-width chips (the prior flex-wrap forced
+         min-content past viewport once Phase 10 added more badges),
+         footer wraps. · bfe879c chore(mobile): kanban single-column
+         mobile mode — Kanban.jsx detects `(max-width: 720px)` via
+         matchMedia and renders only the active column; tab strip
+         above the board switches columns; default tab is the most
+         populated column on breakpoint flip; dnd-kit still owns
+         within-column sortable, cross-column moves require switching
+         tab first then dropping. · 6c320fa chore(mobile): support
+         workbench mobile stack — Workbench.jsx auto-scrolls the
+         case panel into view on user-initiated patient selection
+         (matchMedia 720px gate; rAF then scrollIntoView smooth);
+         scroll-margin-top so the panel is not flush; metric cards
+         shrink padding/headline at 720px so four-up does not
+         truncate. · this commit e2e widen + screenshots + ledger
+         close.)
+        E2E `responsive_overflow_check` mobile_routes widened from
+        `["/paciente"]` to `list(desktop_routes)` so all 8 redesigned
+        routes (`/`, `/paciente`, `/equipe`, `/equipe/pacientes`,
+        `/equipe/estoque`, `/equipe/pedidos`, `/equipe/fulfillment`,
+        `/equipe/suporte`, `/admin`) are checked at 390x844 mobile +
+        1440x950 desktop. The probe switched from `wait_until=
+        "networkidle"` to `wait_until="load" + 400ms wait_for_timeout`
+        because the team routes mount poll-every-5s timers
+        (ActivityFeed, TeamCommand auto-refresh) that prevent
+        networkidle from firing under is_mobile=True; the check is
+        purely geometric so document-load is sufficient.
+        Real overflow detected by the widened E2E (not by an
+        isolated audit on a fresh DB): /equipe at 390px reported
+        scrollWidth=546 once Phase 10 added badge counts to the
+        sidebar. The Phase 12 TeamShell mobile rules eliminate the
+        offender by switching from flex-wrap (which forces
+        min-content+badge wider than viewport on every wrap) to a
+        horizontally scrollable strip with `flex: 0 0 auto` chips.
+        Tests: 58/58 unchanged. `npm run check` clean.
+        scripts/p12-screenshots.py captures every redesigned surface
+        at 390x844 and 320x720 (18 individual files), plus a PIL-
+        composed contact sheet at
+        artifacts/visual-e2e/redesign/p12-mobile-overview-grid.png.
+        Skipped: Phase 12 commit-3 (`chore(mobile): admin 390/320
+        sweep`) had no work — Phase 9's admin.module.css and
+        ReleaseProgress.module.css already drop to 1-col below 720px.
   - [ ] Phase 13 — Handoff, README, runbook, delivery plan
 
 ---

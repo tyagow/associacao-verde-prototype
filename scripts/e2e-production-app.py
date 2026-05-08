@@ -270,11 +270,11 @@ def responsive_overflow_check(browser, base_url, results):
         "/equipe/suporte",
         "/admin",
     ]
-    # Mobile overflow is enforced only on routes that have been redesigned for
-    # mobile-first UX. Phase 1 (patient experience) covers /paciente; team and
-    # admin routes will be re-checked when Phases 3-12 redesign them. The
-    # desktop sweep still covers every route.
-    mobile_routes = ["/paciente"]
+    # Phase 12 widened the mobile sweep to every redesigned surface (patient,
+    # team workspace, admin). Each route was audited at 390px and 320px under
+    # scripts/p12-screenshots.py and brought to zero overflow offenders. The
+    # mobile sweep here keeps that contract green in CI.
+    mobile_routes = list(desktop_routes)
     for viewport in [
         {"width": 390, "height": 844, "is_mobile": True, "routes": mobile_routes},
         {"width": 1440, "height": 950, "is_mobile": False, "routes": desktop_routes},
@@ -285,7 +285,13 @@ def responsive_overflow_check(browser, base_url, results):
         )
         login_team(page, base_url)
         for route in viewport["routes"]:
-            page.goto(f"{base_url}{route}", wait_until="networkidle")
+            # Use `load` (not `networkidle`) for the overflow probe: the
+            # team routes mount poll-every-5s timers (ActivityFeed,
+            # TeamCommand auto-refresh) that prevent networkidle from
+            # firing under is_mobile=True. The check is purely geometric,
+            # so document-loaded is sufficient.
+            page.goto(f"{base_url}{route}", wait_until="load")
+            page.wait_for_timeout(400)
             overflow = page.evaluate("() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1")
             if overflow:
                 offenders = page.evaluate(
