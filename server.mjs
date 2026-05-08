@@ -5,28 +5,27 @@ import { createServer } from "node:http";
 import { basename, dirname, extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import next from "next";
-import { createAsaasPixProvider, ProductionSystem } from "./src/production-system.ts";
 import { evaluateReleaseGate } from "./src/release-gate.ts";
-import { SqliteStateStore } from "./src/sqlite-store.ts";
+import { getSystem } from "./src/system-instance.ts";
+
+// Stage A/B of server.mjs → Next.js migration: route the legacy switch
+// through the SAME singleton that Next.js Route Handlers import. This
+// guarantees a single ProductionSystem + SqliteStateStore in-process,
+// regardless of which layer (legacy switch or Route Handler) handles the
+// request — required to avoid two writers racing on the same DB file.
+const _bootstrap = getSystem();
+const system = _bootstrap.system;
+const paymentProvider = _bootstrap.paymentProvider;
+const documentStorageDir = _bootstrap.documentStorageDir;
+const readinessDir = _bootstrap.readinessDir;
+const webhookSecret = _bootstrap.webhookSecret;
+const sessionSecret = _bootstrap.sessionSecret;
+const production = _bootstrap.production;
+const dbFile = _bootstrap.dbFile;
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const port = Number(process.env.PORT || 4174);
-const production = process.env.NODE_ENV === "production";
-const dbFile = process.env.DB_FILE || join(__dirname, "data", "associacao-verde.sqlite");
-const documentStorageDir =
-  process.env.DOCUMENT_STORAGE_DIR || join(__dirname, "data", "private-documents");
-const teamPassword = requiredEnv("TEAM_PASSWORD", production ? undefined : "apoio-equipe-dev");
-const teamEmail = process.env.TEAM_EMAIL || "equipe@apoiar.local";
-const webhookSecret = requiredEnv(
-  "PIX_WEBHOOK_SECRET",
-  production ? undefined : "dev-webhook-secret",
-);
-const sessionSecret = requiredEnv(
-  "SESSION_SECRET",
-  production ? undefined : "dev-session-secret-change-me",
-);
 const publicDir = join(__dirname, "public");
-const readinessDir = join(__dirname, "artifacts", "readiness");
 const backupDrillEvidenceFile = join(
   __dirname,
   "artifacts",
@@ -96,37 +95,9 @@ const protectedAppRoutes = new Set([
   "/admin",
 ]);
 const loginAttempts = new Map();
-if (production && process.env.PAYMENT_PROVIDER !== "asaas") {
-  throw new Error("PAYMENT_PROVIDER=asaas obrigatorio em producao.");
-}
-const paymentProvider =
-  process.env.PAYMENT_PROVIDER === "asaas"
-    ? createAsaasPixProvider({
-        apiKey: requiredEnv("ASAAS_API_KEY"),
-        customerId: requiredEnv("ASAAS_CUSTOMER_ID"),
-        baseUrl: process.env.ASAAS_BASE_URL || "https://api-sandbox.asaas.com/v3",
-      })
-    : undefined;
-
-const store = new SqliteStateStore({ filePath: dbFile });
-const state = store.load();
-const system = new ProductionSystem({
-  state,
-  paymentProvider,
-  save: (nextState) => store.save(nextState),
-  // Phase 7 — support_messages thread (schema v15) lives in its own
-  // table, not in the JSON snapshot. Inject the SQL helpers here.
-  appendSupportMessage: (message) => store.appendSupportMessage(message),
-  listSupportMessages: (ticketId) => store.listSupportMessages(ticketId),
-});
-system.ensureTeamUser({
-  email: teamEmail,
-  password: teamPassword,
-  name: "Equipe Apoiar",
-  role: "admin",
-});
-const reservationExpiryTimer = setInterval(() => system.expireReservations(), 60_000);
-reservationExpiryTimer.unref?.();
+// system, paymentProvider, store, reservation-expiry timer, and team-user
+// seeding now live in src/system-instance.ts and were initialized at the
+// top of this file via getSystem(). Do not duplicate that work here.
 
 await nextApp.prepare();
 
@@ -691,12 +662,6 @@ function normalizePixWebhook(payload) {
     eventId: payload.eventId || payload.id || `${providerPayment.id}:${providerStatus}`,
     status: paidStatuses.has(providerStatus) ? "paid" : payload.status,
   };
-}
-
-function requiredEnv(name, fallback) {
-  const value = process.env[name] || fallback;
-  if (!value) throw new Error(`${name} obrigatorio para iniciar a aplicacao.`);
-  return value;
 }
 
 function sanitizeFileName(fileName) {
