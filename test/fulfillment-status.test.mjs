@@ -41,6 +41,7 @@ async function paidOrderFor(system, suffix = "kbn") {
     memberCode: patient.memberCode,
     inviteCode: `KANBAN${suffix.toUpperCase()}26`,
   });
+  system.acceptPrivacyConsent(login.sessionId, { accepted: true, version: "lgpd-2026-05" });
   const checkout = await system.createCheckout(login.sessionId, {
     items: [{ productId: product.id, quantity: 1 }],
   });
@@ -99,6 +100,7 @@ test("updateOrderFulfillmentStatus refuses unpaid orders", async () => {
     memberCode: patient.memberCode,
     inviteCode: "PEND2026",
   });
+  system.acceptPrivacyConsent(login.sessionId, { accepted: true, version: "lgpd-2026-05" });
   const checkout = await system.createCheckout(login.sessionId, {
     items: [{ productId: product.id, quantity: 1 }],
   });

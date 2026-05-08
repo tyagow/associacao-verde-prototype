@@ -50,8 +50,8 @@ export function createInitialState(now = new Date()) {
         state: "SP",
         carePlan: "Oleo CBD 10% conforme receita vigente.",
         supportNote: "Confirmar documento renovado antes de setembro.",
-        privacyConsentAt: "",
-        privacyConsentVersion: "",
+        privacyConsentAt: "2026-04-01T12:00:00.000Z",
+        privacyConsentVersion: "lgpd-2026-05",
       },
       {
         id: "pat_joao",
@@ -70,8 +70,8 @@ export function createInitialState(now = new Date()) {
         state: "RJ",
         carePlan: "Acompanhamento familiar com responsavel cadastrado.",
         supportNote: "Validade proxima; acionar responsavel.",
-        privacyConsentAt: "",
-        privacyConsentVersion: "",
+        privacyConsentAt: "2026-04-01T12:00:00.000Z",
+        privacyConsentVersion: "lgpd-2026-05",
       },
       {
         id: "pat_bloqueado",
@@ -395,12 +395,19 @@ export class ProductionSystem {
     };
   }
 
-  requirePatient(sessionId) {
+  requirePatient(sessionId, { requireConsent = false } = {}) {
     const session = this.getSession(sessionId);
     if (session?.role !== "patient") throw problem(401, "Login de paciente obrigatorio.");
     const patient = this.state.patients.find((item) => item.id === session.patient.id);
     const eligibility = this.patientEligibility(patient);
     if (!eligibility.allowed) throw problem(403, eligibility.reason);
+    if (requireConsent && !patient.privacyConsentAt) {
+      this.audit("consent_required_blocked", patient.memberCode || patient.id, {
+        patientId: patient.id,
+      });
+      this.persist();
+      throw problem(403, "Aceite a politica de privacidade para continuar.");
+    }
     return patient;
   }
 
@@ -428,14 +435,14 @@ export class ProductionSystem {
   }
 
   listCatalog(sessionId) {
-    this.requirePatient(sessionId);
+    this.requirePatient(sessionId, { requireConsent: true });
     return this.state.products
       .filter((product) => product.active)
       .map((product) => this.publicProduct(product));
   }
 
   async createCheckout(sessionId, { items, deliveryMethod }) {
-    const patient = this.requirePatient(sessionId);
+    const patient = this.requirePatient(sessionId, { requireConsent: true });
     const checkedItems = this.checkItems(items);
     const expiresAt = new Date(
       this.now().getTime() + this.state.meta.reservationMinutes * 60 * 1000,

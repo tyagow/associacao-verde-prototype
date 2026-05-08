@@ -529,6 +529,7 @@ test("team can create patients, products, and update fulfillment only after paym
   assert.equal(product.availableStock, 4);
 
   const login = system.loginPatient({ memberCode: "APO-2001", inviteCode: "NOVO2026" });
+  system.acceptPrivacyConsent(login.sessionId, { accepted: true, version: "lgpd-2026-05" });
   const checkout = await system.createCheckout(login.sessionId, {
     items: [{ productId: product.id, quantity: 1 }],
   });
@@ -789,7 +790,11 @@ test("patient can open tracked support request and team can resolve it", () => {
 });
 
 test("patient can record privacy consent and team dashboard sees it", () => {
-  const { system } = harness();
+  const { system, state } = harness();
+  // Clear seeded consent so this test exercises the accept flow from scratch.
+  const helenaSeed = state.patients.find((p) => p.id === "pat_helena");
+  helenaSeed.privacyConsentAt = "";
+  helenaSeed.privacyConsentVersion = "";
   const patient = system.loginPatient({ memberCode: "APO-1027", inviteCode: "HELENA2026" });
   const team = system.loginTeam({ password: "secret" }, "secret");
 

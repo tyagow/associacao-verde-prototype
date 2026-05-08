@@ -43,6 +43,10 @@ test("SQLite store persists production entities across process-style reloads", a
       message: "Verificar se solicitacao sobrevive ao reload.",
       priority: "normal",
     });
+    system.acceptPrivacyConsent(patientLogin.sessionId, {
+      accepted: true,
+      version: "lgpd-2026-05",
+    });
     const checkout = await system.createCheckout(patientLogin.sessionId, {
       items: [{ productId: product.id, quantity: 2 }],
     });
