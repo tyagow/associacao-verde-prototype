@@ -139,3 +139,31 @@ export function recordLoginFailure(key) {
 export function clearLoginAttempts(key) {
   attempts().delete(key);
 }
+
+// Common shape: read session cookie + JSON body, call system.METHOD,
+// return jsonResponse(status, wrap(result)). Use in Route Handlers
+// that follow the legacy switch's "team write" pattern.
+export function teamWrite(systemMethod, { status = 200, wrap = (r) => r } = {}) {
+  return async function POST(request) {
+    try {
+      const { system } = getSystem();
+      const sessionId = readSessionCookie(request.headers.get("cookie"));
+      const payload = await readJsonBody(request);
+      return jsonResponse(status, wrap(systemMethod(system, sessionId, payload)));
+    } catch (error) {
+      return errorResponse(error);
+    }
+  };
+}
+
+export function teamRead(systemMethod, { wrap = (r) => r } = {}) {
+  return async function GET(request) {
+    try {
+      const { system } = getSystem();
+      const sessionId = readSessionCookie(request.headers.get("cookie"));
+      return jsonResponse(200, wrap(systemMethod(system, sessionId, request)));
+    } catch (error) {
+      return errorResponse(error);
+    }
+  };
+}

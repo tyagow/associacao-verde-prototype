@@ -96,6 +96,13 @@ const appRoutes = new Set([
   "/api/patient/access-recovery",
   "/api/patient/consent",
   "/api/support-requests",
+  "/api/team/dashboard",
+  "/api/team/inventory-ledger",
+  "/api/team/product-meta",
+  "/api/team/users",
+  "/api/team/users/status",
+  "/api/team/users/password",
+  "/api/team/stock",
   // Phase 7 bridge: support workbench Route Handlers proxy back into
   // server.mjs's raw system calls (/api/team/support-replies/_raw,
   // /api/team/support-thread/_raw) which are NOT allow-listed and stay
@@ -143,18 +150,6 @@ const server = createServer(async (request, response) => {
       return nextHandler(request, response);
     }
 
-    if (url.pathname === "/api/team/dashboard" && request.method === "GET") {
-      return json(response, 200, system.dashboard(readCookie(request, "av_session")));
-    }
-    if (url.pathname === "/api/team/inventory-ledger" && request.method === "GET") {
-      return json(response, 200, system.listProductLots(readCookie(request, "av_session")));
-    }
-    if (url.pathname === "/api/team/product-meta" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(response, 200, {
-        product: system.updateProductMeta(readCookie(request, "av_session"), await body(request)),
-      });
-    }
     if (url.pathname === "/api/team/readiness" && request.method === "GET") {
       system.requireTeam(readCookie(request, "av_session"), "dashboard:view");
       return json(response, 200, readinessReport());
@@ -175,30 +170,6 @@ const server = createServer(async (request, response) => {
           readCookie(request, "av_session"),
           await body(request),
         ),
-      });
-    }
-    if (url.pathname === "/api/team/users" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(response, 201, {
-        user: system.createTeamUser(readCookie(request, "av_session"), await body(request)),
-      });
-    }
-    if (url.pathname === "/api/team/users/status" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(response, 200, {
-        user: system.updateTeamUserStatus(readCookie(request, "av_session"), await body(request)),
-      });
-    }
-    if (url.pathname === "/api/team/users/password" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(response, 200, {
-        user: system.resetTeamUserPassword(readCookie(request, "av_session"), await body(request)),
-      });
-    }
-    if (url.pathname === "/api/team/stock" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(response, 200, {
-        product: system.addStock(readCookie(request, "av_session"), await body(request)),
       });
     }
     if (url.pathname === "/api/team/cultivation-batches" && request.method === "POST") {
