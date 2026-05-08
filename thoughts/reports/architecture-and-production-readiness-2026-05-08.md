@@ -82,14 +82,14 @@
 | 84 unpushed commits, no CI signal | **Still standing** — CI has not been run on the migration. Push to `origin/main` to fire `production-ci.yml` against the post-migration tree. |
 | `@ts-nocheck` on 2778 lines | **Still standing** — domain code still has the escape hatches. Multi-PR work; out of scope for this migration. |
 | Patient invite codes are 24 random bits | **Still standing** — no auth-strength change in the migration. |
-| In-memory login throttle, no rate limit on checkout/webhook/support | **Partially carried** — login throttle was inline in server.mjs and was NOT ported during the migration. The invariant is now defended only by `middleware.ts` origin enforcement + audit logging. Tracked as a follow-up. |
+| In-memory login throttle, no rate limit on checkout/webhook/support | **Login throttle preserved** — moved into `src/route-helpers.ts` (`loginAttemptKey` / `assertLoginAllowed` / `recordLoginFailure` / `clearLoginAttempts`); used by both `app/api/patient/login` and `app/api/team/login` Route Handlers. Cached on `globalThis.__avLoginAttempts` to survive HMR / module-graph splits. Other endpoints (checkout, webhook, support) still have no rate limit — same gap as pre-migration. |
 | Audit log retention, structured logging, `npm audit` in CI, offsite backup | **Still standing** — operations work, unchanged. |
 
 ### New post-migration concerns
 
 1. **Middleware "loopback bypass"** allows server-side scripts (webhook-drill, deployment-check, etc.) to call APIs without an `Origin` header when running on `127.0.0.1`/`localhost`. Browsers always send `Origin` cross-context, so CSRF protection for browser surfaces is intact. But: a loopback shell on the production host could now POST to `/api/*` without a session cookie if it bypasses the cookie check too (it can't — protected endpoints still require `av_session` and pass it to `system.<method>(sessionId, ...)` for RBAC). Risk is bounded.
 2. **`AV_REQUIRE_LIVE_PROVIDER=true`** must be set in real production deployments. If forgotten, the app boots with the dev `dev-pix` provider — payments would not actually settle. Mitigated by `release-gate.ts` checking `paymentProvider !== "dev-pix"` before clearing the gate, but Dockerfile/deploy template should hard-code it.
-3. **Login throttle dropped during migration** — was `loginAttempts` Map in server.mjs, with 5-fail-then-15min-lockout. Patient and team login endpoints are now Route Handlers without throttle. Brute-force surface widened. Add follow-up Route-Handler-level throttle (Redis or in-process Map per worker).
+3. **Login throttle survived** — was carried into `src/route-helpers.ts` (verified post-migration; correction to the original draft of this section). 5-fail-then-15min-lockout still applies to both patient and team login. Other endpoints (checkout, support, webhook) remain unrate-limited — that's a pre-existing gap, not a migration regression.
 4. **Singleton on `globalThis`** assumes single Node process. Horizontal scaling (multiple `next start` instances behind a load balancer) would break SQLite single-writer assumption. Already true pre-migration; flagged for visibility.
 
 ### What this means for the BLOCKER list below
