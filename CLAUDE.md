@@ -26,6 +26,10 @@ Enforced by ESLint `no-restricted-imports` on `src/**/*.{js,mjs,ts,tsx}` (see
 - Existing endpoints stay until the redesign phase that owns that surface
   rewrites them as Route Handlers and wires them into the Next.js app.
 - Bug fixes inside `server.mjs` are allowed; growth is not.
+- Adding a Route Handler's pathname to the `appRoutes` allow-list in
+  `server.mjs` is delegation, NOT a new endpoint. The implementation lives
+  in `app/api/<name>/route.js` (or `route.ts`). Phase 3 introduced this
+  bridge with `/api/team/activity`.
 
 Reasoning: the rewrite incrementally moves auth/Pix/webhook/RBAC into the
 Next.js pipeline. Adding new code to `server.mjs` makes that migration harder

@@ -68,6 +68,10 @@ const appRoutes = new Set([
   "/equipe/fulfillment",
   "/equipe/suporte",
   "/admin",
+  // Phase 3 bridge: Next.js Route Handlers under app/api/* are delegated by
+  // listing their pathnames here. server.mjs adds NO new endpoint code; the
+  // implementation lives in app/api/<name>/route.js.
+  "/api/team/activity",
 ]);
 const protectedAppRoutes = new Set([
   "/equipe/pacientes",
