@@ -11,7 +11,9 @@
   border-radius: var(--radius-lg, 14px);
   padding: var(--sp-3);
   min-height: 400px;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
 }
 
 .txColumnOver {

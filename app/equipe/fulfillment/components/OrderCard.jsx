@@ -33,9 +33,7 @@ export default function OrderCard({ order, onPrintLabel }) {
     opacity: isDragging ? 0.45 : 1,
   };
 
-  const items = order.items
-    .map((item) => `${item.quantity} ${item.unit} ${item.name}`)
-    .join(" · ");
+  const items = order.items.map((item) => `${item.quantity} ${item.unit} ${item.name}`).join(" · ");
 
   const showLabel = order.status === "ready_to_ship";
 
