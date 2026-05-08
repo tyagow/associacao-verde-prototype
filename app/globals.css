@@ -3221,3 +3221,11 @@ textarea {
   .app-sidebar { display: none; }
   .app-work { padding: var(--sp-5) var(--sp-4); gap: var(--sp-5); }
 }
+
+/* Phase 1b — patient catalog/profile drawer triggers in pedido tab. */
+.patient-catalog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin: var(--sp-3) 0 var(--sp-4);
+}

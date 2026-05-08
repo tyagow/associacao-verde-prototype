@@ -2,8 +2,10 @@
 
 import Brand from "../components/Brand";
 import { useEffect, useMemo, useState } from "react";
+import CatalogDrawer from "./components/CatalogDrawer";
 import PatientShell from "./components/PatientShell";
 import PatientTabs, { PATIENT_TABS } from "./components/PatientTabs";
+import ProfileDrawer from "./components/ProfileDrawer";
 import Toast from "./components/Toast";
 
 const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
@@ -21,6 +23,8 @@ export default function PatientPortal() {
   const [toast, setToast] = useState("");
   const [busy, setBusy] = useState(false);
   const [currentTab, setCurrentTab] = useState("pedido");
+  const [catalogOpen, setCatalogOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const patient = session?.role === "patient" ? session.patient : null;
   const hasPrivacyConsent = Boolean(patient?.privacyConsentAt);
@@ -392,14 +396,6 @@ export default function PatientPortal() {
           </div>
 
           <section
-            className="patient-profile-details"
-            id="patient-profile-details"
-            aria-label="Dados do associado"
-          >
-            <PatientProfileDetails patient={patient} latestOrder={latestOrder} />
-          </section>
-
-          <section
             id="privacy-consent-panel"
             className={`privacy-consent-panel ${patient.privacyConsentAt ? "good" : "warn"}`}
           >
@@ -449,102 +445,18 @@ export default function PatientPortal() {
               </div>
             </div>
 
-            <div className="catalog-tools" id="catalog-tools" hidden={!hasPrivacyConsent}>
-              <label>
-                Buscar produto autorizado
-                <input
-                  data-catalog-query
-                  type="search"
-                  value={catalogQuery}
-                  onChange={(event) => setCatalogQuery(event.target.value)}
-                  placeholder="Buscar por oleo, flor, goma..."
-                />
-              </label>
-              <div
-                className="segment-control"
-                role="group"
-                aria-label="Filtrar produtos autorizados"
+            <div className="patient-catalog-actions">
+              <button
+                className="btn btn--primary"
+                type="button"
+                onClick={() => setCatalogOpen(true)}
+                disabled={!hasPrivacyConsent}
               >
-                {CATALOG_FILTERS.map((filter) => (
-                  <button
-                    key={filter.value}
-                    type="button"
-                    data-catalog-filter={filter.value}
-                    className={catalogFilter === filter.value ? "active" : undefined}
-                    aria-pressed={catalogFilter === filter.value}
-                    onClick={() => setCatalogFilter(filter.value)}
-                  >
-                    {filter.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div id="catalog" className="patient-product-list">
-              {!hasPrivacyConsent ? (
-                <section className="consent-required-panel">
-                  <span className="kicker">Privacidade obrigatoria</span>
-                  <h3>Aceite LGPD para abrir catalogo, suporte e Pix</h3>
-                  <p>
-                    O pedido usa dados de cadastro, receita, produto, pagamento e suporte. O sistema
-                    so libera a operacao depois do consentimento registrado.
-                  </p>
-                </section>
-              ) : filteredProducts.length ? (
-                filteredProducts.map((product) => (
-                  <article className="patient-product-card" key={product.id}>
-                    <div className="patient-product-main">
-                      <span className="product-category">
-                        {productCategoryLabel(productCategory(product))}
-                      </span>
-                      <h3>{product.name}</h3>
-                      <p>{product.description}</p>
-                    </div>
-                    <div className="patient-product-stock">
-                      <span>Estoque autorizado</span>
-                      <strong className={product.availableStock <= 5 ? "warn-text" : undefined}>
-                        {product.availableStock} {product.unit}
-                      </strong>
-                    </div>
-                    <div className="patient-product-price">
-                      <span>Valor</span>
-                      <strong>{money.format(product.priceCents / 100)}</strong>
-                    </div>
-                    <div className="patient-product-action">
-                      <label>
-                        Qtd.
-                        <input
-                          className="qty"
-                          data-qty={product.id}
-                          type="number"
-                          min="1"
-                          max={Math.max(1, product.availableStock)}
-                          value={productQuantities[product.id] || 1}
-                          onChange={(event) =>
-                            onProductQuantity(
-                              product.id,
-                              event.target.value,
-                              product.availableStock,
-                            )
-                          }
-                          disabled={product.availableStock <= 0}
-                        />
-                      </label>
-                      <button
-                        className="mini"
-                        type="button"
-                        data-add={product.id}
-                        onClick={() => addProduct(product.id)}
-                        disabled={product.availableStock <= 0}
-                      >
-                        {cart[product.id] ? "Atualizar" : "Adicionar"}
-                      </button>
-                    </div>
-                  </article>
-                ))
-              ) : (
-                <p className="muted">Nenhum produto autorizado encontrado para este filtro.</p>
-              )}
+                Abrir catalogo autorizado
+              </button>
+              <button className="btn btn--ghost" type="button" onClick={() => setProfileOpen(true)}>
+                Meu perfil
+              </button>
             </div>
 
             <div id="cart-summary">
@@ -680,6 +592,118 @@ export default function PatientPortal() {
           </section>
         </div>
       </PatientShell>
+
+      <CatalogDrawer
+        open={catalogOpen}
+        onClose={() => setCatalogOpen(false)}
+        title="Catalogo autorizado"
+        kicker="Produtos liberados"
+      >
+        <div className="catalog-tools" id="catalog-tools" hidden={!hasPrivacyConsent}>
+          <label>
+            Buscar produto autorizado
+            <input
+              data-catalog-query
+              type="search"
+              value={catalogQuery}
+              onChange={(event) => setCatalogQuery(event.target.value)}
+              placeholder="Buscar por oleo, flor, goma..."
+            />
+          </label>
+          <div className="segment-control" role="group" aria-label="Filtrar produtos autorizados">
+            {CATALOG_FILTERS.map((filter) => (
+              <button
+                key={filter.value}
+                type="button"
+                data-catalog-filter={filter.value}
+                className={catalogFilter === filter.value ? "active" : undefined}
+                aria-pressed={catalogFilter === filter.value}
+                onClick={() => setCatalogFilter(filter.value)}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div id="catalog" className="patient-product-list">
+          {!hasPrivacyConsent ? (
+            <section className="consent-required-panel">
+              <span className="kicker">Privacidade obrigatoria</span>
+              <h3>Aceite LGPD para abrir catalogo, suporte e Pix</h3>
+              <p>
+                O pedido usa dados de cadastro, receita, produto, pagamento e suporte. O sistema so
+                libera a operacao depois do consentimento registrado.
+              </p>
+            </section>
+          ) : filteredProducts.length ? (
+            filteredProducts.map((product) => (
+              <article className="patient-product-card" key={product.id}>
+                <div className="patient-product-main">
+                  <span className="product-category">
+                    {productCategoryLabel(productCategory(product))}
+                  </span>
+                  <h3>{product.name}</h3>
+                  <p>{product.description}</p>
+                </div>
+                <div className="patient-product-stock">
+                  <span>Estoque autorizado</span>
+                  <strong className={product.availableStock <= 5 ? "warn-text" : undefined}>
+                    {product.availableStock} {product.unit}
+                  </strong>
+                </div>
+                <div className="patient-product-price">
+                  <span>Valor</span>
+                  <strong>{money.format(product.priceCents / 100)}</strong>
+                </div>
+                <div className="patient-product-action">
+                  <label>
+                    Qtd.
+                    <input
+                      className="qty"
+                      data-qty={product.id}
+                      type="number"
+                      min="1"
+                      max={Math.max(1, product.availableStock)}
+                      value={productQuantities[product.id] || 1}
+                      onChange={(event) =>
+                        onProductQuantity(product.id, event.target.value, product.availableStock)
+                      }
+                      disabled={product.availableStock <= 0}
+                    />
+                  </label>
+                  <button
+                    className="mini"
+                    type="button"
+                    data-add={product.id}
+                    onClick={() => addProduct(product.id)}
+                    disabled={product.availableStock <= 0}
+                  >
+                    {cart[product.id] ? "Atualizar" : "Adicionar"}
+                  </button>
+                </div>
+              </article>
+            ))
+          ) : (
+            <p className="muted">Nenhum produto autorizado encontrado para este filtro.</p>
+          )}
+        </div>
+      </CatalogDrawer>
+
+      <ProfileDrawer
+        open={profileOpen}
+        onClose={() => setProfileOpen(false)}
+        title="Meu perfil"
+        kicker="Cadastro e elegibilidade"
+      >
+        <section
+          className="patient-profile-details"
+          id="patient-profile-details"
+          aria-label="Dados do associado"
+        >
+          <PatientProfileDetails patient={patient} latestOrder={latestOrder} />
+        </section>
+      </ProfileDrawer>
 
       <Toast message={toast} />
     </>
