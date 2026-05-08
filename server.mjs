@@ -114,6 +114,13 @@ const appRoutes = new Set([
   "/api/team/member-cards",
   "/api/team/products",
   "/api/team/products/update",
+  "/api/team/fulfillment",
+  "/api/team/orders/cancel",
+  "/api/team/orders/exception",
+  "/api/team/shipments",
+  "/api/team/support-requests",
+  "/api/team/payments/reconcile",
+  "/api/team/simulate-pix",
   // Phase 7 bridge: support workbench Route Handlers proxy back into
   // server.mjs's raw system calls (/api/team/support-replies/_raw,
   // /api/team/support-thread/_raw) which are NOT allow-listed and stay
@@ -205,87 +212,6 @@ const server = createServer(async (request, response) => {
       );
       return servePrivateDocument(response, documentRecord);
     }
-    if (url.pathname === "/api/team/fulfillment" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(response, 200, {
-        order: system.updateFulfillmentStatus(
-          readCookie(request, "av_session"),
-          await body(request),
-        ),
-      });
-    }
-    if (url.pathname === "/api/team/orders/cancel" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(response, 200, {
-        order: system.cancelOrder(readCookie(request, "av_session"), await body(request)),
-      });
-    }
-    // Phase 5 bridge target: the public path /api/team/orders/status is a
-    // Next Route Handler (allow-listed above). It proxies here to wire the
-    // shared ProductionSystem singleton to the new kanban-aware
-    // updateOrderFulfillmentStatus method (team_order_status_changed audit).
-    if (url.pathname === "/api/team/orders/status-apply" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(response, 200, {
-        order: system.updateOrderFulfillmentStatus(
-          readCookie(request, "av_session"),
-          await body(request),
-        ),
-      });
-    }
-    if (url.pathname === "/api/team/orders/exception" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(response, 200, {
-        order: system.recordOrderException(readCookie(request, "av_session"), await body(request)),
-      });
-    }
-    if (url.pathname === "/api/team/shipments" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(
-        response,
-        200,
-        system.upsertShipment(readCookie(request, "av_session"), await body(request)),
-      );
-    }
-    if (url.pathname === "/api/team/support-requests" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(response, 200, {
-        ticket: system.updateSupportRequest(readCookie(request, "av_session"), await body(request)),
-      });
-    }
-    // Phase 7 — raw system access for the Route Handlers under
-    // app/api/team/support-{replies,thread}/route.js. These paths are NOT
-    // in `appRoutes`; they stay on this switch so the Route Handlers can
-    // proxy via fetch with the session cookie forwarded.
-    if (url.pathname === "/api/team/support-replies/_raw" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(response, 201, {
-        message: system.createSupportReply(readCookie(request, "av_session"), await body(request)),
-      });
-    }
-    if (url.pathname === "/api/team/support-thread/_raw" && request.method === "GET") {
-      const ticketId = url.searchParams.get("ticketId") || "";
-      return json(
-        response,
-        200,
-        system.listSupportThread(readCookie(request, "av_session"), ticketId),
-      );
-    }
-    if (url.pathname === "/api/team/payments/reconcile" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(
-        response,
-        200,
-        await system.reconcilePayment(readCookie(request, "av_session"), await body(request)),
-      );
-    }
-    if (url.pathname === "/api/team/simulate-pix" && request.method === "POST") {
-      if (production) throw httpError(404, "Rota disponivel apenas em desenvolvimento.");
-      assertSameOrigin(request);
-      system.requireTeam(readCookie(request, "av_session"), "payments:simulate");
-      return json(response, 200, system.confirmPixPayment(await body(request)));
-    }
-
     return json(response, 404, { error: "Rota nao encontrada." });
   } catch (error) {
     return json(response, error.status || 500, { error: error.message || "Erro interno." });
