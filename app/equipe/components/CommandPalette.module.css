@@ -1,0 +1,212 @@
+/* Phase 8 — Command palette ⌘K (.tx-* namespace).
+ *
+ * Renders on top of TeamShell as a fixed overlay + centered dialog. Uses
+ * cmdk primitives but is styled to match the calm-clinical-modern aesthetic
+ * already established by TeamShell and the readiness panels.
+ */
+
+.txOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: color-mix(in srgb, var(--ink) 55%, transparent);
+  display: grid;
+  align-items: start;
+  justify-items: center;
+  padding: 12vh var(--sp-5) var(--sp-7);
+  overflow-y: auto;
+}
+
+.txDialog {
+  width: min(640px, 100%);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow:
+    0 24px 60px rgba(8, 24, 16, 0.18),
+    0 4px 12px rgba(8, 24, 16, 0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 70vh;
+  font-family: var(--font-ui);
+}
+
+.txHeader {
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--line);
+  background: var(--paper-warm);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.txInput {
+  flex: 1;
+  appearance: none;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: var(--fs-md);
+  color: var(--ink);
+  padding: var(--sp-2) 0;
+  font-family: inherit;
+}
+
+.txInput::placeholder {
+  color: var(--muted);
+}
+
+.txKbdHint {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+}
+
+.txKbdHint kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: var(--r-xs);
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.txList {
+  overflow-y: auto;
+  padding: var(--sp-2);
+  scroll-padding-block: var(--sp-3);
+}
+
+.txEmpty {
+  padding: var(--sp-5);
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  text-align: center;
+}
+
+.txGroup {
+  padding: var(--sp-2) 0;
+}
+
+.txGroup [cmdk-group-heading] {
+  padding: var(--sp-1) var(--sp-3);
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.txItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  font-size: var(--fs-sm);
+  color: var(--ink);
+  user-select: none;
+}
+
+.txItem[data-selected="true"] {
+  background: var(--soft);
+}
+
+.txItem[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.txItemBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.txItemLabel {
+  color: var(--ink);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.txItemHint {
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.txItemAside {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.txStar {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: var(--fs-md);
+  padding: 0 var(--sp-1);
+  line-height: 1;
+}
+
+.txStar[data-on="true"] {
+  color: var(--gold, #b8893a);
+}
+
+.txFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-4);
+  border-top: 1px solid var(--line);
+  background: var(--paper-warm);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+}
+
+.txFooter kbd {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: var(--r-xs);
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  letter-spacing: 0;
+  text-transform: none;
+  margin: 0 2px;
+}
+
+@media (max-width: 540px) {
+  .txOverlay {
+    padding: var(--sp-5) var(--sp-3);
+  }
+
+  .txDialog {
+    max-height: 80vh;
+  }
+}
