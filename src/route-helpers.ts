@@ -1,8 +1,9 @@
 // @ts-nocheck
 // Shared helpers for Next.js Route Handlers:
-//   - readSessionCookie: parse `Cookie:` header, find `av_session=`, verify HMAC
+//   - readSessionCookie: parse `Cookie:` header, find session cookie, verify HMAC
 //   - signSessionCookie: produce HMAC-signed cookie value
-//   - sessionCookieHeader: build a Set-Cookie line for av_session
+//   - sessionCookieName: returns `__Host-av_session` in prod, `av_session` in dev
+//   - sessionCookieHeader: build a Set-Cookie line for the session cookie
 //   - jsonResponse: build a same-shape JSON response with no-store cache
 //   - errorResponse: convert thrown { status, message } / Error into JSON
 
@@ -15,6 +16,15 @@ function getSessionSecret() {
 
 export function isProduction() {
   return getSystem().production === true;
+}
+
+// In production, use the `__Host-` cookie prefix. Browsers enforce that
+// `__Host-` cookies must be `Secure`, `Path=/`, and have no `Domain=` —
+// which is already true for our session cookie. This blocks subdomain
+// injection attacks. In dev (NEXT_DEV / non-production), we keep the
+// plain `av_session` name because `Secure` is not set over plain http.
+export function sessionCookieName() {
+  return isProduction() ? "__Host-av_session" : "av_session";
 }
 
 export function signSessionCookie(value) {
@@ -33,24 +43,26 @@ export function verifySessionCookie(signed) {
 }
 
 export function readSessionCookie(cookieHeader) {
+  const name = sessionCookieName();
+  const prefix = `${name}=`;
   const header = String(cookieHeader || "");
   const match = header
     .split(";")
     .map((item) => item.trim())
-    .find((item) => item.startsWith("av_session="));
+    .find((item) => item.startsWith(prefix));
   if (!match) return "";
-  return verifySessionCookie(decodeURIComponent(match.slice("av_session=".length)));
+  return verifySessionCookie(decodeURIComponent(match.slice(prefix.length)));
 }
 
 export function sessionCookieHeader(sessionId, { maxAge = 12 * 60 * 60 } = {}) {
   const value = sessionId ? signSessionCookie(sessionId) : "";
   const secure = isProduction() ? "; Secure" : "";
-  return `av_session=${encodeURIComponent(value)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${secure}`;
+  return `${sessionCookieName()}=${encodeURIComponent(value)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${secure}`;
 }
 
 export function clearSessionCookieHeader() {
   const secure = isProduction() ? "; Secure" : "";
-  return `av_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`;
+  return `${sessionCookieName()}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`;
 }
 
 export function jsonResponse(status, payload, extraHeaders = {}) {

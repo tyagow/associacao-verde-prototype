@@ -75,7 +75,12 @@ export function middleware(request) {
   //    Cookie *presence* is enough here; the page itself re-checks signed
   //    cookie + role via system.getSession().
   if (PROTECTED_PAGE_PATHS.has(pathname)) {
-    const sessionCookie = request.cookies.get("av_session");
+    // Edge runtime: no getSystem() — read env directly. Mirrors
+    // sessionCookieName() in src/route-helpers.ts: production uses the
+    // `__Host-` prefix, dev keeps the plain name.
+    const cookieName =
+      process.env.AV_REQUIRE_LIVE_PROVIDER === "true" ? "__Host-av_session" : "av_session";
+    const sessionCookie = request.cookies.get(cookieName);
     if (!sessionCookie || !sessionCookie.value) {
       const redirectUrl = new URL("/equipe", request.url);
       return NextResponse.redirect(redirectUrl, 308);

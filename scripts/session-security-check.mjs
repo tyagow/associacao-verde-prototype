@@ -23,10 +23,12 @@ try {
   const parsed = parseSetCookie(login.setCookie || "");
   const url = new URL(baseUrl);
   const secureRequired = health.payload?.production === true || url.protocol === "https:";
+  // Production uses the `__Host-` cookie prefix; dev keeps the plain name.
+  const expectedCookieName = secureRequired ? "__Host-av_session" : "av_session";
   const evidence = {
     ok:
       login.status === 200 &&
-      parsed.name === "av_session" &&
+      parsed.name === expectedCookieName &&
       parsed.httpOnly === true &&
       parsed.sameSite === "Lax" &&
       parsed.path === "/" &&

@@ -411,10 +411,13 @@ export function readSessionSecurityEvidence() {
     const evidence = JSON.parse(readFileSync(file, "utf8"));
     const cookie = evidence.cookie || {};
     const secureRequired = evidence.secureRequired === true;
+    // In production we use `__Host-av_session`; in dev we use `av_session`.
+    // `secureRequired` mirrors `production` for the running environment.
+    const expectedCookieName = secureRequired ? "__Host-av_session" : "av_session";
     return {
       ok:
         evidence.ok === true &&
-        cookie.name === "av_session" &&
+        cookie.name === expectedCookieName &&
         cookie.httpOnly === true &&
         cookie.sameSite === "Lax" &&
         cookie.path === "/" &&
