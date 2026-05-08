@@ -17,6 +17,10 @@ COPY server.mjs ./
 
 RUN npm run next:build && npm prune --omit=dev && mkdir -p /data/private-documents
 
+# Run as non-root for least-privilege (node:22-slim ships a 'node' uid 1000).
+RUN chown -R node:node /app /data
+USER node
+
 EXPOSE 4174
 
 CMD ["node", "server.mjs"]

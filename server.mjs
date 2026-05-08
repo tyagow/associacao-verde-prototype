@@ -476,7 +476,11 @@ const server = createServer(async (request, response) => {
       );
     }
     if (url.pathname === "/api/webhooks/pix" && request.method === "POST") {
-      if (request.headers["x-webhook-secret"] !== webhookSecret)
+      const provided = String(request.headers["x-webhook-secret"] || "");
+      const expected = String(webhookSecret || "");
+      const a = Buffer.from(provided);
+      const b = Buffer.from(expected);
+      if (a.length !== b.length || !timingSafeEqual(a, b))
         throw httpError(401, "Webhook Pix sem assinatura valida.");
       return json(
         response,
@@ -606,13 +610,28 @@ async function servePrivateDocument(response, documentRecord) {
 }
 
 function securityHeaders(headers = {}) {
-  return {
+  const base = {
     ...headers,
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
     "Referrer-Policy": "same-origin",
     "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    "Content-Security-Policy": [
+      "default-src 'self'",
+      "img-src 'self' data:",
+      "style-src 'self' 'unsafe-inline'",
+      "script-src 'self' 'unsafe-inline'",
+      "font-src 'self' data:",
+      "connect-src 'self'",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join("; "),
   };
+  if (production) {
+    base["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains";
+  }
+  return base;
 }
 
 function setSecurityHeaders(response) {
@@ -705,10 +724,15 @@ function verifyCookie(signed) {
 }
 
 function assertSameOrigin(request) {
-  const origin = request.headers.origin;
-  if (!origin) return;
-  const expected = `${request.headers["x-forwarded-proto"] || "http"}://${request.headers.host}`;
-  if (origin !== expected) throw httpError(403, "Origem da requisicao nao autorizada.");
+  const origin = request.headers.origin || request.headers.referer;
+  if (!origin) throw httpError(403, "Origem da requisicao nao autorizada.");
+  const expectedHost = request.headers.host;
+  const proto = request.headers["x-forwarded-proto"] || "http";
+  const expected = `${proto}://${expectedHost}`;
+  // accept exact origin match OR referer beginning with expected origin
+  if (origin === expected) return;
+  if (origin.startsWith(expected + "/")) return;
+  throw httpError(403, "Origem da requisicao nao autorizada.");
 }
 
 function readinessReport() {
