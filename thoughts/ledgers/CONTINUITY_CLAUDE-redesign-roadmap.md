@@ -118,9 +118,20 @@ finds the current `[→]`, completes its acceptance criteria, then advances.
         described in SQLite's BEGIN IMMEDIATE docs applies here at the JS
         level. Race test verifies "exactly one wins for the last unit"
         with Promise.allSettled across 5 sessions.
+  - [x] **Phase 4 — Pedidos & Pix ledgers**
+        (f471824 scaffold Ledger/OrderRow/OrderDrawer · 6051d7a two-ledger
+         OrdersClient rewrite · screenshots p4-orders-{desktop,mobile}.png).
+        Note: f471824 swept up the Phase 4 component scaffolds together
+        with the ledger pointer advance (concurrent commit during Phase 2
+        close); commit message refers to ledger close but the diff also
+        contains the new components. No new endpoints; existing
+        /api/team/dashboard, /payments/reconcile, /simulate-pix,
+        /orders/cancel reused. E2E preserved verbatim:
+        #orders-surface [data-pay], [data-filter='ordersQuery|ordersStatus'],
+        body texts "Pedidos e Pix" / "Reservas, pagamentos e reconciliacao".
+        Tests still 41/41 green.
 - Now: [→] **Phase 3 — Team shell + Command center**
 - Next:
-  - [ ] Phase 4 — Pedidos & Pix ledgers
   - [ ] Phase 5 — Fulfillment kanban (dnd-kit)
   - [ ] Phase 6 — Estoque & cultivo (single ledger + lot detail)
   - [ ] Phase 7 — Support workbench
