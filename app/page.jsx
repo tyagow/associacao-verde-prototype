@@ -305,13 +305,159 @@ export default function HomePage() {
             </article>
           </div>
         </section>
+
+        <section
+          id="transparencia"
+          className={styles.lxSection}
+          aria-labelledby="lx-transparencia-title"
+        >
+          <header className={styles.lxSectionHead}>
+            <div>
+              <p className={styles.lxSectionEyebrow}>Transparencia</p>
+              <h2 id="lx-transparencia-title" className={styles.lxSectionTitle}>
+                Prestamos contas a quem confia na associacao.
+              </h2>
+            </div>
+            <p className={styles.lxSectionLead}>
+              Somos uma organizacao sem fins lucrativos. Nossa governanca, nosso estatuto e os
+              relatorios anuais ficam disponiveis para associados, parceiros e qualquer pessoa que
+              queira nos conhecer.
+            </p>
+          </header>
+
+          <div className={styles.lxTransparencyRow}>
+            <article className={styles.lxStat}>
+              <span className={styles.lxStatLabel}>Natureza juridica</span>
+              <span className={styles.lxStatValue}>Sem fins lucrativos</span>
+              <span className={styles.lxStatNote}>
+                Associacao civil de pacientes, regida por estatuto e assembleia de associados.
+              </span>
+            </article>
+            <article className={styles.lxStat}>
+              <span className={styles.lxStatLabel}>Cuidado clinico</span>
+              <span className={styles.lxStatValue}>Receita medica</span>
+              <span className={styles.lxStatNote}>
+                Atendimento apenas para pacientes com indicacao terapeutica e prescricao em vigor.
+              </span>
+            </article>
+            <article className={styles.lxStat}>
+              <span className={styles.lxStatLabel}>Sigilo</span>
+              <span className={styles.lxStatValue}>Dados protegidos</span>
+              <span className={styles.lxStatNote}>
+                Tratamos as informacoes do paciente conforme a LGPD, com acesso restrito a equipe
+                clinica.
+              </span>
+            </article>
+            <article className={styles.lxStat}>
+              <span className={styles.lxStatLabel}>Governanca</span>
+              <span className={styles.lxStatValue}>Aberta</span>
+              <span className={styles.lxStatNote}>
+                Estatuto, atas e prestacao de contas disponiveis sob solicitacao aos associados.
+              </span>
+            </article>
+          </div>
+        </section>
+
+        <section
+          id="contato"
+          className={`${styles.lxSection} ${styles.lxSectionAlt}`}
+          aria-labelledby="lx-contato-title"
+        >
+          <header className={styles.lxSectionHead}>
+            <div>
+              <p className={styles.lxSectionEyebrow}>Contato</p>
+              <h2 id="lx-contato-title" className={styles.lxSectionTitle}>
+                Fale com a gente.
+              </h2>
+            </div>
+            <p className={styles.lxSectionLead}>
+              Escolha o canal mais confortavel. Toda mensagem chega a uma pessoa da equipe e tem
+              retorno em ate dois dias uteis.
+            </p>
+          </header>
+
+          <div className={styles.lxContactGrid}>
+            <article className={styles.lxContactCard}>
+              <span className={styles.lxContactKicker}>Acolhimento</span>
+              <h3 className={styles.lxContactTitle}>Quero comecar um tratamento</h3>
+              <p className={styles.lxContactDetail}>
+                Para pacientes e familias que querem entender como ser acolhidos.
+              </p>
+              <p className={styles.lxContactDetail}>
+                <strong>acolhimento@apoiarbrasil.org</strong>
+              </p>
+            </article>
+
+            <article className={styles.lxContactCard}>
+              <span className={styles.lxContactKicker}>Atendimento</span>
+              <h3 className={styles.lxContactTitle}>Sou paciente associado</h3>
+              <p className={styles.lxContactDetail}>
+                Duvidas sobre receita, pedido ou plano de cuidado em andamento.
+              </p>
+              <p className={styles.lxContactDetail}>
+                <strong>atendimento@apoiarbrasil.org</strong>
+              </p>
+            </article>
+
+            <article className={styles.lxContactCard}>
+              <span className={styles.lxContactKicker}>Imprensa e parceiros</span>
+              <h3 className={styles.lxContactTitle}>Outros assuntos</h3>
+              <p className={styles.lxContactDetail}>
+                Imprensa, pesquisa academica, parcerias institucionais e voluntariado.
+              </p>
+              <p className={styles.lxContactDetail}>
+                <strong>contato@apoiarbrasil.org</strong>
+              </p>
+            </article>
+          </div>
+        </section>
       </main>
 
-      <footer className={styles.lxFooter} id="contato">
+      <footer className={styles.lxFooter}>
+        <div className={styles.lxFooterTop}>
+          <div className={styles.lxFooterIntro}>
+            <h3>Apoiar Brasil Associacao Verde</h3>
+            <p>
+              Cannabis medicinal com acolhimento e ciencia. Acompanhamos pacientes, familias e
+              profissionais de saude no acesso ao tratamento autorizado, com plano de cuidado e
+              atendimento humano.
+            </p>
+          </div>
+
+          <div className={styles.lxFooterDoors}>
+            <span className={styles.lxFooterDoorLabel}>Acessos para associados e equipe</span>
+            <a className={styles.lxFooterDoor} href="/paciente">
+              <span className={styles.lxFooterDoorIcon} aria-hidden="true">
+                P
+              </span>
+              <span className={styles.lxFooterDoorBody}>
+                <strong>Paciente associado</strong>
+                <span>Entrar no portal de cuidado</span>
+              </span>
+              <span className={styles.lxFooterDoorArrow} aria-hidden="true"></span>
+            </a>
+            <a className={styles.lxFooterDoor} href="/equipe">
+              <span
+                className={`${styles.lxFooterDoorIcon} ${styles.lxFooterDoorIconAlt}`}
+                aria-hidden="true"
+              >
+                E
+              </span>
+              <span className={styles.lxFooterDoorBody}>
+                <strong>Equipe da associacao</strong>
+                <span>Entrar na area interna</span>
+              </span>
+              <span className={styles.lxFooterDoorArrow} aria-hidden="true"></span>
+            </a>
+          </div>
+        </div>
+
         <div className={styles.lxFooterBottom}>
           <span>(c) Apoiar Brasil Associacao Verde</span>
           <nav aria-label="Links institucionais">
             <a href="#quem-somos">Quem somos</a>
+            <a href="#transparencia">Transparencia</a>
+            <a href="#contato">Contato</a>
             <a href="mailto:contato@apoiarbrasil.org">contato@apoiarbrasil.org</a>
           </nav>
         </div>
