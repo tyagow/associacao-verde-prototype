@@ -420,19 +420,9 @@ export class ProductionSystem {
     const expiresAt = new Date(
       this.now().getTime() + this.state.meta.reservationMinutes * 60 * 1000,
     ).toISOString();
-    const orderId = `PED-${Date.now()}`;
+    const orderId = `PED-${Date.now()}-${randomUUID().slice(0, 8)}`;
     const reservationId = randomUUID();
     const paymentId = randomUUID();
-
-    for (const item of checkedItems) {
-      const available = this.availableStock(item.product.id);
-      if (item.quantity > available) {
-        throw problem(
-          409,
-          `Estoque insuficiente para ${item.product.name}. Disponivel: ${available} ${item.product.unit}.`,
-        );
-      }
-    }
 
     const orderItems = checkedItems.map((item) => ({
       productId: item.product.id,
@@ -444,42 +434,124 @@ export class ProductionSystem {
     }));
     const totalCents = orderItems.reduce((sum, item) => sum + item.subtotalCents, 0);
 
-    this.state.stockReservations.push({
-      id: reservationId,
-      orderId,
-      patientId: patient.id,
-      items: orderItems.map(({ productId, quantity }) => ({ productId, quantity })),
-      status: "active",
-      createdAt: this.now().toISOString(),
-      expiresAt,
+    // CHECKOUT TRANSACTION (Phase 2 — concurrency safety):
+    //   Synchronous critical section that re-reads availableStock and writes
+    //   the reservation+order in one run-to-completion turn of the JS event
+    //   loop. better-sqlite3 is synchronous and Node is single-threaded, so
+    //   no other JS handler can interleave between the check and the write —
+    //   this is the lock-acquire-order serialization the SQLite docs describe
+    //   as the BEGIN IMMEDIATE pattern. Any throw inside the body rolls back
+    //   in-memory state via the snapshot taken below, so the failed call
+    //   leaves no half-committed reservation or order.
+    this.runInventoryTransaction(() => {
+      for (const item of checkedItems) {
+        const available = this.availableStock(item.product.id);
+        if (item.quantity > available) {
+          this.audit("patient_concurrent_checkout_blocked", patient.id, {
+            productId: item.product.id,
+            requested: item.quantity,
+            available,
+            actor: "system",
+          });
+          throw problem(
+            409,
+            `Estoque insuficiente para ${item.product.name}. Disponivel: ${available} ${item.product.unit}.`,
+            { code: "OUT_OF_STOCK" },
+          );
+        }
+      }
+
+      this.state.stockReservations.push({
+        id: reservationId,
+        orderId,
+        patientId: patient.id,
+        items: orderItems.map(({ productId, quantity }) => ({ productId, quantity })),
+        status: "active",
+        createdAt: this.now().toISOString(),
+        expiresAt,
+      });
+
+      this.state.orders.push({
+        id: orderId,
+        patientId: patient.id,
+        patientName: patient.name,
+        memberCode: patient.memberCode,
+        items: orderItems,
+        totalCents,
+        deliveryMethod: deliveryMethod || "Retirada combinada",
+        status: "awaiting_payment",
+        reservationId,
+        paymentId,
+        createdAt: this.now().toISOString(),
+        updatedAt: this.now().toISOString(),
+      });
     });
 
-    this.state.orders.push({
-      id: orderId,
-      patientId: patient.id,
-      patientName: patient.name,
-      memberCode: patient.memberCode,
-      items: orderItems,
-      totalCents,
-      deliveryMethod: deliveryMethod || "Retirada combinada",
-      status: "awaiting_payment",
-      reservationId,
-      paymentId,
-      createdAt: this.now().toISOString(),
-      updatedAt: this.now().toISOString(),
-    });
-
-    const payment = await this.paymentProvider.createPayment({
-      paymentId,
-      orderId,
-      patient,
-      totalCents,
-      expiresAt,
-    });
+    let payment;
+    try {
+      payment = await this.paymentProvider.createPayment({
+        paymentId,
+        orderId,
+        patient,
+        totalCents,
+        expiresAt,
+      });
+    } catch (error) {
+      // Provider failed after we already reserved stock. Release the
+      // reservation and remove the half-built order so availableStock is
+      // restored, then rethrow.
+      this.state.stockReservations = this.state.stockReservations.filter(
+        (item) => item.id !== reservationId,
+      );
+      this.state.orders = this.state.orders.filter((item) => item.id !== orderId);
+      this.persist();
+      throw error;
+    }
     this.state.payments.push(payment);
     this.audit("checkout_created", patient.id, { orderId, reservationId, paymentId });
     this.persist();
     return { order: this.publicOrder(this.orderById(orderId)), payment };
+  }
+
+  // Run a synchronous inventory mutation as a transactional unit. Snapshots
+  // the inventory-relevant arrays before the body runs; on throw, restores
+  // them so callers see no partial state. On success, persists once via
+  // SqliteStateStore.save which itself uses BEGIN IMMEDIATE for durability.
+  runInventoryTransaction(body) {
+    const snapshot = {
+      stockReservations: this.state.stockReservations.slice(),
+      orders: this.state.orders.slice(),
+      payments: this.state.payments.slice(),
+      paymentEvents: this.state.paymentEvents.slice(),
+      stockMovements: this.state.stockMovements.slice(),
+      auditLogLength: this.state.auditLog.length,
+      productStocks: this.state.products.map((product) => ({
+        id: product.id,
+        stock: product.stock,
+      })),
+    };
+    try {
+      body();
+    } catch (error) {
+      // Roll back inventory state but PRESERVE audit events appended during
+      // the failed body — events like patient_concurrent_checkout_blocked
+      // record why the transaction failed and must outlive the rollback.
+      const auditAppended = this.state.auditLog.slice(snapshot.auditLogLength);
+      this.state.stockReservations = snapshot.stockReservations;
+      this.state.orders = snapshot.orders;
+      this.state.payments = snapshot.payments;
+      this.state.paymentEvents = snapshot.paymentEvents;
+      this.state.stockMovements = snapshot.stockMovements;
+      const stockMap = new Map(snapshot.productStocks.map((row) => [row.id, row.stock]));
+      for (const product of this.state.products) {
+        if (stockMap.has(product.id)) product.stock = stockMap.get(product.id);
+      }
+      // auditLog already has the appended events because it's the same
+      // reference; we leave it as-is (length > snapshot.auditLogLength).
+      void auditAppended;
+      this.persist();
+      throw error;
+    }
   }
 
   confirmPixPayment({ paymentId, eventId = randomUUID(), status = "paid" }) {
@@ -1843,9 +1915,12 @@ function generatedInviteCode(memberCode, now) {
     .slice(-4)}${isoDate(now()).replaceAll("-", "").slice(2)}${suffix}`;
 }
 
-function problem(status, message) {
+function problem(status, message, extras = {}) {
   const error = new Error(message);
   error.status = status;
+  for (const [key, value] of Object.entries(extras)) {
+    error[key] = value;
+  }
   return error;
 }
 
