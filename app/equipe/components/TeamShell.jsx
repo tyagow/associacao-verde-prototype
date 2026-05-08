@@ -1,6 +1,9 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
+
 import Brand from "../../components/Brand";
+import CommandPalette from "./CommandPalette";
 import styles from "./TeamShell.module.css";
 
 const ROLE_LABELS = {
@@ -31,6 +34,27 @@ export default function TeamShell({
   children,
 }) {
   const counts = computeBadgeCounts(dashboard);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  // Global ⌘K / Ctrl+K binding. Registered while the shell is mounted, which
+  // is every /equipe/* route (Phase 3 onwards). Stops the browser's default
+  // (Safari/Chrome use ⌘K for the address bar) and toggles the palette.
+  const handleKeyDown = useCallback((event) => {
+    if ((event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey) {
+      const key = (event.key || "").toLowerCase();
+      if (key === "k") {
+        event.preventDefault();
+        setPaletteOpen((prev) => !prev);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
+
   const items = [
     { href: "/equipe", label: "Comando", key: "command" },
     { href: "/equipe/pacientes", label: "Pacientes", key: "patients" },
@@ -57,11 +81,18 @@ export default function TeamShell({
           </span>
         </div>
         <div className={styles.txTopbarRight}>
-          <span className={styles.txKbdHint} aria-label="Atalho da paleta de comandos">
+          <button
+            type="button"
+            className={styles.txKbdHint}
+            aria-label="Abrir paleta de comandos"
+            data-cmdk-trigger
+            onClick={() => setPaletteOpen(true)}
+            style={{ background: "transparent", border: 0, cursor: "pointer", padding: 0 }}
+          >
             <kbd>{platformMeta()}</kbd>
             <kbd>K</kbd>
             <span>paleta</span>
-          </span>
+          </button>
         </div>
       </header>
 
@@ -112,6 +143,8 @@ export default function TeamShell({
           ) : null}
         </div>
       </footer>
+
+      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} dashboard={dashboard} />
     </div>
   );
 }

@@ -113,7 +113,13 @@ export default function CommandPalette({ open, onOpenChange, dashboard }) {
       const next = exists
         ? starred.filter((s) => s.id !== item.id)
         : [
-            { id: item.id, label: item.label, hint: item.hint || "", href: item.href, kind: item.kind || "nav" },
+            {
+              id: item.id,
+              label: item.label,
+              hint: item.hint || "",
+              href: item.href,
+              kind: item.kind || "nav",
+            },
             ...starred,
           ];
       persistStarred(next);
@@ -279,11 +285,7 @@ function PaletteItem({ item, starred, onSelect, onToggleStar, asideLabel }) {
   // patient by member code or an order by id.
   const value = `${item.id} ${item.label} ${item.hint || ""}`;
   return (
-    <Command.Item
-      value={value}
-      className={styles.txItem}
-      onSelect={() => onSelect(item)}
-    >
+    <Command.Item value={value} className={styles.txItem} onSelect={() => onSelect(item)}>
       <span className={styles.txItemBody}>
         <span className={styles.txItemLabel}>{item.label}</span>
         {item.hint ? <span className={styles.txItemHint}>{item.hint}</span> : null}
@@ -361,7 +363,9 @@ function buildItems(dashboard) {
   }
 
   // "Reset invite for X" for blocked patients.
-  for (const patient of (dashboard?.patients || []).filter((p) => !p.eligibility?.allowed).slice(0, 8)) {
+  for (const patient of (dashboard?.patients || [])
+    .filter((p) => !p.eligibility?.allowed)
+    .slice(0, 8)) {
     actions.push({
       id: `action:reset-invite:${patient.id}`,
       label: `Resetar convite de ${patient.name || patient.memberCode}`,
