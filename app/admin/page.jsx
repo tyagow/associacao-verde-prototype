@@ -9,6 +9,17 @@ import adminStyles from "./admin.module.css";
 
 const initialFilters = { adminQuery: "", adminStatus: "all" };
 
+const GATE_TAGS = {
+  "Webhook Pix": "webhook drill",
+  "Aceite do provider": "provider approval",
+  "Deploy/domain/logs": "deployment check",
+  "Dominio/TLS": "domain tls",
+  "Schema DB": "schema db",
+  "Sessao/cookie": "session cookie",
+  "Backup/restore": "restore drill",
+  "Backup offsite": "backup offsite",
+};
+
 export default function AdminPage() {
   const [dashboard, setDashboard] = useState(null);
   const [readiness, setReadiness] = useState(null);
@@ -466,6 +477,7 @@ function ReadinessSection({
               detail={gate.detail}
               tone={toneFor(gate)}
               pillText={gate.status === "ok" ? "Passa" : "Pendente"}
+              tag={GATE_TAGS[gate.label] || ""}
               selected={selectedGate === gate.label}
               onSelect={(id) => onSelectGate(id === selectedGate ? null : id)}
             />

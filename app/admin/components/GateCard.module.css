@@ -52,6 +52,14 @@
   min-width: 0;
 }
 
+.tag {
+  display: inline-block;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+  color: var(--muted, #687970);
+}
+
 .label {
   font-size: 14px;
   font-weight: 600;

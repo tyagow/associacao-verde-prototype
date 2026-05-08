@@ -136,7 +136,8 @@ finds the current `[→]`, completes its acceptance criteria, then advances.
   - [ ] Phase 6 — Estoque & cultivo (single ledger + lot detail)
   - [ ] Phase 7 — Support workbench
   - [ ] Phase 8 — Command palette ⌘K
-  - [ ] Phase 9 — Admin readiness redesign
+  - [x] Phase 9 — Admin readiness redesign
+        (scaffold def05b8 · redesign 6ee2fe4 · screenshots + ledger close pending commit)
   - [ ] Phase 10 — Audit timeline + Team users
   - [ ] Phase 11 — Public home redesign
   - [ ] Phase 12 — Mobile polish sweep
@@ -574,7 +575,33 @@ required (E2E covers existing reconciliation path).
 
 ---
 
-### Phase 9 — Admin readiness redesign
+### Phase 9 — Admin readiness redesign ✓
+
+**Shipped (commits).**
+- `def05b8` scaffold ReleaseProgress + GateCard + GateDetail components (CSS Modules).
+- `6ee2fe4` rewire `app/admin/page.jsx` readiness section: hero progress bar +
+  2-col gate grid + click-to-expand `GateDetail`. Evidence panels collapsed into
+  per-gate metadata; provider + backup-offsite forms moved into the gate detail.
+- (this commit) capture desktop + mobile screenshots and close ledger.
+- E2E text contract preserved: every required label and lowercase descriptor
+  ("Pix provider", "Webhook Pix", "webhook drill", "Aceite do provider",
+  "provider approval", "Deploy/domain/logs", "deployment check", "Dominio/TLS",
+  "domain tls", "Schema DB", "schema db", "Sessao/cookie", "session cookie",
+  "Backup/restore", "restore drill", "Backup offsite", "backup offsite",
+  "release gate", "Release bloqueado por evidencias pendentes",
+  "Readiness do ambiente") still rendered unconditionally on `/admin` (the
+  lowercase descriptors are exposed via a per-card `tag` overline so they don't
+  depend on selecting a specific gate).
+- Tests still 41/41 green; `next build` clean.
+- Audit + team-users sections were intentionally not touched (Phase 10 owns
+  them); `EvidenceMetric`/`EvidenceTextMetric` helpers were dropped because no
+  caller remained.
+
+**Open for Phase 10.**
+- Audit timeline replaces the existing audit ledger block (kept verbatim by
+  this phase). The hero `ReleaseProgress` and `GateCard` styling is admin-
+  specific (`.ax-*` namespace via CSS Modules) and does not collide with the
+  audit/users redesign.
 
 **Scope.**
 - Replace evidence wall with:
