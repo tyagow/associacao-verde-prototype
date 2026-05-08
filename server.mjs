@@ -72,6 +72,20 @@ const appRoutes = new Set([
   // listing their pathnames here. server.mjs adds NO new endpoint code; the
   // implementation lives in app/api/<name>/route.js.
   "/api/team/activity",
+  // Phase 7 bridge: support workbench Route Handlers proxy back into
+  // server.mjs's raw system calls (/api/team/support-replies/_raw,
+  // /api/team/support-thread/_raw) which are NOT allow-listed and stay
+  // on the legacy switch below. Handlers live in
+  // app/api/team/support-replies/route.js and
+  // app/api/team/support-thread/route.js.
+  "/api/team/support-replies",
+  "/api/team/support-thread",
+  // Phase 5 bridge: fulfillment kanban drag posts here. The Route Handler
+  // in app/api/team/orders/status/route.js validates the body and proxies
+  // to /api/team/orders/status-apply below, which wires the shared
+  // ProductionSystem singleton + the new updateOrderFulfillmentStatus
+  // method (kanban-specific audit envelope).
+  "/api/team/orders/status",
 ]);
 const protectedAppRoutes = new Set([
   "/equipe/pacientes",
@@ -100,6 +114,10 @@ const system = new ProductionSystem({
   state,
   paymentProvider,
   save: (nextState) => store.save(nextState),
+  // Phase 7 — support_messages thread (schema v15) lives in its own
+  // table, not in the JSON snapshot. Inject the SQL helpers here.
+  appendSupportMessage: (message) => store.appendSupportMessage(message),
+  listSupportMessages: (ticketId) => store.listSupportMessages(ticketId),
 });
 system.ensureTeamUser({
   email: teamEmail,
@@ -398,6 +416,19 @@ const server = createServer(async (request, response) => {
         order: system.cancelOrder(readCookie(request, "av_session"), await body(request)),
       });
     }
+    // Phase 5 bridge target: the public path /api/team/orders/status is a
+    // Next Route Handler (allow-listed above). It proxies here to wire the
+    // shared ProductionSystem singleton to the new kanban-aware
+    // updateOrderFulfillmentStatus method (team_order_status_changed audit).
+    if (url.pathname === "/api/team/orders/status-apply" && request.method === "POST") {
+      assertSameOrigin(request);
+      return json(response, 200, {
+        order: system.updateOrderFulfillmentStatus(
+          readCookie(request, "av_session"),
+          await body(request),
+        ),
+      });
+    }
     if (url.pathname === "/api/team/orders/exception" && request.method === "POST") {
       assertSameOrigin(request);
       return json(response, 200, {
@@ -417,6 +448,24 @@ const server = createServer(async (request, response) => {
       return json(response, 200, {
         ticket: system.updateSupportRequest(readCookie(request, "av_session"), await body(request)),
       });
+    }
+    // Phase 7 — raw system access for the Route Handlers under
+    // app/api/team/support-{replies,thread}/route.js. These paths are NOT
+    // in `appRoutes`; they stay on this switch so the Route Handlers can
+    // proxy via fetch with the session cookie forwarded.
+    if (url.pathname === "/api/team/support-replies/_raw" && request.method === "POST") {
+      assertSameOrigin(request);
+      return json(response, 201, {
+        message: system.createSupportReply(readCookie(request, "av_session"), await body(request)),
+      });
+    }
+    if (url.pathname === "/api/team/support-thread/_raw" && request.method === "GET") {
+      const ticketId = url.searchParams.get("ticketId") || "";
+      return json(
+        response,
+        200,
+        system.listSupportThread(readCookie(request, "av_session"), ticketId),
+      );
     }
     if (url.pathname === "/api/team/payments/reconcile" && request.method === "POST") {
       assertSameOrigin(request);
