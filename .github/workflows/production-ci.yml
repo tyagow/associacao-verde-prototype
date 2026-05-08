@@ -32,6 +32,13 @@ jobs:
           python -m pip install playwright
           python -m playwright install --with-deps chromium
 
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Dependency audit (advisory)
+        # || true makes this advisory; remove it to enforce
+        run: npm audit --omit=dev --audit-level=high || true
+
       - name: Syntax checks
         run: npm run check
 
