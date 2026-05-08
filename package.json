@@ -1,0 +1,52 @@
+{
+  "name": "associacao-verde-production-system",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "next:build": "next build",
+    "test": "node --test",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "smoke": "node scripts/smoke-production-app.mjs",
+    "e2e": "python3 scripts/e2e-production-app.py",
+    "dev:reset": "node scripts/reset-dev-data.mjs",
+    "readiness:backup-drill": "node scripts/backup-restore-drill.mjs",
+    "readiness:webhook-drill": "node scripts/webhook-drill.mjs",
+    "readiness:provider-evidence": "node scripts/provider-evidence.mjs",
+    "readiness:deployment-check": "node scripts/deployment-check.mjs",
+    "readiness:backup-schedule": "node scripts/backup-schedule-evidence.mjs",
+    "readiness:domain-tls": "node scripts/domain-tls-check.mjs",
+    "readiness:schema-check": "node scripts/schema-check.mjs",
+    "readiness:session-security": "node scripts/session-security-check.mjs",
+    "readiness:release-gate": "node scripts/release-gate.mjs",
+    "verify:isolated": "node scripts/verify-isolated.mjs",
+    "import:archive": "node scripts/import-archive.mjs",
+    "check": "npm run lint --silent && npm run format:check --silent && node --check server.mjs && node --check src/production-system.mjs && node --check src/sqlite-store.mjs && node --check src/release-gate.mjs && node --check scripts/smoke-production-app.mjs && node --check scripts/import-archive.mjs && node --check scripts/reset-dev-data.mjs && node --check scripts/backup-restore-drill.mjs && node --check scripts/webhook-drill.mjs && node --check scripts/provider-evidence.mjs && node --check scripts/deployment-check.mjs && node --check scripts/backup-schedule-evidence.mjs && node --check scripts/domain-tls-check.mjs && node --check scripts/schema-check.mjs && node --check scripts/session-security-check.mjs && node --check scripts/release-gate.mjs && node --check scripts/verify-isolated.mjs && python3 -m py_compile scripts/e2e-production-app.py && next build"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "cmdk": "^1.1.1",
+    "framer-motion": "^12.38.0",
+    "lucide-react": "^1.14.0",
+    "next": "^16.2.6",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "recharts": "^3.8.1"
+  },
+  "overrides": {
+    "postcss": "^8.5.10"
+  },
+  "devDependencies": {
+    "@next/eslint-plugin-next": "^16.2.6",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.6",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "prettier": "^3.8.3"
+  }
+}

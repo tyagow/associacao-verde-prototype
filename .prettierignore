@@ -1,0 +1,12 @@
+node_modules
+.next
+artifacts
+data
+public/app.css
+package-lock.json
+*.sqlite
+*.sqlite-*
+thoughts
+.superpowers
+.claude
+.github
