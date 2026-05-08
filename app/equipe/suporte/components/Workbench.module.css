@@ -1,0 +1,64 @@
+/* Phase 7 — Two-pane support workbench layout. */
+
+.txWorkbench {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) 1fr;
+  gap: var(--sp-4);
+  align-items: stretch;
+  min-height: 0;
+}
+
+.txWorkbenchSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  min-width: 0;
+}
+
+.txWorkbenchSummary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-3);
+}
+
+.txMetric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--paper);
+}
+
+.txMetric span {
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.txMetric strong {
+  font-family: var(--font-display);
+  font-size: var(--fs-h2);
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.txWorkbenchEmpty {
+  padding: var(--sp-5);
+  text-align: center;
+  color: var(--muted);
+  background: var(--paper);
+  border: 1px dashed var(--line);
+  border-radius: var(--r-lg);
+}
+
+@media (max-width: 1024px) {
+  .txWorkbench {
+    grid-template-columns: 1fr;
+  }
+  .txWorkbenchSummary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

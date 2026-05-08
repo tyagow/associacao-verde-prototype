@@ -1,0 +1,135 @@
+/* Phase 7 — Support queue column. Sticky list of cases on the LEFT pane.
+   Mirrors the mock's queue-row pattern with priority pill, member code,
+   and a one-line summary. .tx-* namespace via CSS Modules. */
+
+.txQueue {
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  align-self: stretch;
+  min-height: 0;
+}
+
+.txQueueHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--line-soft);
+  background: var(--paper-warm);
+}
+
+.txQueueTitle {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+
+.txQueueCount {
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.txQueueScroll {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  max-height: calc(100vh - 280px);
+}
+
+.txQueueRow {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  gap: 4px var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  border: 0;
+  border-bottom: 1px solid var(--line-soft);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: var(--ink);
+}
+
+.txQueueRow:hover {
+  background: var(--paper-warm);
+}
+
+.txQueueRow.active {
+  background: var(--green-tint);
+  border-left: 3px solid var(--green-deep);
+  padding-left: calc(var(--sp-4) - 3px);
+}
+
+.txQueueRow:last-child {
+  border-bottom: 0;
+}
+
+.txQueuePill {
+  grid-row: 1;
+  grid-column: 1;
+  align-self: center;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--soft);
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.txQueuePill.warn {
+  background: var(--warn-soft);
+  color: var(--warn-ink);
+}
+
+.txQueuePill.danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.txQueuePill.good {
+  background: var(--green-tint);
+  color: var(--green-deep);
+}
+
+.txQueueName {
+  grid-row: 1;
+  grid-column: 2;
+  font-weight: 600;
+  color: var(--ink);
+  font-size: var(--fs-base);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.txQueueSummary {
+  grid-row: 2;
+  grid-column: 1 / -1;
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.txQueueEmpty {
+  padding: var(--sp-5) var(--sp-4);
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  text-align: center;
+}
+
+@media (max-width: 1024px) {
+  .txQueueScroll {
+    max-height: 360px;
+  }
+}
