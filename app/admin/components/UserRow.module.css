@@ -1,0 +1,230 @@
+.row {
+  border-bottom: 1px solid var(--line, #e3ebe6);
+}
+
+.row td {
+  padding: 12px 14px;
+  vertical-align: middle;
+  font-size: 13px;
+  color: var(--ink, #0d1f17);
+}
+
+.cellUser {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.avatar {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--green-tint, #dff0e6);
+  color: var(--green-deep, #135b35);
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.identity {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.identity strong {
+  font-size: 13px;
+  color: var(--ink, #0d1f17);
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.email {
+  font-size: 12px;
+  color: var(--muted, #687970);
+  word-break: break-all;
+}
+
+.rolePill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: var(--paper-warm, #f7f9f6);
+  color: var(--muted, #687970);
+  border: 1px solid var(--line, #e3ebe6);
+  white-space: nowrap;
+}
+
+.role_admin {
+  background: var(--green-tint, #dff0e6);
+  color: var(--green-deep, #135b35);
+  border-color: var(--green-soft, #c7e2d2);
+}
+.role_operations {
+  background: #eaf1ff;
+  color: #1d3a8a;
+  border-color: #c8d6f1;
+}
+.role_support {
+  background: var(--warn-soft, #fff5d4);
+  color: var(--warn-ink, #876f12);
+  border-color: #f0d883;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ink, #0d1f17);
+  white-space: nowrap;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted-2, #92a098);
+}
+
+.statusActive .statusDot {
+  background: var(--good, #1d8c52);
+}
+
+.statusInactive .statusDot {
+  background: var(--danger, #b03a2e);
+}
+
+.cellTime {
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--muted, #687970);
+  white-space: nowrap;
+}
+
+.cellActions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.actionButton {
+  appearance: none;
+  font: inherit;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line, #e3ebe6);
+  background: #fff;
+  color: var(--ink, #0d1f17);
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease;
+}
+
+.actionButton:hover {
+  background: var(--paper-warm, #f7f9f6);
+}
+
+.actionButton:focus-visible {
+  outline: 2px solid var(--green, #1d8c52);
+  outline-offset: 2px;
+}
+
+.actionDanger {
+  color: var(--danger, #b03a2e);
+  border-color: var(--danger-line, #ecc3bd);
+}
+
+.actionDanger:hover {
+  background: var(--danger-soft, #fbe5e1);
+}
+
+.actionPrimary {
+  color: var(--green-deep, #135b35);
+  border-color: var(--green-soft, #c7e2d2);
+}
+
+.actionPrimary:hover {
+  background: var(--green-tint, #dff0e6);
+}
+
+.drawerRow td {
+  background: var(--paper-warm, #f7f9f6);
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line, #e3ebe6);
+}
+
+.drawer {
+  display: grid;
+  gap: 12px;
+}
+
+.drawer label {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted, #687970);
+}
+
+.drawer input {
+  font: inherit;
+  padding: 8px 10px;
+  border: 1px solid var(--line, #e3ebe6);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.drawerCopy {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink, #0d1f17);
+}
+
+.drawerActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.drawerPrimary {
+  appearance: none;
+  font: inherit;
+  font-size: 12px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: var(--green, #1d8c52);
+  color: #fff;
+  border: 1px solid var(--green-deep, #135b35);
+  cursor: pointer;
+}
+
+.drawerPrimary:hover {
+  background: var(--green-deep, #135b35);
+}
+
+.drawerGhost {
+  appearance: none;
+  font: inherit;
+  font-size: 12px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--muted, #687970);
+  border: 1px solid var(--line, #e3ebe6);
+  cursor: pointer;
+}
+
+.drawerGhost:hover {
+  background: var(--paper-warm, #f7f9f6);
+}
