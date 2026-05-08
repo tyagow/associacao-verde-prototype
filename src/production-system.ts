@@ -579,10 +579,55 @@ export class ProductionSystem {
     const reservation = this.state.stockReservations.find(
       (item) => item.id === order.reservationId,
     );
-    if (!reservation || reservation.status !== "active")
-      throw problem(409, "Reserva de estoque nao esta ativa.");
-    if (new Date(reservation.expiresAt) <= this.now())
-      throw problem(409, "Reserva de estoque expirada.");
+
+    // PAID-AFTER-EXPIRY CONFLICT (Phase 2):
+    //   The Pix webhook arrived after the reservation expired or was
+    //   cancelled. We must NOT decrement permanent stock — the freed units
+    //   may already be reserved by another patient. Mark the order as
+    //   fulfillment_exception with exceptionStatus 'paid_after_expiry' so
+    //   the team workbench surfaces it for manual review/refund.
+    const reservationExpired =
+      reservation &&
+      reservation.status === "active" &&
+      new Date(reservation.expiresAt) <= this.now();
+    const reservationInactive = !reservation || reservation.status !== "active";
+    if (reservationInactive || reservationExpired) {
+      const reason = reservationExpired
+        ? "Reserva de estoque expirada (paid_after_expiry_conflict)."
+        : "Reserva de estoque nao esta ativa (paid_after_expiry_conflict).";
+      payment.status = "paid";
+      payment.paidAt = this.now().toISOString();
+      payment.refundStatus = "pending_review";
+      payment.refundReason = reason;
+      order.status = "fulfillment_exception";
+      order.exceptionStatus = "paid_after_expiry";
+      order.exceptions ||= [];
+      order.exceptions.push(orderException("paid_after_expiry", reason, "system", this.now()));
+      order.updatedAt = this.now().toISOString();
+      this.state.paymentEvents.push({
+        eventId,
+        paymentId,
+        status,
+        receivedAt: this.now().toISOString(),
+        conflict: "paid_after_expiry",
+      });
+      this.audit("paid_after_expiry_conflict", "system", {
+        orderId: order.id,
+        paymentId: payment.id,
+        reservationId: reservation?.id || "",
+        reservationStatus: reservation?.status || "missing",
+        productIds: (reservation?.items || []).map((item) => item.productId),
+        actor: "system",
+      });
+      this.persist();
+      return {
+        duplicate: false,
+        conflict: "paid_after_expiry",
+        payment,
+        order: this.publicOrder(order),
+        reason,
+      };
+    }
 
     for (const item of reservation.items) {
       const product = this.productById(item.productId);
@@ -654,6 +699,25 @@ export class ProductionSystem {
           eventId: `reconcile:${payment.provider}:${payment.providerPaymentId || payment.id}:paid`,
           status: "paid",
         });
+        if (confirmed.conflict === "paid_after_expiry") {
+          // confirmPixPayment already wrote paid_after_expiry_conflict and
+          // marked the order fulfillment_exception; the reconcile path
+          // surfaces this to the team as an exception with the same audit
+          // shape it always used (regex-matched by tests).
+          payment.reconciliationStatus = "exception";
+          payment.reconciliationError = confirmed.reason;
+          payment.lastProviderStatus = providerStatus.rawStatus || providerStatus.status || "PAID";
+          payment.lastReconciledAt = this.now().toISOString();
+          this.audit("payment_reconciliation_exception", actor.id, {
+            paymentId: payment.id,
+            orderId: payment.orderId,
+            providerStatus: payment.lastProviderStatus,
+            error: confirmed.reason,
+            conflict: "paid_after_expiry",
+          });
+          this.persist();
+          return { status: "exception", payment, error: confirmed.reason };
+        }
         payment.reconciliationStatus = confirmed.duplicate ? "already_paid" : "paid";
         payment.lastProviderStatus = providerStatus.rawStatus || providerStatus.status || "PAID";
         payment.lastReconciledAt = this.now().toISOString();
