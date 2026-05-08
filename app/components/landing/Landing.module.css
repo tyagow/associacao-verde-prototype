@@ -1,0 +1,964 @@
+/* =====================================================================
+   LANDING EXPERIENCE (lx) — public institutional surface
+   Calm Clinical Modern aesthetic, modeled on apoiarbrasil.org institutional
+   voice. No internal-feature jargon. Mission/values lead.
+   ===================================================================== */
+
+.lxRoot {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+/* ---------------------------------------------------------------------
+   Topbar
+   --------------------------------------------------------------------- */
+
+.lxTopbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-5);
+  padding: var(--sp-4) clamp(var(--sp-5), 5vw, var(--sp-9));
+  background: rgba(251, 252, 250, 0.92);
+  backdrop-filter: saturate(140%) blur(8px);
+  -webkit-backdrop-filter: saturate(140%) blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+
+.lxNavPrimary {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-6);
+  font-size: var(--fs-base);
+  color: var(--ink-soft);
+}
+
+.lxNavPrimary a {
+  color: inherit;
+  text-decoration: none;
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid transparent;
+  transition:
+    color var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out);
+}
+
+.lxNavPrimary a:hover,
+.lxNavPrimary a:focus-visible {
+  color: var(--ink);
+  border-bottom-color: var(--green-soft);
+  outline: none;
+}
+
+.lxNavSecondary {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.lxDoorMini {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line-strong);
+  background: var(--paper);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  transition:
+    background var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out);
+}
+
+.lxDoorMini:hover,
+.lxDoorMini:focus-visible {
+  background: var(--soft);
+  border-color: var(--green-soft);
+  outline: none;
+}
+
+.lxDoorMiniSolid {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.lxDoorMiniSolid:hover,
+.lxDoorMiniSolid:focus-visible {
+  background: var(--ink-soft);
+  border-color: var(--ink-soft);
+}
+
+/* ---------------------------------------------------------------------
+   Hero
+   --------------------------------------------------------------------- */
+
+.lxHero {
+  padding: clamp(var(--sp-9), 8vw, calc(var(--sp-10) + var(--sp-7)))
+    clamp(var(--sp-5), 5vw, var(--sp-9)) var(--sp-9);
+  display: grid;
+  gap: var(--sp-9);
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  align-items: center;
+  background-image:
+    radial-gradient(900px 540px at 92% -10%, rgba(29, 140, 82, 0.07), transparent 60%),
+    radial-gradient(700px 420px at -10% 110%, rgba(214, 181, 106, 0.05), transparent 60%);
+}
+
+.lxHeroCopy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  max-width: 56ch;
+}
+
+.lxOverline {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+  color: var(--green-deep);
+}
+
+.lxOverline::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 4px var(--green-tint);
+}
+
+.lxHeroTitle {
+  font-family: var(--font-display);
+  font-size: clamp(34px, 5vw, var(--fs-hero));
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--ink);
+  font-weight: 600;
+  margin: 0;
+}
+
+.lxHeroTitle em {
+  color: var(--green-deep);
+  font-style: normal;
+}
+
+.lxHeroLead {
+  font-size: var(--fs-lg);
+  line-height: var(--lh-body);
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.lxHeroActions {
+  display: flex;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  margin-top: var(--sp-3);
+}
+
+.lxBtnPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  padding: var(--sp-4) var(--sp-6);
+  border-radius: var(--r-pill);
+  background: var(--ink);
+  color: var(--paper);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: var(--fs-md);
+  border: 1px solid var(--ink);
+  transition:
+    background var(--t-fast) var(--ease-out),
+    transform var(--t-fast) var(--ease-out);
+}
+
+.lxBtnPrimary:hover,
+.lxBtnPrimary:focus-visible {
+  background: var(--ink-soft);
+  outline: none;
+}
+
+.lxBtnGhost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  padding: var(--sp-4) var(--sp-6);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: var(--fs-md);
+  border: 1px solid var(--line-strong);
+  transition:
+    background var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out);
+}
+
+.lxBtnGhost:hover,
+.lxBtnGhost:focus-visible {
+  background: var(--soft);
+  border-color: var(--green-soft);
+  outline: none;
+}
+
+.lxHeroAside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding: var(--sp-7);
+  background: var(--paper-warm);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-1);
+}
+
+.lxHeroAsideTitle {
+  font-family: var(--font-display);
+  font-size: var(--fs-h3);
+  font-weight: 600;
+  margin: 0;
+  color: var(--ink);
+  letter-spacing: var(--tracking-tight);
+}
+
+.lxValueList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.lxValueList li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--sp-3);
+  align-items: start;
+  padding: var(--sp-3) 0;
+  border-top: 1px solid var(--line-soft);
+}
+
+.lxValueList li:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.lxValueDot {
+  width: 10px;
+  height: 10px;
+  margin-top: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 4px var(--green-tint);
+}
+
+.lxValueLabel {
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+
+.lxValueText {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: var(--fs-base);
+  line-height: var(--lh-body);
+}
+
+/* ---------------------------------------------------------------------
+   Section frame
+   --------------------------------------------------------------------- */
+
+.lxSection {
+  padding: clamp(var(--sp-9), 7vw, var(--sp-10)) clamp(var(--sp-5), 5vw, var(--sp-9));
+  border-top: 1px solid var(--line);
+}
+
+.lxSectionAlt {
+  background: var(--paper-warm);
+}
+
+.lxSectionHead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: var(--sp-9);
+  align-items: end;
+  margin-bottom: var(--sp-8);
+}
+
+.lxSectionEyebrow {
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+  color: var(--green-deep);
+  margin: 0 0 var(--sp-3);
+}
+
+.lxSectionTitle {
+  font-family: var(--font-display);
+  font-size: clamp(26px, 3.4vw, var(--fs-h1));
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--ink);
+  font-weight: 600;
+  margin: 0;
+}
+
+.lxSectionLead {
+  font-size: var(--fs-lg);
+  line-height: var(--lh-body);
+  color: var(--ink-soft);
+  margin: 0;
+  max-width: 60ch;
+}
+
+/* ---------------------------------------------------------------------
+   Quem somos / values grid
+   --------------------------------------------------------------------- */
+
+.lxValuesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-5);
+}
+
+.lxValueCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-7);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-1);
+}
+
+.lxValueCardKicker {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+  color: var(--green-deep);
+}
+
+.lxValueCardTitle {
+  font-family: var(--font-display);
+  font-size: var(--fs-h3);
+  line-height: var(--lh-tight);
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+  letter-spacing: var(--tracking-tight);
+}
+
+.lxValueCardText {
+  font-size: var(--fs-base);
+  line-height: var(--lh-body);
+  color: var(--muted);
+  margin: 0;
+}
+
+/* ---------------------------------------------------------------------
+   Programs
+   --------------------------------------------------------------------- */
+
+.lxProgramsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-5);
+}
+
+.lxProgramCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-7);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--green);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-1);
+}
+
+.lxProgramTag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  align-self: flex-start;
+  padding: 2px var(--sp-3);
+  border-radius: var(--r-pill);
+  background: var(--green-tint);
+  color: var(--green-deep);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+}
+
+.lxProgramTitle {
+  font-family: var(--font-display);
+  font-size: var(--fs-h3);
+  line-height: var(--lh-tight);
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+  letter-spacing: var(--tracking-tight);
+}
+
+.lxProgramText {
+  font-size: var(--fs-base);
+  line-height: var(--lh-body);
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.lxProgramDetails {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.lxProgramDetails li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--sp-3);
+  align-items: start;
+  font-size: var(--fs-sm);
+  color: var(--muted);
+}
+
+.lxProgramDetails li::before {
+  content: "";
+  margin-top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+}
+
+/* ---------------------------------------------------------------------
+   Como acessar — 3-step
+   --------------------------------------------------------------------- */
+
+.lxStepsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-5);
+  counter-reset: lx-step;
+}
+
+.lxStepCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-7);
+  padding-top: var(--sp-8);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  counter-increment: lx-step;
+  box-shadow: var(--shadow-1);
+}
+
+.lxStepCard::before {
+  content: counter(lx-step, decimal-leading-zero);
+  position: absolute;
+  top: var(--sp-5);
+  right: var(--sp-6);
+  font-family: var(--font-display);
+  font-size: var(--fs-h2);
+  color: var(--gold-deep);
+  font-weight: 600;
+  letter-spacing: var(--tracking-tight);
+}
+
+.lxStepKicker {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+  color: var(--green-deep);
+}
+
+.lxStepTitle {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-tight);
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+  letter-spacing: var(--tracking-tight);
+}
+
+.lxStepText {
+  font-size: var(--fs-base);
+  line-height: var(--lh-body);
+  color: var(--muted);
+  margin: 0;
+}
+
+/* ---------------------------------------------------------------------
+   Stakeholder addressee block (profissionais + parceiros)
+   --------------------------------------------------------------------- */
+
+.lxStakeholderGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-5);
+}
+
+.lxStakeholderCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding: var(--sp-7);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-1);
+}
+
+.lxStakeholderTag {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 2px var(--sp-3);
+  border-radius: var(--r-pill);
+  background: var(--gold-soft);
+  color: var(--gold-on);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+}
+
+.lxStakeholderTitle {
+  font-family: var(--font-display);
+  font-size: var(--fs-h3);
+  line-height: var(--lh-tight);
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+  letter-spacing: var(--tracking-tight);
+}
+
+.lxStakeholderText {
+  font-size: var(--fs-base);
+  line-height: var(--lh-body);
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.lxStakeholderLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  align-self: flex-start;
+  font-weight: 600;
+  color: var(--green-deep);
+  text-decoration: none;
+  font-size: var(--fs-base);
+  border-bottom: 1px solid var(--green-soft);
+  padding-bottom: 2px;
+  transition: color var(--t-fast) var(--ease-out);
+}
+
+.lxStakeholderLink:hover,
+.lxStakeholderLink:focus-visible {
+  color: var(--ink);
+  outline: none;
+}
+
+/* ---------------------------------------------------------------------
+   Transparência snippet
+   --------------------------------------------------------------------- */
+
+.lxTransparencyRow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-5);
+  margin-top: var(--sp-7);
+}
+
+.lxStat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-5) var(--sp-6);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+}
+
+.lxStatLabel {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.lxStatValue {
+  font-family: var(--font-display);
+  font-size: var(--fs-h2);
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: var(--tracking-tight);
+  font-variant-numeric: tabular-nums;
+}
+
+.lxStatNote {
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  line-height: var(--lh-body);
+}
+
+/* ---------------------------------------------------------------------
+   Contato
+   --------------------------------------------------------------------- */
+
+.lxContactGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-5);
+}
+
+.lxContactCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-7);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+}
+
+.lxContactKicker {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+  color: var(--green-deep);
+}
+
+.lxContactTitle {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  line-height: var(--lh-tight);
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+  letter-spacing: var(--tracking-tight);
+}
+
+.lxContactDetail {
+  font-size: var(--fs-base);
+  color: var(--ink-soft);
+  margin: 0;
+  line-height: var(--lh-body);
+}
+
+.lxContactDetail strong {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: var(--fs-sm);
+  color: var(--ink);
+}
+
+/* ---------------------------------------------------------------------
+   Footer with secondary doors
+   --------------------------------------------------------------------- */
+
+.lxFooter {
+  margin-top: auto;
+  padding: clamp(var(--sp-8), 6vw, var(--sp-9)) clamp(var(--sp-5), 5vw, var(--sp-9));
+  border-top: 1px solid var(--line);
+  background: var(--paper-cool);
+}
+
+.lxFooterTop {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: var(--sp-9);
+  align-items: start;
+  padding-bottom: var(--sp-7);
+  border-bottom: 1px solid var(--line);
+}
+
+.lxFooterIntro h3 {
+  font-family: var(--font-display);
+  font-size: var(--fs-h3);
+  margin: 0 0 var(--sp-3);
+  color: var(--ink);
+  letter-spacing: var(--tracking-tight);
+  font-weight: 600;
+}
+
+.lxFooterIntro p {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--fs-base);
+  line-height: var(--lh-body);
+  max-width: 50ch;
+}
+
+.lxFooterDoors {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.lxFooterDoorLabel {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: var(--sp-2);
+}
+
+.lxFooterDoor {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-4) var(--sp-5);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  text-decoration: none;
+  color: var(--ink);
+  transition:
+    border-color var(--t-fast) var(--ease-out),
+    background var(--t-fast) var(--ease-out);
+}
+
+.lxFooterDoor:hover,
+.lxFooterDoor:focus-visible {
+  border-color: var(--green-soft);
+  background: var(--soft);
+  outline: none;
+}
+
+.lxFooterDoorIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--green-tint);
+  color: var(--green-deep);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-md);
+  letter-spacing: var(--tracking-tight);
+}
+
+.lxFooterDoorIconAlt {
+  background: var(--gold-soft);
+  color: var(--gold-on);
+}
+
+.lxFooterDoorBody strong {
+  display: block;
+  font-size: var(--fs-base);
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+
+.lxFooterDoorBody span {
+  display: block;
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.lxFooterDoorArrow {
+  font-size: var(--fs-md);
+  color: var(--muted);
+}
+
+.lxFooterBottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sp-5);
+  padding-top: var(--sp-6);
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  flex-wrap: wrap;
+}
+
+.lxFooterBottom nav {
+  display: flex;
+  gap: var(--sp-5);
+  flex-wrap: wrap;
+}
+
+.lxFooterBottom a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition:
+    color var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out);
+}
+
+.lxFooterBottom a:hover,
+.lxFooterBottom a:focus-visible {
+  color: var(--ink);
+  border-bottom-color: var(--line-strong);
+  outline: none;
+}
+
+/* ---------------------------------------------------------------------
+   Reduced motion
+   --------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .lxBtnPrimary,
+  .lxBtnGhost,
+  .lxDoorMini,
+  .lxFooterDoor,
+  .lxNavPrimary a,
+  .lxStakeholderLink,
+  .lxFooterBottom a {
+    transition: none;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Mobile (390 / 320) — single-column, no horizontal overflow
+   --------------------------------------------------------------------- */
+
+@media (max-width: 960px) {
+  .lxHero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-7);
+  }
+
+  .lxSectionHead {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-4);
+    align-items: start;
+  }
+
+  .lxValuesGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lxProgramsGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lxStepsGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lxStakeholderGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lxTransparencyRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .lxContactGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lxFooterTop {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-7);
+  }
+}
+
+@media (max-width: 540px) {
+  .lxNavPrimary {
+    display: none;
+  }
+
+  .lxTopbar {
+    padding: var(--sp-3) var(--sp-4);
+    gap: var(--sp-3);
+  }
+
+  .lxHero {
+    padding: var(--sp-8) var(--sp-4) var(--sp-7);
+    gap: var(--sp-6);
+  }
+
+  .lxSection {
+    padding: var(--sp-8) var(--sp-4);
+  }
+
+  .lxHeroAside,
+  .lxValueCard,
+  .lxProgramCard,
+  .lxStepCard,
+  .lxStakeholderCard,
+  .lxStat,
+  .lxContactCard {
+    padding: var(--sp-5);
+  }
+
+  .lxBtnPrimary,
+  .lxBtnGhost {
+    width: 100%;
+    padding: var(--sp-4);
+  }
+
+  .lxTransparencyRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lxFooter {
+    padding: var(--sp-7) var(--sp-4);
+  }
+
+  .lxFooterBottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-3);
+  }
+}
+
+@media (max-width: 360px) {
+  .lxHeroTitle {
+    font-size: 28px;
+  }
+
+  .lxStepCard::before {
+    top: var(--sp-4);
+    right: var(--sp-4);
+    font-size: var(--fs-lg);
+  }
+}

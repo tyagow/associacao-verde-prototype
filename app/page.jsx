@@ -1,81 +1,149 @@
 import Brand from "./components/Brand";
+import styles from "./components/landing/Landing.module.css";
 
 export default function HomePage() {
   return (
-    <>
-      <header className="topbar">
+    <div className={styles.lxRoot}>
+      <header className={styles.lxTopbar}>
         <Brand />
-        <nav aria-label="Entradas seguras">
-          <a className="ghost" href="/paciente">
-            Paciente
-          </a>
-          <a className="ghost" href="/equipe">
-            Equipe
-          </a>
+        <nav className={styles.lxNavPrimary} aria-label="Navegacao institucional">
+          <a href="#quem-somos">Quem somos</a>
+          <a href="#programas">Programas</a>
+          <a href="#como-acessar">Como acessar</a>
+          <a href="#transparencia">Transparencia</a>
+          <a href="#contato">Contato</a>
         </nav>
+        <div className={styles.lxNavSecondary} aria-label="Acessos rapidos">
+          <a className={styles.lxDoorMini} href="/paciente">
+            Sou paciente
+          </a>
+          <a className={`${styles.lxDoorMini} ${styles.lxDoorMiniSolid}`} href="#contato">
+            Quero acolhimento
+          </a>
+        </div>
       </header>
 
-      <main className="home-entry">
-        <section className="home-hero home-console" aria-labelledby="home-title">
-          <div className="home-console-copy">
-            <p className="kicker">Sistema privado da associacao</p>
-            <h1 id="home-title">Apoiar Brasil Operacao Privada</h1>
-            <p>
-              Acesso controlado para pacientes autorizados e equipe interna: elegibilidade, receita,
-              estoque, Pix, pedidos, envio, suporte e auditoria no servidor.
+      <main>
+        <section className={styles.lxHero} aria-labelledby="lx-hero-title">
+          <div className={styles.lxHeroCopy}>
+            <span className={styles.lxOverline}>Associacao sem fins lucrativos</span>
+            <h1 id="lx-hero-title" className={styles.lxHeroTitle}>
+              Cannabis medicinal com <em>acolhimento</em> e ciencia, lado a lado de quem precisa.
+            </h1>
+            <p className={styles.lxHeroLead}>
+              Acompanhamos pacientes, familias e profissionais de saude no acesso ao tratamento
+              autorizado, com plano de cuidado, atendimento humano e acompanhamento ao longo de toda
+              a jornada.
             </p>
+            <div className={styles.lxHeroActions}>
+              <a className={styles.lxBtnPrimary} href="#como-acessar">
+                Quero ser acolhido
+              </a>
+              <a className={styles.lxBtnGhost} href="#programas">
+                Conhecer os programas
+              </a>
+            </div>
           </div>
 
-          <div className="home-entry-actions" aria-label="Entradas principais">
-            <a className="home-entry-action patient" href="/paciente">
-              <span>Paciente</span>
-              <strong>Entrar no portal autorizado</strong>
-              <p>Ver elegibilidade, pedido atual, catalogo privado e Pix.</p>
-            </a>
-            <a className="home-entry-action team" href="/equipe">
-              <span>Equipe</span>
-              <strong>Abrir comando operacional</strong>
-              <p>Gerenciar pacientes, estoque, pedidos, fulfillment e readiness.</p>
-            </a>
-          </div>
-
-          <aside className="home-console-status" aria-label="Controles do sistema">
-            <div>
-              <span>Autenticacao</span>
-              <strong>Sessoes assinadas</strong>
-            </div>
-            <div>
-              <span>Catalogo</span>
-              <strong>Fechado por elegibilidade</strong>
-            </div>
-            <div>
-              <span>Pix</span>
-              <strong>Reserva antes da baixa</strong>
-            </div>
-            <div>
-              <span>Auditoria</span>
-              <strong>Operacoes rastreadas</strong>
-            </div>
+          <aside className={styles.lxHeroAside} aria-label="Compromisso da associacao">
+            <h2 className={styles.lxHeroAsideTitle}>O que nos move</h2>
+            <ul className={styles.lxValueList}>
+              <li>
+                <span className={styles.lxValueDot} aria-hidden="true" />
+                <div>
+                  <span className={styles.lxValueLabel}>Acolhimento</span>
+                  <span className={styles.lxValueText}>
+                    Cada paciente e ouvido por uma pessoa real, antes de qualquer documento ou
+                    processo.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className={styles.lxValueDot} aria-hidden="true" />
+                <div>
+                  <span className={styles.lxValueLabel}>Ciencia</span>
+                  <span className={styles.lxValueText}>
+                    Trabalhamos com prescricao medica, evidencia clinica e medicamentos com
+                    qualidade rastreavel.
+                  </span>
+                </div>
+              </li>
+              <li>
+                <span className={styles.lxValueDot} aria-hidden="true" />
+                <div>
+                  <span className={styles.lxValueLabel}>Acesso</span>
+                  <span className={styles.lxValueText}>
+                    Tornamos o tratamento mais proximo, simples e sustentavel para quem ja tem
+                    indicacao terapeutica.
+                  </span>
+                </div>
+              </li>
+            </ul>
           </aside>
         </section>
 
-        <section
-          className="home-system-strip home-proof-strip"
-          aria-label="Capacidades do sistema privado"
-        >
-          {[
-            ["Paciente", "Cadastro ativo, convite, receita e carteirinha antes do catalogo."],
-            ["Equipe", "Rotas internas exigem sessao de equipe antes de renderizar."],
-            ["Estoque", "Reserva no checkout; baixa definitiva so no Pix confirmado."],
-            ["Readiness", "Provider, dominio, cookie, backup e deploy seguem gates."],
-          ].map(([label, text]) => (
-            <article key={label}>
-              <span>{label}</span>
-              <p>{text}</p>
+        <section id="quem-somos" className={styles.lxSection} aria-labelledby="lx-quem-somos-title">
+          <header className={styles.lxSectionHead}>
+            <div>
+              <p className={styles.lxSectionEyebrow}>Quem somos</p>
+              <h2 id="lx-quem-somos-title" className={styles.lxSectionTitle}>
+                Uma associacao construida ao redor das pessoas que cuida.
+              </h2>
+            </div>
+            <p className={styles.lxSectionLead}>
+              Somos uma associacao de pacientes que organiza, em conjunto com medicos, equipe
+              tecnica e familias, o acesso seguro a cannabis medicinal no Brasil. Nosso compromisso
+              e tratar cada caso com tempo, escuta e responsabilidade clinica, do primeiro contato a
+              continuidade do tratamento.
+            </p>
+          </header>
+
+          <div className={styles.lxValuesGrid}>
+            <article className={styles.lxValueCard}>
+              <span className={styles.lxValueCardKicker}>Missao</span>
+              <h3 className={styles.lxValueCardTitle}>
+                Cuidar de quem precisa de cannabis medicinal
+              </h3>
+              <p className={styles.lxValueCardText}>
+                Existimos para que pacientes com indicacao medica tenham acolhimento, acompanhamento
+                e acesso continuado, sem burocratizar o que ja e dificil para quem esta em
+                tratamento.
+              </p>
             </article>
-          ))}
+
+            <article className={styles.lxValueCard}>
+              <span className={styles.lxValueCardKicker}>Visao</span>
+              <h3 className={styles.lxValueCardTitle}>
+                Tratamento como direito, nao como privilegio
+              </h3>
+              <p className={styles.lxValueCardText}>
+                Acreditamos que ciencia e cuidado humano podem caminhar juntos. Trabalhamos para que
+                mais familias encontrem informacao clara, profissionais preparados e medicamento de
+                qualidade.
+              </p>
+            </article>
+
+            <article className={styles.lxValueCard}>
+              <span className={styles.lxValueCardKicker}>Valores</span>
+              <h3 className={styles.lxValueCardTitle}>Etica clinica, transparencia e respeito</h3>
+              <p className={styles.lxValueCardText}>
+                Todo acolhimento comeca pela escuta. Toda decisao terapeutica e do medico. Toda
+                nossa operacao e prestada de contas com clareza para associados e parceiros.
+              </p>
+            </article>
+          </div>
         </section>
       </main>
-    </>
+
+      <footer className={styles.lxFooter} id="contato">
+        <div className={styles.lxFooterBottom}>
+          <span>(c) Apoiar Brasil Associacao Verde</span>
+          <nav aria-label="Links institucionais">
+            <a href="#quem-somos">Quem somos</a>
+            <a href="mailto:contato@apoiarbrasil.org">contato@apoiarbrasil.org</a>
+          </nav>
+        </div>
+      </footer>
+    </div>
   );
 }
