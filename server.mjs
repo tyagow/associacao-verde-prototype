@@ -92,6 +92,7 @@ const appRoutes = new Set([
   "/api/team/readiness",
   "/api/team/readiness/provider-approval",
   "/api/team/readiness/backup-schedule",
+  "/api/team/prescription-documents",
   // Phase 7 bridge: support workbench Route Handlers proxy back into
   // server.mjs's raw system calls (/api/team/support-replies/_raw,
   // /api/team/support-thread/_raw) which are NOT allow-listed and stay
@@ -129,7 +130,17 @@ const server = createServer(async (request, response) => {
     if (url.pathname.startsWith("/public/")) {
       return serveFile(response, join(publicDir, url.pathname.replace("/public/", "")));
     }
-    if (url.pathname.startsWith("/_next/") || appRoutes.has(url.pathname)) {
+    // Dynamic prescription-document download lives at
+    // app/api/team/prescription-documents/[id]/download/route.js — match
+    // it explicitly so Next handles the [id] segment.
+    const prescriptionDownloadMatch = /^\/api\/team\/prescription-documents\/[^/]+\/download$/.test(
+      url.pathname,
+    );
+    if (
+      url.pathname.startsWith("/_next/") ||
+      appRoutes.has(url.pathname) ||
+      prescriptionDownloadMatch
+    ) {
       setSecurityHeaders(response);
       if (protectedAppRoutes.has(url.pathname)) {
         const session = system.getSession(readCookie(request, "av_session"));
@@ -138,28 +149,6 @@ const server = createServer(async (request, response) => {
       return nextHandler(request, response);
     }
 
-    if (url.pathname === "/api/team/prescription-documents" && request.method === "POST") {
-      assertSameOrigin(request);
-      const payload = await body(request);
-      return json(
-        response,
-        201,
-        system.registerPrescriptionDocument(
-          readCookie(request, "av_session"),
-          await storePrescriptionPayload(payload),
-        ),
-      );
-    }
-    const prescriptionDownloadMatch = url.pathname.match(
-      /^\/api\/team\/prescription-documents\/([^/]+)\/download$/,
-    );
-    if (prescriptionDownloadMatch && request.method === "GET") {
-      const documentRecord = system.getPrescriptionDocumentForDownload(
-        readCookie(request, "av_session"),
-        prescriptionDownloadMatch[1],
-      );
-      return servePrivateDocument(response, documentRecord);
-    }
     return json(response, 404, { error: "Rota nao encontrada." });
   } catch (error) {
     return json(response, error.status || 500, { error: error.message || "Erro interno." });
