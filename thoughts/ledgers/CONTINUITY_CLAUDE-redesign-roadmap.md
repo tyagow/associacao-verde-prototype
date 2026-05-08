@@ -166,7 +166,7 @@ commits, each gated by `npm run check && npm test` (38/38 green).
 
 ---
 
-### Phase 0 — Design system foundation [→]
+### Phase 0 — Design system foundation ✓
 
 **Why first.** Every subsequent phase pulls tokens from one file. Locking
 the system here means visual consistency across phases without drift.
