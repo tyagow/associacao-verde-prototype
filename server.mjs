@@ -86,6 +86,7 @@ const appRoutes = new Set([
   // so they read/mutate the SAME ProductionSystem instance server.mjs sees.
   "/api/session",
   "/api/logout",
+  "/api/patient/login",
   // Phase 7 bridge: support workbench Route Handlers proxy back into
   // server.mjs's raw system calls (/api/team/support-replies/_raw,
   // /api/team/support-thread/_raw) which are NOT allow-listed and stay
@@ -133,22 +134,6 @@ const server = createServer(async (request, response) => {
       return nextHandler(request, response);
     }
 
-    if (url.pathname === "/api/patient/login" && request.method === "POST") {
-      assertSameOrigin(request);
-      const payload = await body(request);
-      const key = loginAttemptKey(request, "patient", payload.memberCode);
-      assertLoginAllowed(key);
-      let result;
-      try {
-        result = system.loginPatient(payload);
-        clearLoginAttempts(key);
-      } catch (error) {
-        recordLoginFailure(key);
-        throw error;
-      }
-      setSessionCookie(response, result.sessionId);
-      return json(response, 200, { patient: result.patient });
-    }
     if (url.pathname === "/api/patient/access-recovery" && request.method === "POST") {
       assertSameOrigin(request);
       return json(response, 201, {
