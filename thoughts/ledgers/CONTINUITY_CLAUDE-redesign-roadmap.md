@@ -302,7 +302,52 @@ finds the current `[→]`, completes its acceptance criteria, then advances.
         WIP changes to src/sqlite-store.ts, not from Phase 8).
   - [x] Phase 9 — Admin readiness redesign
         (scaffold def05b8 · redesign 6ee2fe4 · screenshots + ledger close pending commit)
-  - [ ] Phase 10 — Audit timeline + Team users
+  - [x] Phase 10 — Audit timeline + Team users
+        (e7edb9f fix(admin): preserve gate summary captions for E2E
+         reachability — restored "Webhook Pix assinado validado" and the
+         seven other per-gate evidence summaries on initial paint by
+         adding an optional `caption` prop to GateCard, sourced from
+         `buildDetailForGate(gate, readiness).summary`. Phase 9
+         redesign had moved that copy behind an expand interaction. ·
+         98376d7 refactor(admin): scaffold AuditTimeline, AuditEventModal,
+         TeamUsersTable, UserRow plus the pure groupAuditEvents.js helper
+         and four-test grouping suite (54 → 58). · 64b392b feat(admin):
+         grouped audit timeline with filter chips + payload modal. ·
+         681ff10 feat(admin): single team users table with inline
+         reactivation. · this commit p10 screenshots + ledger close.)
+        admin/page.jsx changes:
+          - Audit section: replaced the audit-ledger card stack with
+            `<AuditTimeline>` + `<AuditEventModal>`. Existing
+            data-filter='adminQuery' input and data-filter='adminStatus'
+            SELECT preserved verbatim (the new chip rail mirrors the
+            SELECT, both write `filters.adminStatus`). Helper
+            `buildAuditFilterChips` computes per-action counts so the
+            chip rail shows current bucket sizes.
+          - Team users section: replaced the inline form + grid + per-row
+            <details> drawer with `<TeamUsersTable>`. Form keeps
+            id='team-user-form' and same input names — backend contract
+            unchanged. UserRow exposes Editar / Senha (open inline
+            password reset drawer), Desativar (immediate, calls existing
+            handler that revokes sessions) and Reativar (opens inline
+            confirmation drawer before calling handler).
+          - Readiness section (Phase 9 owner) untouched. Brand/topbar/
+            side-nav untouched.
+        Grouping rule: `groupAuditEvents` (pure helper in
+        app/admin/components/groupAuditEvents.js) buckets events at local
+        midnight boundaries — today (≥ midnight today), yesterday
+        (between midnight today and midnight yesterday), earlier (older
+        or unparseable timestamps). Each bucket sorted desc. Extracted
+        to .js so node:test (--import tsx) can import without loading
+        the .jsx component.
+        E2E preserved: every literal asserted on /admin still renders on
+        initial paint. Restored regression: "Webhook Pix assinado
+        validado" + the other seven per-gate summary captions. The
+        audit toolbar SELECT, #admin-status, and #admin-surface remain.
+        Tests: 54 → 58 (+4 in test/audit-timeline-grouping.test.mjs:
+        bucket boundaries, desc sort, missing/garbage timestamps, empty
+        input). next build clean. Screenshots:
+        artifacts/visual-e2e/redesign/p10-admin-{audit,users}-desktop.png
+        via scripts/p10-screenshots.py.
   - [ ] Phase 11 — Public home redesign
   - [ ] Phase 12 — Mobile polish sweep
   - [ ] Phase 13 — Handoff, README, runbook, delivery plan
