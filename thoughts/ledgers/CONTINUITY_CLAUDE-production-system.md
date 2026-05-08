@@ -1,0 +1,372 @@
+# Session: production-system
+Updated: 2026-05-08T07:57:08Z
+
+## Goal
+Build the Apoiar/Associacao Verde cannabis association system as a full production application.
+
+The durable goal is the complete authenticated production application for
+patient access, team operations, Pix payments, inventory, fulfillment,
+compliance, and deployment.
+
+Done means:
+- Patients can access a private purchase surface only when authorized.
+- The association team can manage products, inventory, orders, patients, prescriptions, and fulfillment.
+- A Brazilian payment gate is integrated, with Pix as the first payment method.
+- Stock is reserved when an order is started and permanently decremented only after payment confirmation.
+- The system has a deployable production architecture, tests for payment/stock/order flows, and a clear migration path from archived reference data into the production application.
+
+## Constraints
+- Application context: an assistant-like daily operations system for a cannabis association; code/design must align with that operating model.
+- This is the full production application track: authenticated, backend-backed, multi-route, production-owned, and measured against patient, team, payment, inventory, compliance, deployment, and QA gates.
+- Missing production evidence means the application is incomplete, not that the target scope is smaller.
+- Production access control is mandatory. GitHub Pages/noindex/code gate was only for a browser-only reference and is not acceptable for patients.
+- Patient purchase access must require association eligibility, active patient status, and valid prescription/card state.
+- Payment and inventory must be server-side. Do not trust browser `localStorage` for stock or order state.
+- Product/payment compliance is a business/legal risk. Confirm payment provider acceptance before implementation.
+- Keep Portuguese/Brazilian UX language and Apoiar reference tone: safe, legal, association/patient framing, green/white/yellow palette.
+- Avoid building a public ecommerce catalog. The purchase surface should be invite/auth gated and not indexed.
+- The production app needs multiple production application surfaces/routes for patient ordering, team command center, patient records, stock/cultivation, orders/payments, fulfillment, compliance/admin, and support.
+- Do not use the archived browser-only UI as the product model. It can only inform data import or historical context.
+
+## Key Decisions
+- Archived browser-only files are reference data only. The active product is the full backend-backed production application with persistence, auth, payments, and webhooks.
+- Payment gate direction: start with Pix using a Brazilian-capable provider. Candidates from official docs:
+  - Mercado Pago Checkout/API supports Pix with QR code/payment link for Brazil.
+  - Asaas supports Pix billing, dynamic/static QR codes, billing notifications, webhooks, boleto/card options, and is Brazil-focused.
+  - Pagar.me supports Pix transactions in Brazil and can be evaluated as an alternative.
+- Inventory decision: do not permanently decrement stock on order draft. Create a reservation at checkout, expire unpaid reservations, and finalize stock decrement on confirmed payment webhook.
+- The production system should prioritize Pix first, then boleto/card only after compliance/provider account validation.
+- Archived reference files include a demo access code, seeded products/orders, stock ledger, mobile layout, and stock decrement proof, but they are not part of the production product and have no production security.
+- UI direction correction: professional routes are `/`, `/paciente`, `/equipe`, `/equipe/pacientes`, `/equipe/estoque`, `/equipe/pedidos`, `/equipe/fulfillment`, `/equipe/suporte`, and `/admin`. No legacy alias is the product URL.
+- Framework direction correction: frontend route ownership moved to Next.js while the existing authenticated Node API remains in the same process during migration.
+
+## State
+- Done: Transcribed latest WhatsApp audios from Downloads and extracted workflows.
+- Done: Created the archived browser operations reference in `index.html`, `styles.css`, `app.js` before the current Next.js production rebuild superseded it.
+- Done: Created archived sales/order reference in `archived-ordering-reference.html`, `archived-ordering-reference.css`, `archived-ordering-reference.js`.
+- Done: Published GitHub Pages repo under `tyagow/associacao-verde-reference`.
+- Done: Archived ordering reference URL verified at `https://tyagow.github.io/associacao-verde-reference/archived-ordering-reference.html`.
+- Done: Fixed access gate visibility/cache issue.
+- Done: Strengthened archived reference with 6 fake products, 3 fake orders, stock dashboard, stock movement ledger, stock impact preview, data-version reset, and mobile-friendly cart.
+- Done: Live mobile verification after commit `ffe2351`: stale demo data resets, 6 products visible, 3 orders visible, adding stock works, checkout subtracts stock, ledger records movements, no horizontal overflow.
+- Done: Initial backend-backed private system shell, SQLite persistence, patient/team auth, Pix reservation/payment flow, stock decrement after webhook, Docker/runbook, and archived-data importer started.
+- Done: Production delivery plan and UX IA created, but the UI plan must be corrected away from a single-page shell into multiple production surfaces.
+- Done: Professional routes added: `/`, `/paciente`, `/equipe`, `/equipe/pacientes`, `/equipe/estoque`, `/equipe/pedidos`, `/equipe/fulfillment`, `/equipe/suporte`, and `/admin`.
+- Done: Smoke now verifies the professional route set without legacy route aliases.
+- Done: Team role permission matrix added for admin, operations, stock, fulfillment, and support with operation-specific server checks and tests.
+- Done: Admin route can create team users via `POST /api/team/users`; smoke verifies a restricted stock user cannot create patients.
+- Done: Reservation expiry worker runs in `server.mjs`; expiry marks reservation, order, and payment expired, releases available stock, and writes `reservation_expired`.
+- Done: Prescription documents can be uploaded to private storage outside `public/`, downloaded only by permitted team users, sha256-verified on download, and audited via `prescription_document_accessed`.
+- Done: Login throttling added in `server.mjs`; smoke verifies repeated bad team login locks with `429` while normal login still works.
+- Done: Admin surface renders recent audit events; test proves patient access, prescription registration/access, inventory, checkout/payment, fulfillment, shipment, and admin actions are audited with actor/timestamp.
+- Done: Payment reconciliation added for `/equipe/pedidos`: team can ask the provider for status, paid statuses use the same idempotent Pix confirmation path, overdue/failed statuses release pending reservations without stock decrement, and late paid-after-expiry conflicts are recorded as reconciliation exceptions.
+- Done: Active product docs now frame the work as the full production application track measured by patient, team, payment, inventory, compliance, deployment, and QA gates.
+- Done: Apoiar Brasil reference captured in `artifacts/reference/apoiarbrasil-home-desktop.png`; use its dark green/white/yellow, acolhimento tone, serif section headings, cards, and trust-first cannabis medicinal framing as the production UX reference.
+- Done: First UX/login rescue slice: Apoiar-style branded entry hero, patient/team entry cards, professional auth form framing, session-aware hiding of login forms after successful login, and fixed async submit bug where valid server sessions did not refresh the UI.
+- Done: Mobile navigation tightened so top nav and side nav become horizontal chip rows instead of full-width button walls before the patient content.
+- Done: Patient portal now has eligibility/status cards for associated patient, prescription/card validity, latest order state, and a safer pre-login explanation before catalog access.
+- Done: Team command center now has daily queue cards and action list for pending Pix, fulfillment, low stock, blocked patients, expiring validity, and active reservations before secondary operational lists.
+- Done: Naming cleanup completed: implementation files now use production/private-system naming (`src/production-system.mjs`, `public/app.*`, `scripts/smoke-production-app.mjs`, `test/production-system.test.mjs`), class is `ProductionSystem`, package is `associacao-verde-production-system`, and the legacy alias route now returns 404.
+- Done: Archived sales/order filenames and storage key renamed to `archived-ordering-reference.*` / `apoio-reserva-archive`; repository text/file scan for old naming and temporary-scope language returned no matches.
+- Done: Visual evidence generated at `artifacts/visual-e2e/home-entry-desktop.png`, `artifacts/visual-e2e/patient-login-mobile.png`, `artifacts/visual-e2e/patient-authenticated-mobile.png`, and `artifacts/visual-e2e/team-authenticated-desktop.png`.
+- Done: Patient cart/Pix flow polished: cart summary appears before Pix, hides after order creation, Pix panel shows order id, amount, payment status, expiry, and copy/paste code; updated screenshot is `artifacts/visual-e2e/patient-cart-pix-mobile.png`.
+- Done: Team route UX slice added route-level filters, summaries, and worklists for patients, stock/cultivation, orders/Pix, fulfillment, support, and admin/audit instead of form-only route screens.
+- Done: Browser evidence generated for current team routes: `team-command-desktop.png`, `team-patients-route-desktop.png`, `team-stock-route-desktop.png`, `team-orders-route-desktop.png`, `team-fulfillment-route-desktop.png`, and `team-admin-route-desktop.png`.
+- Done: Verification passed after route UX work: `npm run check`, `npm test` (25/25), `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, and mobile/desktop no-horizontal-overflow assertions for all public app routes.
+- Done: Added `/equipe/suporte` support workspace with navigation, server route, smoke route coverage, filters, and support cards combining patient eligibility, prescription/card validity, latest order, payment, shipment, document count, and order history count. Screenshot: `artifacts/visual-e2e/team-support-route-desktop.png`.
+- Done: Restarted fresh dev server on `http://127.0.0.1:4184` after server route change; smoke passed on the fresh process.
+- Done: Re-ran mobile/desktop no-horizontal-overflow checks including `/equipe/suporte`; result passed.
+- Done: Converted ad hoc browser checks into checked-in repeatable E2E: `scripts/e2e-production-app.py` exposed as `npm run e2e`. It starts an isolated temporary server/database when `E2E_BASE_URL` is absent.
+- Done: `npm run e2e` passed and covers patient Pix happy path, blocked-patient denial, team route filters, Pix confirmation moving into fulfillment, and mobile/desktop overflow across `/paciente`, `/equipe`, `/equipe/pacientes`, `/equipe/estoque`, `/equipe/pedidos`, `/equipe/fulfillment`, `/equipe/suporte`, and `/admin`.
+- Done: E2E artifacts generated: `e2e-patient-pix-mobile.png`, `e2e-patient-blocked-mobile.png`, and `e2e-team-workspaces-desktop.png`.
+- Done: Full verification after E2E work passed: `npm run check`, `npm test` (25/25), `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, `npm run e2e`, and naming/file scan returned no old temporary-scope matches.
+- Done: Support dashboard context now records patient `lastLoginAt`, exposes active patient session expiry, and shows latest-order reservation status/expiry in `/equipe/suporte`.
+- Done: Added unit coverage `team dashboard exposes patient support login and reservation context`; test suite now passes 26/26.
+- Done: Updated `npm run e2e` to assert support login/reservation signals render on the support route.
+- Done: Verification after support context work passed: `npm run check`, `npm test` (26/26), `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, `npm run e2e`, and naming/file scan returned no old temporary-scope matches.
+- Done: Added `GET /api/team/readiness` with non-secret environment gates for Pix provider, database, private storage, session signing, webhook secret, provider acceptance, and backup/restore.
+- Done: `/admin` now renders readiness cards from the running server instead of static placeholder gate text; long readiness details wrap correctly on mobile.
+- Done: Smoke now includes `admin readiness reports environment gates`; E2E asserts `/admin` renders Pix provider and backup/restore readiness.
+- Done: Restarted fresh dev server on `http://127.0.0.1:4184`; smoke passed after the readiness route was live.
+- Done: Verification after admin readiness work passed: `npm run check`, `npm test` (26/26), `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, `npm run e2e`, and naming/file scan returned no old temporary-scope matches.
+- Done: Added `.github/workflows/production-ci.yml` to run production verification in GitHub Actions: Node 22, Python 3.11, Python Playwright plus Chromium, `npm run check`, `npm test`, API smoke, `npm run e2e`, and browser artifact upload.
+- Done: README verification section now includes `npm run e2e` and points to the CI workflow.
+- Done: Cleaned `design.md` wording so the repo-wide temporary-scope/naming scan stays clean.
+- Done: Local workflow shape check passed and local verification passed after CI wiring: `npm run check`, `npm test` (26/26), `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, and `npm run e2e`.
+- Done: Added prescription document upload to checked-in browser E2E. It uploads `receita-e2e.pdf` through `/equipe/pacientes`, verifies the private document appears with hash metadata, verifies support context reflects registered documents, and writes `artifacts/visual-e2e/e2e-document-upload-desktop.png`.
+- Done: Verification after document-upload E2E passed: `npm run check`, `npm test` (26/26), `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, `npm run e2e`, and naming/file scan returned no old temporary-scope matches.
+- Done: Migrated the product route layer to Next.js. `server.mjs` now prepares Next and delegates `/`, `/paciente`, `/equipe`, `/equipe/pacientes`, `/equipe/estoque`, `/equipe/pedidos`, `/equipe/fulfillment`, `/equipe/suporte`, `/admin`, and `/_next/*` to Next while keeping authenticated API routes in the same Node process.
+- Done: Added concrete Next route files under `app/` for every professional product URL.
+- Done: `npm run check` now includes `next build`; build output confirms static Next pages for `/`, `/paciente`, `/equipe`, `/equipe/pacientes`, `/equipe/estoque`, `/equipe/pedidos`, `/equipe/fulfillment`, `/equipe/suporte`, and `/admin`.
+- Done: Added React/Next dependencies and an npm override for patched `postcss`; `npm audit --omit=dev` now reports zero vulnerabilities.
+- Done: Visual system pass started from `design.md` and Apoiar Brasil reference: Outfit/Playfair fonts wired through the Next layout, green/gold tokens aligned, decorative background treatment reduced, and operational route content visually reordered so filters/worklists render before management forms on team routes.
+- Done: Verification after Next migration passed on `http://127.0.0.1:4184`: `npm run check`, `npm test` (26/26), `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, and `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`.
+- Done: Next-owned `/` page added with Apoiar-style hero, route cards, and professional app entry instead of shared-shell rendering.
+- Done: React-owned `/paciente` route added with `app/paciente/PatientPortal.jsx`. It keeps `#patient-login`, `#patient-status`, `#catalog`, `#cart-summary`, `#checkout`, and `#patient-orders` for browser coverage while presenting a proper patient profile, eligibility, catalog, cart, Pix, and order workflow.
+- Done: React-owned `/equipe` route added with `app/equipe/TeamCommand.jsx`. It keeps `#team-login`, `#team-status`, `#team-dashboard`, and visible `Fila de acao agora` while presenting team login/profile and daily queues for Pix, fulfillment, low stock, blocked patients, expiring validity, and active reservations.
+- Done: Removed the shared shell files `app/AppDocument.jsx`, `app/private-shell.html`, and the old shared browser product module `public/app.js`. Active product URLs are owned by Next route files under `app/`; route-scoped browser modules remain only where needed to preserve live interactions while the custom Node API server hosts Next.
+- Done: Added route-owned live behavior for the Next stock and orders routes so `/equipe/estoque` renders products/cultivation from the authenticated backend session and `/equipe/pedidos` renders Pix/payment actions under the custom Node-hosted Next server.
+- Done: Fixed mobile overflow in the admin/dashboard stack by constraining grid children and wrapping mobile navigation instead of allowing route cards, audit ids, and team links to widen the document.
+- Done: Old server process was stopped and the active development server was restarted in tmux on `http://127.0.0.1:4184`; no listeners remain on the old 4173/4174/4199 ports.
+- Done: Verification after the Next route cleanup passed: `npm run check`, `npm test` (26/26), `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`, and `npm audit --omit=dev`.
+- Done: Verification after React-owned `/`, `/paciente`, and `/equipe` work passed: `npm run check`, `npm test` (26/26), `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, and `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`.
+- Done: Security/source gate slice completed: public `/` and unauthenticated `/equipe` no longer expose protected team/admin route links in initial HTML, protected detail routes plus `/admin` redirect before Next renders without a team session, and unauthenticated `/admin` returns no-store/security headers.
+- Done: Removed stale unused inline `TEAM_COMMAND_SCRIPT` from `app/equipe/TeamCommand.jsx`; active team behavior is owned by `app/equipe/TeamCommand.jsx` and internal links render only after team session validation.
+- Done: Patient UX slice moved current action/Pix guidance before the catalog, translated payment chips away from raw provider/status values, and made authorized product rows denser with stock chips in `app/paciente/PatientPortal.jsx`.
+- Done: Fresh visual evidence captured for secure entry and patient current-action work: `home-secure-entry-desktop.png`, `team-login-secure-entry-desktop.png`, `patient-secure-entry-mobile.png`, and `patient-current-action-pix-mobile.png`.
+- Done: Verification after security/source gate and patient UX work passed: `npm run check`, `npm test` (26/26), `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`, source privacy curl checks for `/` and `/equipe`, unauthenticated `/admin` redirect/header check, and `npm audit --omit=dev`.
+- Done: Ledger constraint now explicitly states the goal is the full authenticated, backend-backed, multi-route production application track.
+- Done: Patient authorized catalog now has search plus category chips for all/oils/flowers/edibles in `app/paciente/PatientPortal.jsx`; E2E verifies search text, flower filtering, active chip state, and checkout after returning to all products.
+- Done: Visual evidence for the cleaned patient catalog filter state captured at `artifacts/visual-e2e/patient-catalog-filter-active-mobile.png`.
+- Done: Verification after catalog filter work passed: `npm run check`, `npm test` (26/26), `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`, and `npm audit --omit=dev`.
+- Done: Added `scripts/reset-dev-data.mjs` and `npm run dev:reset` to clear configured local SQLite/document storage while refusing `NODE_ENV=production`; documented in `README.md` and `docs/production-runbook.md`.
+- Done: Reset utility verified against a temporary SQLite/doc path, and `npm run check` now syntax-checks the reset script.
+- Done: Team command center redesigned into a denser management dashboard with KPI strip, SLA/expiry priority board, references, and action rows in `app/equipe/TeamCommand.jsx`.
+- Done: E2E now verifies the hydrated command center contains the SLA board, `Separacao/envio`, and `Validades`; smoke remains focused on raw server/API/protected-route behavior because `/equipe` renders authenticated queues after browser session hydration.
+- Done: Fixed responsive layout regression from the command redesign: `.app-layout` is one-column by default and only reserves a side-nav column when a side-nav exists; mobile side-nav routes explicitly collapse to one column. E2E mobile/desktop overflow check passed.
+- Done: Visual evidence for the command dashboard captured at `artifacts/visual-e2e/team-command-ops-board-desktop.png` and `artifacts/visual-e2e/team-command-ops-board-mobile.png`.
+- Done: Verification after team command work passed: `npm run check`, `npm test` (26/26), `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`, and `npm audit --omit=dev`.
+- Done: Local dev server reset with `npm run dev:reset` and restarted clean on `http://127.0.0.1:4184`; old ports 4173/4174/4199 are not listening.
+- Done: Patient profile/status management improved in `/paciente`: authorized patients now see responsible contact, private session expiry/last login, and support handoff context; blocked patients get a persistent recovery panel with the denial reason and next steps instead of only a transient toast.
+- Done: Stable patient mount points added for `#access-issue` and `#patient-profile-details`; `app/paciente/PatientPortal.jsx` explicitly toggles visibility so browser behavior does not leave filled panels hidden.
+- Done: E2E now requires the patient profile details and blocked recovery panel to be visible, not just present in hidden DOM.
+- Done: Visual evidence captured at `artifacts/visual-e2e/patient-profile-status-mobile.png` and `artifacts/visual-e2e/patient-blocked-recovery-mobile.png`.
+- Done: Verification after patient profile/blocked-state work passed: `npm run check`, `npm test` (26/26), `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`, and `npm audit --omit=dev`.
+- Done: Added `npm run readiness:backup-drill`; it uses SQLite `VACUUM INTO` for a consistent backup, loads the backup through `SqliteStateStore`, checks core restored counts, and writes non-secret evidence to `artifacts/readiness/backup-restore-drill.json`.
+- Done: `/api/team/readiness` now reads backup/restore evidence dynamically and marks the `Backup/restore` gate ok only when the restore drill artifact is valid.
+- Done: `/admin` now renders a restore-drill evidence panel with backup file, timestamp, size, checksum prefix, and restored entity counts instead of only a pending text card.
+- Done: Smoke now requires backup/restore drill evidence; CI runs `npm run readiness:backup-drill` against the smoke SQLite database before `npm run smoke`; E2E asserts the admin restore-drill panel is present.
+- Done: Visual evidence captured at `artifacts/visual-e2e/admin-readiness-backup-drill-desktop.png`.
+- Done: Verification after admin backup/restore readiness work passed: `npm run check`, `npm test` (26/26), `DB_FILE=/tmp/associacao-verde-dev.sqlite npm run readiness:backup-drill`, `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`, direct admin screenshot assertion, and `npm audit --omit=dev`.
+- Done: Patient profile management deepened as backend-backed data, not copy-only UI. `src/production-system.mjs` now stores and exposes contact phone, email, city/UF, responsible-party phone, care plan, and internal support note; team create/update flows can maintain those fields; patient and team patient surfaces render them.
+- Done: Unit, smoke, and E2E coverage now require profile management data: `team can maintain patient profile management fields` verifies server persistence/eligibility; smoke confirms a created patient care plan/guardian returns through dashboard; E2E checks patient and team screens show `Plano de cuidado`.
+- Done: Visual evidence captured at `artifacts/visual-e2e/patient-profile-management-mobile.png` and `artifacts/visual-e2e/team-patient-profile-management-desktop.png`.
+- Done: Verification after patient profile management work passed: `npm run check`, `npm test` (27/27), `DB_FILE=/tmp/associacao-verde-dev.sqlite npm run readiness:backup-drill`, `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`, direct profile screenshots, and `npm audit --omit=dev`.
+- Done: Added backend-backed patient support requests. Patients can submit `/api/support-requests`; SQLite persists `support_tickets`; the team support route renders open requests with priority/status; permitted team users can move requests to `in_progress` or `resolved` through `/api/team/support-requests`.
+- Done: Unit, SQLite, smoke, and E2E coverage now require support requests: `patient can open tracked support request and team can resolve it`, SQLite reload persists the ticket, smoke confirms dashboard exposure, and E2E submits a patient request then verifies it on `/equipe/suporte`.
+- Done: Visual evidence captured at `artifacts/visual-e2e/patient-support-request-mobile.png` and `artifacts/visual-e2e/team-support-requests-desktop.png`.
+- Done: Verification after support request workflow passed: `npm run check`, `npm test` (28/28), `DB_FILE=/tmp/associacao-verde-dev.sqlite npm run readiness:backup-drill`, `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`, direct support screenshots, and `npm audit --omit=dev`.
+- Done: Added backend-backed privacy/LGPD consent. Patients can accept through `POST /api/patient/consent`; consent timestamp/version is stored on the patient profile, audited with `privacy_consent_accepted`, shown in `/paciente`, and visible to the team on `/equipe/pacientes`.
+- Done: Unit, smoke, and E2E now require privacy consent behavior: `patient can record privacy consent and team dashboard sees it`, smoke persists consent before checkout/support, and E2E accepts consent then verifies the team patient route shows privacy state.
+- Done: Visual evidence captured at `artifacts/visual-e2e/patient-privacy-consent-accepted-mobile.png` and `artifacts/visual-e2e/team-patient-privacy-consent-desktop.png`.
+- Done: Verification after privacy consent work passed: `npm run check`, `npm test` (29/29), `DB_FILE=/tmp/associacao-verde-dev.sqlite npm run readiness:backup-drill`, `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`, direct privacy screenshots, and `npm audit --omit=dev`.
+- Done: Added credential-verified access recovery for blocked/expired patients. `POST /api/patient/access-recovery` validates member code plus invite without granting a patient session/catalog access, creates a typed `access_recovery` support ticket, records the eligibility denial reason, and audits `patient_access_recovery_requested`.
+- Done: Blocked patient UI now includes a recovery form in the persistent access issue panel; `/equipe/suporte` labels those tickets as `Revisao de acesso` with the original denial reason.
+- Done: Unit, smoke, and E2E now require recovery behavior: blocked/expired recovery works without catalog access, invalid credentials are rejected, smoke verifies recovery does not create a catalog session, and E2E submits recovery then verifies the team support queue.
+- Done: Visual evidence captured at `artifacts/visual-e2e/patient-access-recovery-mobile.png` and `artifacts/visual-e2e/team-access-recovery-desktop.png`.
+- Done: Verification after access recovery work passed: `npm run check`, `npm test` (31/31), `DB_FILE=/tmp/associacao-verde-dev.sqlite npm run readiness:backup-drill`, `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`, direct recovery screenshots, and `npm audit --omit=dev`.
+- Done: Added dedicated team invite reset. `POST /api/team/patient-invite-reset` requires `patients:write`, updates the patient invite, records reset timestamp, returns the new invite one time, keeps the old invite hidden from dashboard DTOs, and audits `patient_invite_reset`.
+- Done: `/equipe/pacientes` now has a focused invite reset form with one-time result copy and patient cards show when the invite was last reset.
+- Done: Unit, smoke, and E2E now require invite reset behavior: old invite stops working, new invite works, smoke checks the reset path before patient checkout, and E2E verifies the team reset UI/result.
+- Done: Visual evidence captured at `artifacts/visual-e2e/team-invite-reset-desktop.png` and `artifacts/visual-e2e/team-invite-reset-result-desktop.png`.
+- Done: Verification after invite reset work passed: `npm run check`, `npm test` (32/32), `DB_FILE=/tmp/associacao-verde-dev.sqlite npm run readiness:backup-drill`, `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`, direct invite screenshots, and `npm audit --omit=dev`.
+- Done: Added `npm run readiness:webhook-drill`; it creates an isolated local patient/order, proves unsigned Pix webhooks return `401`, proves a signed Pix webhook confirms payment, and verifies stock decrements only after the signed webhook.
+- Done: `/api/team/readiness` now reads `artifacts/readiness/webhook-drill.json`; the `Webhook Pix` gate is ok only when the secret exists and the drill evidence is valid.
+- Done: `/admin` now renders a webhook-drill evidence panel beside backup/restore evidence, with unsigned/signed status, order/payment ids, final order status, stock proof, and timestamp.
+- Done: Smoke, E2E, CI, README, runbook, and production delivery plan now include signed webhook readiness proof.
+- Done: Visual evidence captured at `artifacts/visual-e2e/admin-webhook-drill-desktop.png`.
+- Done: Verification after webhook readiness work passed: `npm run check`, `npm test` (32/32), `DB_FILE=/tmp/associacao-verde-dev.sqlite npm run readiness:backup-drill`, `READINESS_BASE_URL=http://127.0.0.1:4184 npm run readiness:webhook-drill`, `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`, direct admin screenshot assertion, direct readiness API check, `npm audit --omit=dev`, final dev reset/restart, and old ports 4173/4174/4199 clear.
+- Done: Added provider approval evidence plumbing. `npm run readiness:provider-evidence` writes `artifacts/readiness/provider-approval.json` but refuses approved status unless provider, account, evidence, terms, and webhook-doc references are present; `/api/team/readiness` and `/admin` keep `Aceite do provider` pending until real business evidence exists.
+- Done: Added deployment readiness proof. `npm run readiness:deployment-check` verifies release URL health, protected `/admin` redirect, unauthenticated catalog denial, security headers, and optional log reference, then writes `artifacts/readiness/deployment-check.json`.
+- Done: `/admin` now renders provider approval and deployment evidence panels beside Pix webhook and backup/restore proof. Smoke, E2E, CI, README, runbook, and delivery plan were updated for these gates.
+- Done: Visual evidence captured at `artifacts/visual-e2e/admin-provider-deployment-readiness-desktop.png`.
+- Done: Verification after provider/deployment readiness work passed: `npm run check`, `npm test` (32/32), `DB_FILE=/tmp/associacao-verde-dev.sqlite npm run readiness:backup-drill`, `READINESS_BASE_URL=http://127.0.0.1:4184 npm run readiness:webhook-drill`, `PROVIDER_NAME=asaas PROVIDER_APPROVAL_STATUS=pending PROVIDER_ACCOUNT_STATUS=not-approved npm run readiness:provider-evidence`, `READINESS_BASE_URL=http://127.0.0.1:4184 LOG_EVIDENCE_REF=local-tmux-session-associacao-verde-dev npm run readiness:deployment-check`, `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`, direct admin screenshot assertion, direct readiness API check, `npm audit --omit=dev`, final dev reset/restart, and old ports 4173/4174/4199 clear.
+- Done: Admin UX order corrected so readiness evidence and audit filters render before the create-user workflow; user creation is now framed as restricted operational access after release/compliance context, not the first action on `/admin`.
+- Done: Visual evidence captured at `artifacts/visual-e2e/admin-readiness-before-user-form-desktop.png`; verification after the admin UX order change passed `npm run check`, `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`, and a direct browser assertion that readiness appears before the user form.
+- Done: Added clean verification isolation with `npm run verify:isolated`. It starts a temporary server, SQLite database, and private document directory, runs backup/webhook/provider/deployment readiness plus smoke and E2E, and removes the temporary data afterward so repeated production checks do not mutate the shared dev URL.
+- Done: GitHub Actions now uses `npm run verify:isolated` for the production smoke/browser gate instead of a fixed smoke database plus separate E2E process; README, runbook, and delivery plan document this as the preferred repeated verification path.
+- Done: Isolated verification exposed and fixed production-mode route issues: `server.mjs` now supports `NEXT_DEV=false` for production-mode local verification without colliding with the active Next dev server; Next client-owned routes no longer load retired browser modules (`/paciente`, `/equipe`, `/equipe/pacientes`, `/equipe/estoque`, `/equipe/pedidos`); the temporary `/equipe/fulfillment`, `/equipe/suporte`, and `/admin` module mounts were later replaced by React route clients.
+- Done: Fixed production-mode stock filtering crash by copying `event.currentTarget.value` before the React state updater in `app/equipe/estoque/StockRoute.jsx`.
+- Done: Updated E2E assertions to track current React/Next route text and status messages instead of retired browser-module headings/toasts.
+- Done: Verification after seed isolation and production-mode route cleanup passed: `npm run check`, `npm test` (32/32), `LOG_EVIDENCE_REF=local-isolated-verification npm run verify:isolated`, `npm audit --omit=dev`, final dev reset/restart on `http://127.0.0.1:4184`, readiness backup/webhook/provider/deployment artifacts regenerated, old ports 4173/4174/4199 plus debug ports 62991/63218/63492 clear, and old-term scan returned no matches.
+- Done: Added offsite backup schedule readiness. `npm run readiness:backup-schedule` writes `artifacts/readiness/backup-schedule.json`, links the schedule evidence to the latest restore-drill checksum, and keeps `Backup offsite` pending until a real offsite target, frequency, retention, last backup reference, and last successful backup timestamp exist.
+- Done: `/api/team/readiness` and `/admin` now expose/render the `Backup offsite` gate and evidence panel; smoke, E2E, isolated verifier, README, runbook, and delivery plan include the gate.
+- Done: Visual evidence captured at `artifacts/visual-e2e/admin-backup-offsite-readiness-desktop.png`.
+- Done: Verification after offsite backup readiness work passed: `npm run check`, `npm test` (32/32), `LOG_EVIDENCE_REF=local-isolated-verification npm run verify:isolated`, `npm audit --omit=dev`, shared `http://127.0.0.1:4184` restarted with `NEXT_DEV=false`, readiness backup/webhook/provider/deployment/backup-schedule artifacts regenerated, direct admin screenshot assertion passed, old/debug ports clear, and old-term scan returned no matches.
+- Done: `/admin` is now a React-owned Next client route in `app/admin/page.jsx`. It loads `/api/team/dashboard` and `/api/team/readiness`, renders production readiness evidence before user management, supports audit filters, creates restricted team users through `POST /api/team/users`, and keeps the existing secure route/auth behavior without injecting the retired admin browser module.
+- Done: Removed retired admin browser module from the codebase and from `npm run check`; `/admin` no longer carries that route module.
+- Done: Visual evidence captured at `artifacts/visual-e2e/admin-react-readiness-desktop.png`.
+- Done: Verification after React admin replacement passed: `npm run check`, `npm test` (32/32), `LOG_EVIDENCE_REF=local-isolated-verification npm run verify:isolated`, `npm audit --omit=dev`, shared `http://127.0.0.1:4184` restarted with `NEXT_DEV=false`, readiness backup/webhook/provider/deployment/backup-schedule artifacts regenerated, direct admin screenshot assertion passed, old/debug ports clear, and old-term scan returned no matches.
+- Done: `/equipe/fulfillment` and `/equipe/suporte` are now React-owned route clients. Fulfillment owns shipment creation, status updates, filters, and worklist metrics; support owns patient context, support filters, ticket status actions, and toast/error states without document-level listeners.
+- Done: Removed all retired route browser modules from `public/` and from `npm run check`, and renamed remaining CSS hooks away from migration wording.
+- Done: Visual evidence captured at `artifacts/visual-e2e/team-fulfillment-react-desktop.png` and `artifacts/visual-e2e/team-support-react-desktop.png`.
+- Done: Verification after route module removal passed: `npm run check`, `npm test` (32/32), `LOG_EVIDENCE_REF=local-isolated-verification npm run verify:isolated`, `npm audit --omit=dev`, shared `http://127.0.0.1:4184` restarted with `NEXT_DEV=false`, readiness backup/webhook/provider/deployment/backup-schedule artifacts regenerated, support/fulfillment screenshot assertions passed, old/debug ports clear, and old-term scan returned no matches.
+- Done: Added admin-only readiness evidence writes. `POST /api/team/readiness/provider-approval` and `POST /api/team/readiness/backup-schedule` persist non-secret evidence artifacts, audit the admin actor, and reject `approved`/`configured` statuses unless all required external proof fields are present.
+- Done: `/admin` now has production readiness forms for provider approval and backup offsite evidence. The UI keeps the gates pending until real provider approval, account status, terms, webhook docs, settlement notes, offsite target, encryption, operator, and last backup proof are recorded.
+- Done: Smoke now proves incomplete provider approval and offsite backup configuration are rejected, pending evidence can be persisted, and restricted non-admin team roles cannot write provider readiness evidence.
+- Done: README, runbook, and delivery plan now document the admin readiness evidence workflow and stricter required proof fields.
+- Done: Visual evidence captured at `artifacts/visual-e2e/admin-readiness-evidence-forms-desktop.png`; direct browser/API proof rejected incomplete approved provider evidence, rejected incomplete configured backup evidence, and accepted pending evidence.
+- Done: Verification after admin readiness evidence write work passed: `npm run check`, `npm test` (32/32), `LOG_EVIDENCE_REF=local-isolated-verification npm run verify:isolated`, `npm audit --omit=dev`, shared `http://127.0.0.1:4184` restarted with `NEXT_DEV=false`, readiness artifacts regenerated, old/debug ports clear, and old-term scan returned no matches.
+- Done: Added dedicated domain/TLS readiness proof. `npm run readiness:domain-tls` writes `artifacts/readiness/domain-tls.json`, requires `READINESS_DOMAIN_URL=https://...`, rejects localhost/IP/plain HTTP, inspects the trusted TLS certificate, and verifies `/health`.
+- Done: `/api/team/readiness` now exposes a separate `Dominio/TLS` gate and `/admin` renders a `domain tls` evidence panel with hostname, issuer, certificate expiry, HTTPS/public-host/TLS status, and health status.
+- Done: Smoke/E2E now require the `Dominio/TLS` gate/panel; local HTTP proof was directly tested and rejected so local `4184` cannot be mistaken for production domain readiness.
+- Done: README, runbook, and delivery plan now document `READINESS_DOMAIN_URL=https://<production-domain> npm run readiness:domain-tls`.
+- Done: Visual evidence captured at `artifacts/visual-e2e/admin-domain-tls-readiness-desktop.png`.
+- Done: Verification after domain/TLS readiness work passed: `npm run check`, `READINESS_DOMAIN_URL=http://127.0.0.1:4184 npm run readiness:domain-tls` rejected local HTTP as expected, `npm test` (32/32), `LOG_EVIDENCE_REF=local-isolated-verification npm run verify:isolated`, `npm audit --omit=dev`, shared `http://127.0.0.1:4184` restarted with `NEXT_DEV=false`, readiness artifacts regenerated, and admin screenshot assertion passed.
+- Done: Added final release refusal gate. `npm run readiness:release-gate` reads readiness artifacts and fails until provider approval, production HTTPS deployment/log evidence, domain/TLS, signed webhook proof, backup restore proof, and configured offsite backup proof are all present.
+- Done: Local release gate was executed and failed for the correct remaining blockers: provider approval, production deployment/log evidence, domain/TLS, and offsite backup schedule; signed webhook and backup restore passed.
+- Done: Fixed the Docker production image so it installs from `package-lock.json`, copies `app/`, `public/`, `src/`, builds Next, prunes dependencies, and uses `/data` for SQLite/private documents.
+- Done: Docker proof passed: `docker build -t associacao-verde-production-system:local .` completed, then a production-mode container booted with required env placeholders and `/health` returned `production: true`, `paymentProvider: asaas`, and database `/data/associacao-verde.sqlite`.
+- Done: README, runbook, and delivery plan now document the release gate and corrected container runtime.
+- Done: Verification after release gate/container work passed: `npm run check`, `npm run readiness:release-gate` failed for the expected external blockers, Docker build/boot health proof, `npm test` (32/32), and `npm audit --omit=dev`.
+- Done: Added SQLite schema version discipline. `src/sqlite-store.mjs` now exports `SQLITE_SCHEMA_VERSION`, sets `PRAGMA user_version`, creates `schema_migrations`, and records the initial schema migration with timestamp evidence.
+- Done: SQLite persistence coverage now asserts the schema version and migration ledger survive process-style reloads.
+- Done: Verification after schema version work passed: `npm run check`, `npm test` (32/32), `npm audit --omit=dev`, and `LOG_EVIDENCE_REF=local-isolated-verification npm run verify:isolated`.
+- Done: Shared release gate evaluation between CLI and app runtime. `src/release-gate.mjs` now owns the release-gate checks, `scripts/release-gate.mjs` uses the shared evaluator, and `/api/team/readiness` exposes `releaseGate`.
+- Done: `/admin` now renders the release gate before individual evidence panels, showing whether final release is blocked and which evidence checks are pending.
+- Done: Smoke and E2E now assert that the local app exposes a blocked release gate with provider/domain blockers; direct browser/API proof captured the same behavior.
+- Done: Visual evidence captured at `artifacts/visual-e2e/admin-release-gate-blocked-desktop.png`.
+- Done: Verification after admin release gate surfacing passed: `npm run check`, `npm run readiness:release-gate` failed for the expected external blockers, `LOG_EVIDENCE_REF=local-isolated-verification npm run verify:isolated`, `npm test` (32/32), `npm audit --omit=dev`, shared `http://127.0.0.1:4184` restarted with `NEXT_DEV=false`, readiness artifacts regenerated, and direct admin screenshot/API assertion passed.
+- Done: Added database schema readiness evidence. `npm run readiness:schema-check` writes `artifacts/readiness/schema-check.json` with SQLite schema version, migration ledger, required table list, and missing-table check.
+- Done: `/api/team/readiness` now exposes `schemaCheck`, adds the `Schema DB` gate, and includes the schema check inside the shared release gate as `Database schema`.
+- Done: `/admin` now renders a `schema db` evidence panel with expected/current schema version, table count, migration count, and missing-table status.
+- Done: Smoke/E2E now require schema readiness, and release gate checks that `Database schema` is passing even while external release blockers remain.
+- Done: Visual evidence captured at `artifacts/visual-e2e/admin-schema-release-gate-desktop.png`.
+- Done: Verification after schema readiness work passed: `npm run check`, `DB_FILE=/tmp/associacao-verde-dev.sqlite npm run readiness:schema-check`, `npm run readiness:release-gate` failed for expected external blockers while `Database schema` passed, `LOG_EVIDENCE_REF=local-isolated-verification npm run verify:isolated`, `npm test` (32/32), `npm audit --omit=dev`, shared `http://127.0.0.1:4184` restarted with `NEXT_DEV=false`, readiness artifacts regenerated, and direct admin screenshot/API assertion passed.
+- Done: Added session-cookie readiness evidence. `npm run readiness:session-security` logs in through the team API, validates the `av_session` cookie is signed, `HttpOnly`, `SameSite=Lax`, path `/`, and max-age <= 12 hours, and writes non-secret evidence to `artifacts/readiness/session-security.json`.
+- Done: `/api/team/readiness` now exposes `sessionSecurity`, adds the `Sessao/cookie` gate, and `/admin` renders a `session cookie` evidence panel. The local gate can pass on HTTP, but the shared release gate still blocks production until HTTPS/prod evidence proves the `Secure` flag.
+- Done: Smoke, E2E, isolated verification, README, runbook, and delivery plan now include session-cookie evidence. The release gate now requires provider approval, production deploy/logs, domain/TLS, signed Pix webhook, database schema, production session-cookie security, backup restore, and offsite backup schedule.
+- Done: Visual evidence captured at `artifacts/visual-e2e/admin-session-cookie-readiness-desktop.png`.
+- Done: Verification after session-cookie readiness work passed: `npm run check`, `npm test` (32/32), `READINESS_BASE_URL=http://127.0.0.1:4184 npm run readiness:session-security`, `npm run readiness:release-gate` failed for expected blockers including production session-cookie security, `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`, `LOG_EVIDENCE_REF=local-isolated-verification npm run verify:isolated`, `npm audit --omit=dev`, shared readiness artifacts regenerated for `http://127.0.0.1:4184`, direct readiness API assertion passed, and old-term scan returned no matches.
+- Done: Goal correction recorded explicitly in the ledger, README, and production delivery plan: this work is the full authenticated production application.
+- Done: Patient authorized-order UX tightened. `/paciente` now renders compact clinical order rows with product category, authorized stock, value, quantity, and action columns instead of large feed-like cards, while keeping the Pix/current-order panel before catalog and hiding raw backend status fallbacks from patient copy.
+- Done: Visual evidence captured at `artifacts/visual-e2e/patient-authorized-catalog-compact-mobile.png`.
+- Done: Verification after patient authorized catalog polish passed: `npm run check`, `npm test` (32/32), clean shared-dev `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`, `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, mobile screenshot assertion for compact catalog labels and no raw status text, shared server restarted at `http://127.0.0.1:4184`, and readiness artifacts regenerated.
+- Done: Team command center now has an exception strip above the priority board with critical attention, open Pix money, committed stock, and patient-access risk, so `/equipe` reads more like an operational control surface than a card grid.
+- Done: Visual evidence captured at `artifacts/visual-e2e/team-command-exception-strip-desktop.png`.
+- Done: Verification after team command exception strip passed: `npm run check`, `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, clean shared-dev `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`, focused browser assertion for exception labels and no desktop horizontal overflow, `npm audit --omit=dev`, readiness artifacts regenerated, and release gate still blocks only expected external/production evidence.
+- Done: Home entry now presents backend-backed production capabilities below the hero: server authentication, persisted data, controlled Pix/webhook flow, and daily operations. The hero was tightened so the first viewport shows more of the system state instead of only a large marketing block, while public HTML still avoids protected route links.
+- Done: Visual evidence captured at `artifacts/visual-e2e/home-production-system-strip-desktop.png`.
+- Done: Verification after home production-system strip passed: `npm run check`, `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, focused browser assertion for the system strip, no `/admin` link in public home HTML, no desktop horizontal overflow, shared server restarted at `http://127.0.0.1:4184`, and readiness artifacts regenerated.
+- Done: Admin team-user lifecycle now supports deactivation/reactivation. `src/production-system.mjs` has `updateTeamUserStatus()`, `server.mjs` exposes `POST /api/team/users/status`, and `/admin` renders `Desativar`/`Reativar` controls for team users. Deactivating a user revokes active sessions and prevents new login until reactivated.
+- Done: Visual evidence captured at `artifacts/visual-e2e/admin-team-user-deactivation-desktop.png`.
+- Done: Verification after team-user lifecycle work passed: `npm run check`, `npm test` (33/33), clean shared-dev `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, clean shared-dev `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`, focused browser proof for admin deactivation and revoked worker session, `npm audit --omit=dev`, readiness artifacts regenerated, and release gate still blocks expected external/production evidence.
+- Done: Admin team-user lifecycle now includes temporary password reset. `src/production-system.mjs` has `resetTeamUserPassword()`, `server.mjs` exposes `POST /api/team/users/password`, and `/admin` renders per-user reset forms. Resetting a password reactivates the target user, revokes old sessions, rejects short passwords, and prevents changing the current admin through this recovery path.
+- Done: Visual evidence captured at `artifacts/visual-e2e/admin-team-user-password-reset-desktop.png`.
+- Done: Verification after team password reset work passed: `npm run check`, `npm test` (34/34), clean shared-dev `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, clean shared-dev `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`, focused browser proof for admin password reset, revoked old worker session, and new password login, readiness artifacts regenerated, and delivery plan updated.
+- Done: Team users can now rotate their own password after login. `src/production-system.mjs` has `changeOwnTeamPassword()`, `server.mjs` exposes `POST /api/team/me/password`, and `/equipe` renders a self-service password form. Changing the password verifies the current password, rejects short new passwords, keeps the current session, and revokes other sessions for that user.
+- Done: Visual evidence captured at `artifacts/visual-e2e/team-self-password-change-desktop.png`.
+- Done: Verification after team self-service password change passed: `npm run check`, `npm test` (35/35), clean shared-dev `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, clean shared-dev `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`, focused browser proof for self-service change, revoked parallel session, and new password login, `npm audit --omit=dev`, readiness artifacts regenerated, and delivery plan updated.
+- Done: Team command UX now separates operator profile/session management from the operational queue. `/equipe` renders a real authenticated team account panel with role, session expiry, permission chips, password rotation, and logout before the dashboard metrics, while removing dev credential hints from team login placeholders.
+- Done: Patient UX now keeps support as aftercare instead of interrupting the purchase path. `/paciente` renders next action, catalog, cart, checkout, and order history before the support request surface, and duplicate login/checkout click handlers were removed so forms have a single submit path.
+- Done: Session payload now exposes non-secret `createdAt`/`expiresAt` session metadata and public team permissions for profile UI without leaking password/session secrets.
+- Done: Visual evidence captured at `artifacts/visual-e2e/team-account-command-desktop.png` and `artifacts/visual-e2e/patient-action-before-support-mobile.png`.
+- Done: Verification after account/patient UX work passed: `npm run check`, `npm test` (35/35), clean shared-dev `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, clean shared-dev `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`, focused browser screenshot assertions for team account panel and patient action-before-support, `READINESS_BASE_URL=http://127.0.0.1:4184 npm run readiness:session-security`, `npm audit --omit=dev`, health check on `http://127.0.0.1:4184`, and route-text scan for removed UI credential hints/duplicate submit patterns.
+- Done: Fulfillment/order exception management added. `src/production-system.mjs` has `cancelOrder()` and `recordOrderException()`, `server.mjs` exposes `POST /api/team/orders/cancel` and `POST /api/team/orders/exception`, unpaid cancellations release active reservations and cancel pending payments without decrementing stock, and paid-order cancellations enter `fulfillment_exception`/refund review without silent restock.
+- Done: `/equipe/fulfillment` now renders exception and cancellation controls per order, `/equipe/pedidos` can cancel pending orders or send paid orders to exception review, and order cards show Portuguese status labels plus exception notes.
+- Done: E2E overflow diagnostics now report the offending elements when a route exceeds viewport width, and CSS constrains the new exception controls on mobile.
+- Done: Visual evidence captured at `artifacts/visual-e2e/team-fulfillment-exception-controls-desktop.png` and `artifacts/visual-e2e/team-fulfillment-exception-controls-mobile.png`.
+- Done: Verification after fulfillment exception work passed: `npm run check`, `npm test` (37/37), clean shared-dev `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, clean shared-dev `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`, focused desktop/mobile browser screenshot assertions for exception controls and no horizontal overflow, and production delivery plan updated to mark FUL-001 partial with remaining carrier/refund-provider/SOP gaps.
+- Done: Product management metadata added. Products now persist `category`, `lowStockThreshold`, `controlled`, and `internalNote`; seeded products include realistic defaults; `/equipe/estoque` create/update forms and product rows expose the fields; `/paciente` category filtering now uses persisted category before name heuristics; team low-stock queues use per-product thresholds.
+- Done: Visual evidence captured at `artifacts/visual-e2e/team-stock-product-metadata-desktop.png`.
+- Done: Verification after product metadata work passed: `npm run check`, `npm test` (38/38), clean shared-dev `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, clean shared-dev `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`, focused browser assertion for stock metadata and no desktop overflow, and production delivery plan updated for OPS-002.
+- Done: Stock route was redesigned from a stack of large forms/cards into a denser operational ledger. `/equipe/estoque` now puts product inventory first, moves create/edit/cultivation actions into management drawers, and uses stable ledger rows with product, quantity, category, value, and stock status for faster team scanning.
+- Done: Visual evidence captured at `artifacts/visual-e2e/team-stock-ledger-redesign-desktop.png` and `artifacts/visual-e2e/team-stock-ledger-redesign-mobile.png`.
+- Done: Landing page was redesigned from a generic marketing hero into a secure system entry console aligned with the private production app goal. `/` now foregrounds patient and team entry points, server-backed capability status, and proof areas without exposing protected `/admin` links in public HTML.
+- Done: Visual evidence captured at `artifacts/visual-e2e/home-secure-console-redesign-desktop.png` and `artifacts/visual-e2e/home-secure-console-redesign-mobile.png`.
+- Done: Verification after stock and landing UX work passed: `npm run check`, `npm test` (38/38), `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, clean shared-dev `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`, focused desktop/mobile browser proof for redesigned stock and home routes, and no horizontal overflow in E2E.
+- Done: Orders and fulfillment routes were redesigned into operational ledgers. `/equipe/pedidos` now separates pending Pix and orders into dense row-based ledgers with compact reconciliation/cancellation drawers. `/equipe/fulfillment` now shows separation rows with patient/items/shipment/status/action zones, and shipment/exception/cancellation forms live inside per-row action drawers instead of filling the whole route.
+- Done: Visual evidence captured at `artifacts/visual-e2e/team-orders-ledger-redesign-desktop.png`, `artifacts/visual-e2e/team-orders-ledger-redesign-mobile.png`, and `artifacts/visual-e2e/team-fulfillment-ledger-redesign-desktop.png`.
+- Done: Patient LGPD consent is now a real workflow gate. `/paciente` blocks catalog filters/products, support request, and checkout until `privacyConsentAt` is recorded; the next-action panel tells the patient to complete consent; product quantity is controlled per product with stock validation; Pix now has copy and refresh actions; order history exposes items, delivery, Pix expiration, and shipment context.
+- Done: Visual evidence captured at `artifacts/visual-e2e/patient-lgpd-gated-mobile.png` and `artifacts/visual-e2e/patient-consent-catalog-enabled-mobile.png`.
+- Done: Verification after orders/fulfillment/patient UX work passed: `npm run check`, `npm test` (38/38), `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, clean shared-dev `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`, focused browser proof for orders/fulfillment ledgers, focused patient consent-gate proof, and final shared server health on `http://127.0.0.1:4184/health`.
+- Done: Support route was redesigned from a repeated support-card feed into an operational workbench. `/equipe/suporte` now has a selectable case queue, a focused patient dossier with login/order/Pix/reservation/shipment/document facts, and compact ticket action rows. Access-recovery tickets remain visible in the queue without requiring selection, preserving E2E support proof.
+- Done: Visual evidence captured at `artifacts/visual-e2e/team-support-workbench-redesign-desktop.png` and `artifacts/visual-e2e/team-support-workbench-redesign-mobile.png`.
+- Done: Verification after support workbench passed: `npm run check`, `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, focused desktop/mobile browser proof for `.support-workbench`, and clean shared-dev `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`.
+- Done: Admin route received the first control-plane cleanup slice. Team users now render as a management table with status/action columns and expandable password reset, and recent audit events now render as a ledger with timestamp, actor, action, and structured key/value details instead of repeated cards with raw JSON.
+- Done: Visual evidence captured at `artifacts/visual-e2e/admin-users-audit-ledger-desktop.png` and `artifacts/visual-e2e/admin-users-audit-ledger-mobile.png`.
+- Done: Verification after admin users/audit slice passed: `npm run check`, `SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke`, focused desktop/mobile browser proof for `.team-users-table` and `.audit-ledger`, and clean shared-dev `E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e`.
+- Done: Durable goal language corrected again after audit. README, production delivery plan, audio requirements, UX IA, and this ledger now state the full authenticated production application goal without forbidden scope wording or stale browser-reference comparison language. Verification scan returned no matches for the forbidden scope terms and no matching obsolete-scope filenames remain in the working tree.
+- Now: Continue production UX and implementation gaps; next visible work is finishing admin readiness as a true release-gate ledger/detail workflow and then deeper provider/domain/deploy evidence, while real production deploy/domain/log artifacts remain external proof blockers.
+- Next: Implement remaining local production-management gaps that do not depend on provider/domain approval: lot-level allocation/traceability, richer support notes/priority workflow, and LGPD export/deletion/retention operations.
+- Next: Continue visible Apoiar-quality polish with authentic brand rhythm on public/patient surfaces and denser operational layouts on team surfaces.
+- Next: Continue production admin readiness with real provider approval, production deploy/domain/log proof, domain/TLS proof, production session-cookie proof, and offsite backup schedule evidence.
+- Next: Remove any remaining unused migration-era text or styles as they become visible, but active product routes are now React-owned under `app/`.
+- Next: Start architecture split and migration path before the compact server grows further: schema migrations, modular API handlers, DB migrations, backup/restore CLI, and deploy profile.
+- Next: Validate payment provider compliance for cannabis association payments and select Asaas/Mercado Pago/Pagar.me with real Pix webhook behavior before claiming payment production readiness.
+- Next: Confirm the GitHub Actions workflow after pushing and keep replacing archived browser-only/localStorage behavior with database-backed entities, production UI, and tests until the production app is complete.
+
+## Open Questions
+- UNCONFIRMED: Which GitHub/deploy target should host the production app: current `tyagow/associacao-verde-reference`, a new private repo, Railway, Vercel, Render, or another provider?
+- UNCONFIRMED: Preferred Brazilian payment provider. Recommendation to evaluate first: Asaas or Mercado Pago for Pix; final choice must consider CNPJ, provider terms, webhook reliability, settlement, fees, and cannabis/association acceptance.
+- UNCONFIRMED: Whether payment should be Pix only for launch, or Pix plus boleto/card.
+- UNCONFIRMED: Whether stock should reserve for a fixed window such as 15 minutes, 30 minutes, or until payment expiry.
+- UNCONFIRMED: Whether patient eligibility data will be created inside this system or imported from Apoiar/D9/existing spreadsheets.
+- UNCONFIRMED: Required prescription document handling, LGPD posture, audit logging, and medical/legal compliance requirements.
+- UNCONFIRMED: Shipping integration target: Melhor Envio/GED Log first, manual fulfillment first, or both.
+
+## Working Set
+- Branch: `main`
+- Repo: `git@github-tyagow:tyagow/associacao-verde-reference.git`
+- Archived reference URL: `https://tyagow.github.io/associacao-verde-reference/`
+- Archived ordering reference URL: `https://tyagow.github.io/associacao-verde-reference/archived-ordering-reference.html`
+- Latest archived reference commit: `ffe2351 Strengthen ordering reference stock and mobile flow`
+- Archived reference files:
+  - `archived-ordering-reference.html`
+  - `archived-ordering-reference.css`
+  - `archived-ordering-reference.js`
+  - `README.md`
+  - `docs/audio-requirements.md`
+- Active production files:
+  - `server.mjs`
+  - `src/production-system.mjs`
+  - `src/sqlite-store.mjs`
+  - `app/layout.jsx`
+  - `app/page.jsx`
+  - `app/paciente/PatientPortal.jsx`
+  - `app/paciente/page.jsx`
+  - `app/equipe/TeamCommand.jsx`
+  - `app/equipe/page.jsx`
+  - `app/equipe/pacientes/PatientsClient.jsx`
+  - `app/equipe/pacientes/page.jsx`
+  - `app/equipe/estoque/StockRoute.jsx`
+  - `app/equipe/estoque/page.jsx`
+  - `app/equipe/pedidos/OrdersClient.jsx`
+  - `app/equipe/pedidos/page.jsx`
+  - `app/equipe/fulfillment/page.jsx`
+  - `app/equipe/suporte/page.jsx`
+  - `app/admin/page.jsx`
+  - `public/app.css`
+  - `docs/production-delivery-plan.md`
+  - `docs/production-ux-ia.md`
+  - `docs/production-runbook.md`
+  - `docs/migration-from-archive.md`
+  - `design.md`
+  - `scripts/smoke-production-app.mjs`
+  - `scripts/e2e-production-app.py`
+  - `scripts/import-archive.mjs`
+  - `.github/workflows/production-ci.yml`
+- Archived reference verification commands:
+  - `python3 -m http.server 4173`
+  - `node --check archived-ordering-reference.js`
+- Verified behavior:
+  - Access code: `APOIAR2026`
+  - Stock add: example Gomas CBD `+3 cx` or `+12 cx`
+  - Checkout decrement: example Flor 24k `92 g -> 91 g`
+  - Mobile viewport tested: `390x844`
+
+## Production System Sketch
+- Frontend: multi-surface private app, not one page:
+  - Patient portal: access, eligibility, catalog/request, Pix payment, order history.
+  - Team command center: daily queues, exceptions, Pix pending, paid orders, low stock, blocked patients.
+  - Patients/association: patient records, guardian, access lifecycle, member card.
+  - Prescriptions/documents: secure document metadata, validity, audit.
+  - Products/stock/cultivation: catalog, stock lots, movements, cultivation batches.
+  - Orders/payments: reservations, payment status, webhook/reconciliation states.
+  - Fulfillment/shipments: picking, packing, carrier/tracking, sent status.
+  - Admin/compliance: team users/roles, audit log, provider readiness, production gates.
+- Backend: authenticated API for products, inventory, patients, prescriptions, carts/orders, payment creation, webhooks, and fulfillment.
+- Database entities:
+  - `patients`, `guardians`, `prescriptions`, `memberships`
+  - `products`, `inventory_lots`, `stock_movements`, `stock_reservations`
+  - `orders`, `order_items`, `payments`, `payment_events`
+  - `shipments`, `audit_log`
+- Payment flow:
+  1. Patient logs in or opens signed invite link.
+  2. API checks active association membership and valid prescription.
+  3. Patient creates cart.
+  4. API creates stock reservation and Pix payment.
+  5. Payment provider returns QR code / copia-e-cola / payment URL.
+  6. Webhook confirms paid status.
+  7. API marks order paid, converts reservation into final stock movement, and queues fulfillment.
+  8. Unpaid/expired payment releases reservation.

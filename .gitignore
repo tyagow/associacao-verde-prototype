@@ -8,3 +8,18 @@ artifacts/
 .env
 .env.local
 .env.*.local
+
+# Next.js generated
+next-env.d.ts
+tsconfig.tsbuildinfo
+
+# Tooling state (Claude Code, Superpowers brainstorm scratchpads)
+.claude/
+.superpowers/
+
+# Session scratchpads/handoffs (ledgers in thoughts/ledgers/ ARE tracked)
+thoughts/shared/
+
+# Python bytecode
+__pycache__/
+*.pyc

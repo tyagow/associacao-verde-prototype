@@ -16,8 +16,8 @@ Source: latest WhatsApp audio files in `~/Downloads`, all dated 2026-05-07 betwe
    - Keep stock by product/cultivar.
    - Creating an order must reduce stock.
    - Online order creation should not require manual order-by-order work.
-   - Payment integration is required in the real system; the prototype shows the payment stage.
-   - Shipping integration with Melhor Envio / GED Log is required in the real system; the prototype shows the label stage.
+   - Payment integration is required in the production system; the reference shows the payment stage.
+   - Shipping integration with Melhor Envio / GED Log is required in the production system; the reference shows the label stage.
 
 3. Patient and responsible-party registration
    - Store patient records.
@@ -33,15 +33,14 @@ Source: latest WhatsApp audio files in `~/Downloads`, all dated 2026-05-07 betwe
    - Medical care and triage will be online.
    - The triage should follow Anvisa-oriented requirements.
    - AI assistance is planned.
-   - This prototype reserves the triage surface and shows the expected handoff back into the patient/prescription record.
+   - This reference reserves the triage surface and shows the expected handoff back into the patient/prescription record.
 
-## Prototype Coverage
+## Archived Reference Coverage
 
-The prototype covers these requirements with a static single-page app:
+The archived browser reference captured the original requirement sketch:
 
 - `index.html`: application structure and screens.
 - `styles.css`: responsive visual system.
 - `app.js`: demo data, local persistence, patient creation, batch advancement, harvest/dry stock logic, order creation, stock decrement, and order status transitions.
 
-The prototype does not include real authentication, payment processing, Melhor Envio API calls, document uploads, or medical AI. Those are represented as workflow stages for client validation.
-
+The reference does not include production authentication, payment processing, Melhor Envio API calls, document uploads, or medical AI. Those are represented as workflow stages for client validation.
