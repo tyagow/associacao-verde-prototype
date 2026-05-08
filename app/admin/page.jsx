@@ -5,6 +5,8 @@ import Brand from "../components/Brand";
 import ReleaseProgress from "./components/ReleaseProgress";
 import GateCard from "./components/GateCard";
 import GateDetail from "./components/GateDetail";
+import AuditTimeline from "./components/AuditTimeline";
+import AuditEventModal from "./components/AuditEventModal";
 import adminStyles from "./admin.module.css";
 
 const initialFilters = { adminQuery: "", adminStatus: "all" };
@@ -28,6 +30,7 @@ export default function AdminPage() {
   const [error, setError] = useState("");
   const [toast, setToast] = useState("");
   const [selectedGate, setSelectedGate] = useState(null);
+  const [selectedAuditEvent, setSelectedAuditEvent] = useState(null);
 
   useEffect(() => {
     load();
@@ -366,31 +369,15 @@ export default function AdminPage() {
                         <h3>Eventos de seguranca e operacao</h3>
                       </div>
                     </div>
-                    <div className="audit-ledger">
-                      <div className="audit-ledger-head">
-                        <span>Quando</span>
-                        <span>Ator</span>
-                        <span>Acao</span>
-                        <span>Detalhes</span>
-                      </div>
-                      {audit.length ? (
-                        audit.map((event) => (
-                          <article
-                            className="audit-ledger-row"
-                            key={`${event.at}-${event.action}-${event.actor}`}
-                          >
-                            <time>{formatDateTime(event.at)}</time>
-                            <strong>{event.actor}</strong>
-                            <span>{event.action}</span>
-                            <AuditDetails details={event.details || {}} />
-                          </article>
-                        ))
-                      ) : (
-                        <p className="muted">
-                          Nenhum evento de auditoria encontrado para o filtro atual.
-                        </p>
-                      )}
-                    </div>
+                    <AuditTimeline
+                      events={audit}
+                      filter={filters.adminStatus}
+                      filters={buildAuditFilterChips(dashboard?.auditLog || [])}
+                      onFilter={(value) =>
+                        setFilters((current) => ({ ...current, adminStatus: value }))
+                      }
+                      onSelect={(event) => setSelectedAuditEvent(event)}
+                    />
                   </section>
                 </div>
               )}
@@ -401,8 +388,29 @@ export default function AdminPage() {
       <div className={`toast ${toast ? "show" : ""}`} id="toast" role="status" aria-live="polite">
         {toast}
       </div>
+      <AuditEventModal event={selectedAuditEvent} onClose={() => setSelectedAuditEvent(null)} />
     </>
   );
+}
+
+function buildAuditFilterChips(auditLog) {
+  const counts = { all: auditLog.length };
+  const types = ["team_user", "payment", "patient", "order", "support"];
+  for (const type of types) counts[type] = 0;
+  for (const event of auditLog) {
+    const action = String(event?.action || "");
+    for (const type of types) {
+      if (action.includes(type)) counts[type] += 1;
+    }
+  }
+  return [
+    { value: "all", label: "Todos", count: counts.all },
+    { value: "team_user", label: "Equipe", count: counts.team_user },
+    { value: "payment", label: "Pagamentos", count: counts.payment },
+    { value: "patient", label: "Pacientes", count: counts.patient },
+    { value: "order", label: "Pedidos", count: counts.order },
+    { value: "support", label: "Suporte", count: counts.support },
+  ];
 }
 
 function ReadinessSection({
@@ -968,27 +976,6 @@ function Metric({ label, value }) {
       <strong>{value}</strong>
     </article>
   );
-}
-
-function AuditDetails({ details }) {
-  const entries = Object.entries(details).slice(0, 4);
-  if (!entries.length) return <span className="muted">Sem detalhes estruturados</span>;
-  return (
-    <dl className="audit-detail-list">
-      {entries.map(([key, value]) => (
-        <div key={key}>
-          <dt>{key}</dt>
-          <dd>{formatAuditValue(value)}</dd>
-        </div>
-      ))}
-    </dl>
-  );
-}
-
-function formatAuditValue(value) {
-  if (value === null || value === undefined || value === "") return "nao informado";
-  if (typeof value === "object") return JSON.stringify(value);
-  return String(value);
 }
 
 function filteredAudit(auditLog, filters) {
