@@ -67,7 +67,7 @@
   align-items: center;
   gap: var(--sp-2);
   padding: var(--sp-2) var(--sp-4);
-  border-radius: var(--r-pill);
+  border-radius: var(--r-md);
   border: 1px solid var(--line-strong);
   background: var(--paper);
   color: var(--ink);
@@ -178,7 +178,7 @@
   justify-content: center;
   gap: var(--sp-2);
   padding: var(--sp-4) var(--sp-6);
-  border-radius: var(--r-pill);
+  border-radius: var(--r-md);
   background: var(--ink);
   color: var(--paper);
   text-decoration: none;
@@ -202,7 +202,7 @@
   justify-content: center;
   gap: var(--sp-2);
   padding: var(--sp-4) var(--sp-6);
-  border-radius: var(--r-pill);
+  border-radius: var(--r-md);
   background: transparent;
   color: var(--ink);
   text-decoration: none;

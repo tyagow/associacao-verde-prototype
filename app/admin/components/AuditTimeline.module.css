@@ -15,7 +15,7 @@
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  border-radius: 999px;
+  border-radius: var(--r-md, 12px);
   border: 1px solid var(--line, #e3ebe6);
   background: #fff;
   color: var(--ink, #0d1f17);
@@ -47,7 +47,7 @@
   font-variant-numeric: tabular-nums;
   font-size: 11px;
   background: rgba(13, 31, 23, 0.06);
-  border-radius: 999px;
+  border-radius: var(--r-pill, 999px);
   padding: 1px 8px;
   color: var(--muted, #687970);
 }
