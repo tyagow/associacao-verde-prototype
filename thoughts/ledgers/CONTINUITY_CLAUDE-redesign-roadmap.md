@@ -226,7 +226,58 @@ finds the current `[→]`, completes its acceptance criteria, then advances.
         <=1024px.
 - Next:
   - [x] Phase 6 — Estoque & cultivo (single ledger + lot detail)
-  - [ ] Phase 7 — Support workbench
+  - [x] Phase 7 — Support workbench
+        (ea62d88 schema v15 support_messages · a5c61ef
+         createSupportReply / listSupportThread on ProductionSystem ·
+         ec72c6c Route Handlers + tests · 8d3e3ef workbench two-pane
+         layout · this commit screenshots + ledger close).
+        Schema v15 — new `support_messages` table (id, ticket_id,
+        author_type, author_id, body, created_at) with idx
+        idx_support_messages_ticket on (ticket_id, created_at). Ledger
+        adopts SCHEMA_MIGRATIONS = [{1, initial_json_state_schema},
+        {15, support_messages_thread}]; recordMigration loops the array
+        so future phases append by adding entries (never edit prior).
+        sqlite-store gets appendSupportMessage / listSupportMessages
+        helpers; production-system gets the matching public API
+        (createSupportReply / listSupportThread) with audit envelope
+        team_support_reply and RBAC (support:write for replies,
+        dashboard:view for thread reads). Constructor adapter pattern
+        keeps tests in-memory.
+        Bridge pattern (CLAUDE.md frozen-server policy) reused: two
+        new appRoutes one-liners (/api/team/support-replies and
+        /api/team/support-thread) delegate to Next Route Handlers
+        which proxy to server.mjs raw endpoints (`_raw` suffix, NOT
+        in appRoutes) where the in-process system call lives. The
+        Phase 5 commit 5c04bad swept the appRoutes additions and the
+        constructor injection (appendSupportMessage /
+        listSupportMessages) along with its Phase 5 work — that's
+        why server.mjs has no direct Phase 7 commit but still carries
+        all Phase 7 lines.
+        Frontend rebuild under app/equipe/suporte/components/
+        (.tx-* CSS Modules): QueueColumn (sticky LEFT, priority pill
+        + member code + summary), CasePanel (RIGHT fact grid: Ultimo
+        login, Pedido, Pix, Reserva, Envio, Documentos, Historico,
+        Solicitacoes; ticket cards with Em atendimento / Resolver),
+        Thread (chronological seed-then-replies, patient-LEFT /
+        team-RIGHT bubbles), ReplyBox (POST
+        /api/team/support-replies, error stays inline). Workbench
+        owns dashboard fetch + filters + selection + thread fetch.
+        page.jsx mounts under TeamShell (currentRoute=/equipe/suporte).
+        E2E preserved verbatim: #support-status, #support-surface,
+        [data-filter='supportQuery'], [data-filter='supportStatus'];
+        body texts "Suporte ao paciente", "Ultimo login", "Reserva",
+        "documento(s) registrados", "Duvida sobre renovacao",
+        "Revisao de acesso".
+        Tests 49 → 54 net (+1 fulfillment-status from Phase 5,
+        +2 inventory-lots from Phase 6, +2 from new
+        test/support-thread.test.mjs: "team can reply to support
+        ticket" exercises RBAC + audit + empty-body rejection;
+        "patient sees team replies in thread" exercises
+        chronological order with the synthesized seed message). The
+        existing sqlite-store reload test asserts both v1 + v15
+        migration rows. next build clean. Screenshots at
+        artifacts/visual-e2e/redesign/p7-support-{desktop,mobile}.png
+        via scripts/p7-screenshots.py (artifacts/ is gitignored).
   - [x] Phase 8 — Command palette ⌘K
         (4b57c3e CommandPalette component using cmdk · 5f87e12 wire ⌘K
          binding in TeamShell + mount palette globally · this commit

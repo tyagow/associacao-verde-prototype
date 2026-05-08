@@ -19,8 +19,7 @@ export const SCHEMA_MIGRATIONS = [
   { version: 1, name: "initial_json_state_schema" },
   { version: 15, name: "support_messages_thread" },
 ];
-export const SQLITE_SCHEMA_VERSION =
-  SCHEMA_MIGRATIONS[SCHEMA_MIGRATIONS.length - 1].version;
+export const SQLITE_SCHEMA_VERSION = SCHEMA_MIGRATIONS[SCHEMA_MIGRATIONS.length - 1].version;
 
 export class SqliteStateStore {
   constructor({ filePath, now = () => new Date() }) {
