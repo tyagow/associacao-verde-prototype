@@ -135,6 +135,51 @@ export function clearLoginAttempts(key) {
   attempts().delete(key);
 }
 
+// Generic per-IP rate-limit, separate from login-throttle.
+// Used by checkout, support-requests, access-recovery, webhook.
+const RATE_KEY = "__avRateLimits";
+function rateBucket() {
+  const g = globalThis;
+  if (!g[RATE_KEY]) g[RATE_KEY] = new Map();
+  return g[RATE_KEY];
+}
+
+export function ipFromRequest(request) {
+  const xff =
+    request.headers?.get?.("x-forwarded-for") ||
+    request.headers?.["x-forwarded-for"] ||
+    "";
+  return String(xff).split(",")[0].trim() || "local";
+}
+
+export function recordRateLimitHit(key) {
+  const map = rateBucket();
+  const now = Date.now();
+  const current = map.get(key);
+  if (!current) {
+    map.set(key, { count: 1, firstAt: now });
+    return;
+  }
+  current.count += 1;
+  map.set(key, current);
+}
+
+export function assertRateLimit(key, max, windowMs) {
+  const map = rateBucket();
+  const now = Date.now();
+  const current = map.get(key);
+  if (!current) return;
+  if (current.firstAt + windowMs <= now) {
+    map.delete(key);
+    return;
+  }
+  if (current.count >= max) {
+    const err = new Error("Muitas requisicoes. Aguarde antes de tentar novamente.");
+    err.status = 429;
+    throw err;
+  }
+}
+
 // Common shape: read session cookie + JSON body, call system.METHOD,
 // return jsonResponse(status, wrap(result)). Use in Route Handlers
 // that follow the legacy switch's "team write" pattern.
