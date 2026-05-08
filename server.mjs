@@ -81,6 +81,11 @@ const appRoutes = new Set([
   // Stage C slice 1 — /health migrated to app/health/route.js (URL stays
   // /health to keep deployment-check / smoke / domain-tls scripts working).
   "/health",
+  // Stage 2 slice (b) — /api/session GET and /api/logout POST migrated
+  // to Route Handlers. Both use the Stage 1 shared globalThis singleton,
+  // so they read/mutate the SAME ProductionSystem instance server.mjs sees.
+  "/api/session",
+  "/api/logout",
   // Phase 7 bridge: support workbench Route Handlers proxy back into
   // server.mjs's raw system calls (/api/team/support-replies/_raw,
   // /api/team/support-thread/_raw) which are NOT allow-listed and stay
@@ -128,9 +133,6 @@ const server = createServer(async (request, response) => {
       return nextHandler(request, response);
     }
 
-    if (url.pathname === "/api/session" && request.method === "GET") {
-      return json(response, 200, { session: system.getSession(readCookie(request, "av_session")) });
-    }
     if (url.pathname === "/api/patient/login" && request.method === "POST") {
       assertSameOrigin(request);
       const payload = await body(request);
@@ -167,12 +169,6 @@ const server = createServer(async (request, response) => {
         throw error;
       }
       setSessionCookie(response, result.sessionId);
-      return json(response, 200, { ok: true });
-    }
-    if (url.pathname === "/api/logout" && request.method === "POST") {
-      assertSameOrigin(request);
-      system.logout(readCookie(request, "av_session"));
-      response.setHeader("Set-Cookie", cookie("av_session", "", { maxAge: 0 }));
       return json(response, 200, { ok: true });
     }
     if (url.pathname === "/api/catalog" && request.method === "GET") {
