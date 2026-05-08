@@ -87,6 +87,8 @@ const appRoutes = new Set([
   "/api/session",
   "/api/logout",
   "/api/patient/login",
+  "/api/team/login",
+  "/api/team/me/password",
   // Phase 7 bridge: support workbench Route Handlers proxy back into
   // server.mjs's raw system calls (/api/team/support-replies/_raw,
   // /api/team/support-thread/_raw) which are NOT allow-listed and stay
@@ -139,22 +141,6 @@ const server = createServer(async (request, response) => {
       return json(response, 201, {
         ticket: system.createAccessRecoveryRequest(await body(request)),
       });
-    }
-    if (url.pathname === "/api/team/login" && request.method === "POST") {
-      assertSameOrigin(request);
-      const payload = await body(request);
-      const key = loginAttemptKey(request, "team", payload.email);
-      assertLoginAllowed(key);
-      let result;
-      try {
-        result = system.loginTeam(payload);
-        clearLoginAttempts(key);
-      } catch (error) {
-        recordLoginFailure(key);
-        throw error;
-      }
-      setSessionCookie(response, result.sessionId);
-      return json(response, 200, { ok: true });
     }
     if (url.pathname === "/api/catalog" && request.method === "GET") {
       return json(response, 200, {
@@ -239,12 +225,6 @@ const server = createServer(async (request, response) => {
       assertSameOrigin(request);
       return json(response, 200, {
         user: system.resetTeamUserPassword(readCookie(request, "av_session"), await body(request)),
-      });
-    }
-    if (url.pathname === "/api/team/me/password" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(response, 200, {
-        user: system.changeOwnTeamPassword(readCookie(request, "av_session"), await body(request)),
       });
     }
     if (url.pathname === "/api/team/stock" && request.method === "POST") {
