@@ -14,8 +14,13 @@ start_server() {
   echo "[watchdog $(date -u +%H:%M:%S)] starting server"
   lsof -tiTCP:"$PORT" -sTCP:LISTEN 2>/dev/null | xargs -r kill 2>/dev/null || true
   sleep 1
-  PORT="$PORT" DB_FILE="$DB_FILE" DOCUMENT_STORAGE_DIR="$DOCS" NEXT_DEV=true \
-    node --import tsx server.mjs >> "$LOG" 2>&1 &
+  NODE_ENV=development \
+  TEAM_PASSWORD="${TEAM_PASSWORD:-apoio-equipe-dev}" \
+  TEAM_EMAIL="${TEAM_EMAIL:-equipe@apoiar.local}" \
+  PIX_WEBHOOK_SECRET="${PIX_WEBHOOK_SECRET:-dev-webhook-secret}" \
+  SESSION_SECRET="${SESSION_SECRET:-dev-session-secret-change-me}" \
+  DB_FILE="$DB_FILE" DOCUMENT_STORAGE_DIR="$DOCS" \
+    npx next dev -p "$PORT" >> "$LOG" 2>&1 &
   for i in 1 2 3 4 5 6 7 8 9 10; do
     sleep 2
     if curl -sf "http://127.0.0.1:$PORT/health" > /dev/null 2>&1; then

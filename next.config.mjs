@@ -48,6 +48,12 @@ const nextConfig = {
       },
     ];
   },
+  // Backwards-compat: legacy code may reference /public/<asset>; rewrite to
+  // the Next.js convention (public/<asset> served at /<asset>) so existing
+  // links keep working without churn while we migrate references.
+  async rewrites() {
+    return [{ source: "/public/:path*", destination: "/:path*" }];
+  },
 };
 
 export default nextConfig;

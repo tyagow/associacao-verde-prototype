@@ -84,7 +84,7 @@ async function run(command, args, nextEnv) {
 }
 
 function startServer() {
-  const processHandle = spawn(process.execPath, ["server.mjs"], {
+  const processHandle = spawn("npx", ["next", "start", "-p", String(port)], {
     cwd: new URL("..", import.meta.url),
     env,
     stdio: ["ignore", "pipe", "pipe"],

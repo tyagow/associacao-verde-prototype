@@ -13,7 +13,7 @@ RUN npm ci
 COPY app ./app
 COPY public ./public
 COPY src ./src
-COPY server.mjs ./
+COPY middleware.ts next.config.mjs tsconfig.json ./
 
 RUN npm run next:build && npm prune --omit=dev && mkdir -p /data/private-documents
 
@@ -23,4 +23,4 @@ USER node
 
 EXPOSE 4174
 
-CMD ["node", "server.mjs"]
+CMD ["npx", "next", "start", "-p", "4174"]

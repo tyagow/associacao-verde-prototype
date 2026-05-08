@@ -35,6 +35,10 @@ def main():
       env = {
           **os.environ,
           "PORT": str(port),
+          # `next start` defaults NODE_ENV=production; the system-instance
+          # singleton fails closed in production unless PAYMENT_PROVIDER=asaas.
+          # E2E runs the dev-pix provider, so we explicitly set development.
+          "NODE_ENV": "development",
           "NEXT_DEV": "false",
           "DB_FILE": str(Path(temp_dir.name) / "e2e.sqlite"),
           "DOCUMENT_STORAGE_DIR": str(Path(temp_dir.name) / "private-documents"),
@@ -44,7 +48,7 @@ def main():
           "SESSION_SECRET": "dev-session-secret-change-me",
       }
       owned_server = subprocess.Popen(
-          ["node", "server.mjs"],
+          ["npx", "next", "start", "-p", str(port)],
           cwd=ROOT,
           env=env,
           stdout=subprocess.PIPE,

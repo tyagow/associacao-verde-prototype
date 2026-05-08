@@ -34,7 +34,12 @@ const repoRoot = process.env.AV_REPO_ROOT || process.cwd();
 const GLOBAL_KEY = "__avSystemInstance";
 
 function build() {
-  const production = process.env.NODE_ENV === "production";
+  // After server.mjs deletion: `next start` forces NODE_ENV=production
+  // inside its workers regardless of what we pass. We must NOT gate the
+  // live-provider requirement on NODE_ENV — it would block every E2E /
+  // dev `next start` invocation. Instead an explicit flag (set in real
+  // production deploys: docker, k8s, vercel) controls fail-closed mode.
+  const production = process.env.AV_REQUIRE_LIVE_PROVIDER === "true";
   const dbFile = process.env.DB_FILE || join(repoRoot, "data", "associacao-verde.sqlite");
   const documentStorageDir =
     process.env.DOCUMENT_STORAGE_DIR || join(repoRoot, "data", "private-documents");
