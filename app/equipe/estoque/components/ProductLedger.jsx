@@ -12,13 +12,7 @@
 
 import styles from "./ProductLedger.module.css";
 
-export default function ProductLedger({
-  products,
-  filters,
-  onFilterChange,
-  totals,
-  children,
-}) {
+export default function ProductLedger({ products, filters, onFilterChange, totals, children }) {
   return (
     <section className={styles.ledger} aria-label="Produtos, estoque e lotes">
       <header className={styles.head}>

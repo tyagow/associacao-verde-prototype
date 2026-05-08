@@ -16,9 +16,7 @@ export default function CultivoPanel({ batches }) {
     <section className={styles.panel} aria-label="Cultivo ativo">
       <header className={styles.head}>
         <strong className={styles.title}>Cultivo</strong>
-        <span className={styles.subtitle}>
-          {active.length} lote(s) em andamento
-        </span>
+        <span className={styles.subtitle}>{active.length} lote(s) em andamento</span>
       </header>
 
       {active.length === 0 ? (

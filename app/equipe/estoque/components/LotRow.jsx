@@ -8,7 +8,10 @@
 import styles from "./LotRow.module.css";
 
 export default function LotRow({ lot }) {
-  const idLabel = lot.id.replace(/^lot_|^mvt_/, "").slice(0, 8).toUpperCase();
+  const idLabel = lot.id
+    .replace(/^lot_|^mvt_/, "")
+    .slice(0, 8)
+    .toUpperCase();
   return (
     <div className={styles.row} role="listitem">
       <span className={styles.lotId} data-label="Lote">

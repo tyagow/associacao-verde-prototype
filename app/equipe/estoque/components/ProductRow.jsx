@@ -25,7 +25,17 @@ export default function ProductRow({ product, expanded, onToggle, onMetaChange, 
 
   useEffect(() => {
     setDraft(initialDraft(product));
-  }, [product.id, product.lowStockThreshold, product.category, product.controlled, product.internalNote]);
+    // We intentionally re-sync the draft when these specific server fields
+    // change rather than depending on the entire `product` reference, which
+    // would re-run after every parent re-render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    product.id,
+    product.lowStockThreshold,
+    product.category,
+    product.controlled,
+    product.internalNote,
+  ]);
 
   const isLow = product.status === "low";
   const isInactive = product.status === "inactive";
@@ -103,7 +113,9 @@ export default function ProductRow({ product, expanded, onToggle, onMetaChange, 
                 }
                 onBlur={(event) => commit("lowStockThreshold", Number(event.target.value))}
               />
-              {savingField === "lowStockThreshold" ? <span className={styles.saving}>salvando…</span> : null}
+              {savingField === "lowStockThreshold" ? (
+                <span className={styles.saving}>salvando…</span>
+              ) : null}
             </label>
             <label>
               Categoria
@@ -136,7 +148,9 @@ export default function ProductRow({ product, expanded, onToggle, onMetaChange, 
                 <option value="true">Controlado</option>
                 <option value="false">Nao controlado</option>
               </select>
-              {savingField === "controlled" ? <span className={styles.saving}>salvando…</span> : null}
+              {savingField === "controlled" ? (
+                <span className={styles.saving}>salvando…</span>
+              ) : null}
             </label>
             <label>
               Nota interna
@@ -149,7 +163,9 @@ export default function ProductRow({ product, expanded, onToggle, onMetaChange, 
                 }
                 onBlur={(event) => commit("internalNote", event.target.value)}
               />
-              {savingField === "internalNote" ? <span className={styles.saving}>salvando…</span> : null}
+              {savingField === "internalNote" ? (
+                <span className={styles.saving}>salvando…</span>
+              ) : null}
             </label>
           </div>
 
@@ -201,8 +217,11 @@ function categoryLabel(category) {
 
 function summarizeLotIds(lots) {
   if (!lots.length) return "Sem lote";
-  const ids = lots
-    .slice(0, 2)
-    .map((lot) => lot.id.replace(/^lot_|^mvt_/, "").slice(0, 6).toUpperCase());
+  const ids = lots.slice(0, 2).map((lot) =>
+    lot.id
+      .replace(/^lot_|^mvt_/, "")
+      .slice(0, 6)
+      .toUpperCase(),
+  );
   return ids.join(" · ") + (lots.length > 2 ? ` · +${lots.length - 2}` : "");
 }
