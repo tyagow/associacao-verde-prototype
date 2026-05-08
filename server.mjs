@@ -106,14 +106,6 @@ const server = createServer(async (request, response) => {
     const url = new URL(request.url, `http://${request.headers.host}`);
     system.expireReservations();
 
-    if (url.pathname === "/health" && request.method === "GET") {
-      return json(response, 200, {
-        ok: true,
-        database: dbFile,
-        paymentProvider: paymentProvider?.name || "dev-pix",
-        production,
-      });
-    }
     if (url.pathname.startsWith("/public/")) {
       return serveFile(response, join(publicDir, url.pathname.replace("/public/", "")));
     }
