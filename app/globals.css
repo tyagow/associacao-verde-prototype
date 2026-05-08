@@ -3239,3 +3239,60 @@ textarea {
   gap: var(--sp-2);
   margin: var(--sp-3) 0 var(--sp-4);
 }
+
+/* =====================================================================
+   === Phase 12 — Mobile polish sweep (additive) ===
+   Hardens the redesigned surfaces at 540px / 360px / 320px viewports.
+   Rules are defensive (min-width: 0, word-break, table-layout) — no
+   layout regressions on larger screens.
+   ===================================================================== */
+
+@media (max-width: 540px) {
+  /* Long monospace ids / pix codes / tracking codes break out gracefully
+     instead of forcing horizontal scroll. */
+  .panel pre,
+  .panel code,
+  .pix-code,
+  textarea[name="message"],
+  textarea {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  /* Toast snaps under the safe area on narrow phones. */
+  #toast {
+    left: var(--sp-3, 12px);
+    right: var(--sp-3, 12px);
+    width: auto;
+    max-width: none;
+  }
+
+  /* Surface toolbar inputs always stretch full width when stacked. */
+  .surface-toolbar label > input,
+  .surface-toolbar label > select,
+  .surface-toolbar input,
+  .surface-toolbar select {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 360px) {
+  /* 320–360px safety net: shrink chrome paddings and force any leftover
+     fixed-width primitives to flex. */
+  .app-work,
+  main { padding-left: 0.85rem; padding-right: 0.85rem; }
+  .panel,
+  article.panel { padding: 1rem 0.95rem; }
+  .panel-heading h2,
+  .section-heading h2 { font-size: 1.15rem; }
+  .pill,
+  .chip { font-size: 11px; }
+  /* Wide buttons in cramped grids should soft-wrap rather than overflow. */
+  button { white-space: normal; word-break: break-word; }
+  /* Table-layout fixed prevents oversized cells from forcing scroll. */
+  table { table-layout: fixed; width: 100%; }
+  table td,
+  table th { word-break: break-word; }
+}
+
