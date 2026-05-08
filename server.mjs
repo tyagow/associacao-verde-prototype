@@ -8,11 +8,18 @@ import next from "next";
 import { evaluateReleaseGate } from "./src/release-gate.ts";
 import { getSystem } from "./src/system-instance.ts";
 
-// Stage A/B of server.mjs → Next.js migration: route the legacy switch
-// through the SAME singleton that Next.js Route Handlers import. This
-// guarantees a single ProductionSystem + SqliteStateStore in-process,
-// regardless of which layer (legacy switch or Route Handler) handles the
-// request — required to avoid two writers racing on the same DB file.
+// Stage A/B of server.mjs → Next.js migration: server.mjs gets its
+// ProductionSystem + SqliteStateStore + payment provider + reservation
+// expiry timer from src/system-instance.ts (getSystem). This collapses
+// the boot sequence to a single source of truth and avoids drift.
+//
+// IMPORTANT: server.mjs (Node tsx) and Next.js Route Handlers (Turbopack
+// bundle) load src/system-instance.ts in DIFFERENT module graphs — they
+// do NOT share this singleton. Calling getSystem() from a Route Handler
+// constructs a SECOND SqliteStateStore on the same file, which races on
+// writes. Therefore Route Handlers must proxy state-touching operations
+// back to server.mjs over fetch (Phase 3/5/7 pattern), not import
+// getSystem() directly. See system-instance.ts for the full note.
 const _bootstrap = getSystem();
 const system = _bootstrap.system;
 const paymentProvider = _bootstrap.paymentProvider;

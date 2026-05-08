@@ -5,12 +5,20 @@
 // (lines ~14-127): env reads, store init, payment provider selection,
 // system construction, team-user seeding, reservation-expiry timer.
 //
-// server.mjs continues to import this same instance during the migration
-// so there is one in-process system, regardless of which layer (legacy
-// server.mjs switch or Next.js Route Handler) handles the request.
+// IMPORTANT: server.mjs and Next.js Route Handlers do NOT share this
+// module instance. server.mjs loads it via tsx in its Node module graph;
+// Next.js bundles Route Handlers through Turbopack with a separate module
+// graph. Calling getSystem() from a Route Handler will construct a SECOND
+// SqliteStateStore + ProductionSystem on the same DB file, which races on
+// writes (Phase 2 inventory race coverage exists for a reason).
+//
+// Therefore Route Handlers MUST proxy state-touching operations back to
+// server.mjs (via fetch + cookie/origin forwarding, the Phase 3/5/7
+// pattern) instead of importing getSystem() directly. Pure config-readout
+// handlers (e.g. /health) read process.env without instantiating the
+// system at all. server.mjs itself uses getSystem() for its own init.
 
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { createAsaasPixProvider, ProductionSystem } from "./production-system.ts";
 import { SqliteStateStore } from "./sqlite-store.ts";
 
@@ -20,8 +28,11 @@ function requiredEnv(name, fallback) {
   return value;
 }
 
-const __dirname = fileURLToPath(new URL(".", import.meta.url));
-const repoRoot = join(__dirname, "..");
+// Repo root resolution: prefer explicit env (set by deployment), else
+// process.cwd() (server.mjs and `next start` both run from repo root).
+// Avoid `new URL(".", import.meta.url)` because Turbopack cannot
+// statically analyze it when this module is imported from a Route Handler.
+const repoRoot = process.env.AV_REPO_ROOT || process.cwd();
 
 let cached = null;
 
