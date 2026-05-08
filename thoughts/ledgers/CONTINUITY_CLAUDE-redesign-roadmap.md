@@ -101,9 +101,9 @@ finds the current `[→]`, completes its acceptance criteria, then advances.
   - [x] Inventory invariant flagged as hard gate (Phase 2)
   - [x] Stack libs installed (framer-motion, lucide-react, cmdk, recharts; dnd-kit pending)
   - [x] **Phase 0a — Foundation cleanup** (see section below)
-- Now: [→] **Phase 0 — Design system foundation**
+  - [x] **Phase 0 — Design system foundation** (commit f5d8e85)
+- Now: [→] **Phase 1 — Patient experience rebuild**
 - Next:
-  - [ ] Phase 1 — Patient experience rebuild
   - [ ] Phase 2 — Inventory invariant + concurrency safety
   - [ ] Phase 3 — Team shell + Command center
   - [ ] Phase 4 — Pedidos & Pix ledgers
