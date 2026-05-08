@@ -41,6 +41,7 @@ Enforced by ESLint `no-restricted-imports` on `src/**/*.{js,mjs,ts,tsx}` (see
   `NODE_ENV=production` internally.
 
 When adding a new endpoint:
+
 1. Create `app/api/<your-path>/route.js`.
 2. `import { getSystem } from "@/src/system-instance"` (or relative).
 3. Use `request.cookies.get('av_session')` to read the session; pass to
