@@ -104,9 +104,22 @@ finds the current `[→]`, completes its acceptance criteria, then advances.
   - [x] **Phase 0 — Design system foundation** (commit f5d8e85)
   - [x] **Phase 1 — Patient experience rebuild**
         (1a 00d5fed · 1b 8e3858c · 1c ac0d7d1 · 1d a910bf6 / 3fac042 / 83ee92c / 6e1c48f / + screenshots)
-- Now: [→] **Phase 2 — Inventory invariant + concurrency safety**
+  - [x] **Phase 2 — Inventory invariant + concurrency safety**
+        (b617b3c refactor unify · 5df46ed BEGIN IMMEDIATE checkout ·
+         4bc2441 paid_after_expiry_conflict · 971a22d 5-patient race test ·
+         9fca88d smoke oversell guard). Tests 38 → 41. E2E 5/5 green.
+        better-sqlite3 sync semantics: better-sqlite3 (and node:sqlite) are
+        synchronous and Node is single-threaded, so the synchronous critical
+        section inside runInventoryTransaction (re-read availableStock + push
+        reservation/order) cannot interleave with another checkout's critical
+        section. The await on paymentProvider.createPayment happens AFTER
+        the reservation is in this.state.stockReservations, so any concurrent
+        availableStock read sees it. The lock-acquire-order serialization
+        described in SQLite's BEGIN IMMEDIATE docs applies here at the JS
+        level. Race test verifies "exactly one wins for the last unit"
+        with Promise.allSettled across 5 sessions.
+- Now: [→] **Phase 3 — Team shell + Command center**
 - Next:
-  - [ ] Phase 3 — Team shell + Command center
   - [ ] Phase 4 — Pedidos & Pix ledgers
   - [ ] Phase 5 — Fulfillment kanban (dnd-kit)
   - [ ] Phase 6 — Estoque & cultivo (single ledger + lot detail)
