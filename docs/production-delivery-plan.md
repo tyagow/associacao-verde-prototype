@@ -50,37 +50,61 @@ here until every gate is backed by real evidence.
 
 ## Current State
 
-Status: **Partial production application, not complete.**
+Status: **Application UX shipped under the locked B · Calm Clinical Modern
+aesthetic. Release blocked only on operations evidence (provider approval,
+prod TLS, deploy target, offsite backup).**
 
-Implemented production work so far:
+The redesign initiative (Phases 0–12) closed on 2026-05-08. Every patient
+and team surface is rebuilt against the locked aesthetic; see
+`docs/redesign/locked-aesthetic.md` for the visual contract and
+`docs/redesign/tokens.md` for the canonical tokens. Mobile parity at 390px
+and 320px is verified by the widened E2E overflow check across all
+redesigned routes.
 
-- Node server with SQLite persistence.
-- Next.js private route surfaces for patient and team operations, served by the
-  same Node process as the authenticated API.
-- Team login with hashed password storage.
-- Patient invite/member-code login and eligibility checks.
+Implemented production work:
+
+- Node server with SQLite persistence; schema versioned through migration
+  v15 with append-only `SCHEMA_MIGRATIONS` ledger in `src/sqlite-store.ts`.
+- Next.js private route surfaces for patient and team operations, served by
+  the same Node process as the authenticated API. `server.mjs` is frozen;
+  new endpoints land as Route Handlers under `app/api/` and are delegated
+  via the `appRoutes` allow-list (Phase 3 `/api/team/activity`, Phase 5
+  `/api/team/orders/status`, Phase 7 `/api/team/support-replies` and
+  `/api/team/support-thread`).
+- Team login with hashed password storage; team self-service password
+  rotation; admin temporary-password reset with old-session revocation.
+- Patient invite/member-code login and eligibility checks; patient consent
+  recorded with audit envelope; access-recovery flow for blocked patients.
 - Product, patient, prescription document, member card, stock, cultivation,
-  order, Pix, webhook, and shipment primitives.
+  order, Pix, webhook, support thread (schema v15), and shipment primitives.
+- Inventory invariant: `availableStock = onHandStock − activeReservations`
+  enforced under `BEGIN IMMEDIATE` with re-read inside the synchronous
+  critical section. 5-patient race test on the last unit
+  (`test/inventory-race.test.mjs`) and oversell guard in smoke.
+- `paid_after_expiry_conflict` audit event + `fulfillment_exception` order
+  state for the late paid-after-expiry edge.
 - Pix provider abstraction with local development mode and Asaas adapter.
+- Signed webhook gate; production refuses to boot with `dev-pix`.
 - Production boot gates for secrets and Pix provider.
-- Tests and smoke coverage for core payment, stock, and fulfillment paths.
+- 58/58 unit tests across inventory, race, fulfillment status, inventory
+  lots, support thread, audit timeline grouping, team activity Route
+  Handler, RBAC, audit envelope, and the rest of the production surface.
 - Dockerfile, runbook, release gate, and archived-data importer.
 
-Known gaps before production:
+Known gaps before production (operations only — application UX is shipped):
 
-- UI/UX is operational and being rebuilt route by route against the Apoiar
-  reference direction.
-- The server is still compact and needs production-grade route/service
-  organization, migrations, and stronger transaction boundaries.
-- Payment provider compliance and live credentials are not confirmed.
-- Webhook validation must match the final provider's exact signature contract.
-- Reservation expiry/reconciliation worker is not production complete.
-- Admin/team lifecycle is partially implemented: roles, user creation,
-  deactivation, session revocation, and admin temporary-password reset exist;
-  team users can rotate their own password; onboarding still needs production
-  polish.
-- Document storage is metadata-only; secure storage is still required.
+- Payment provider compliance and live credentials are not confirmed
+  (`PAY-001` blocked on business decision).
+- Webhook validation must match the final provider's exact signature
+  contract (`PAY-003`).
+- Document storage is metadata-only; durable secure storage with integrity
+  verification still required for production rollout.
+- Production deploy target, real TLS/domain evidence, and real offsite
+  backup schedule evidence are pending (`DEP-001`, `DEP-002`).
 - Backups, monitoring, alerting, and deploy target are not live.
+- Public landing redesign (`UX-009`, deferred from Phase 11) was
+  intentionally deferred per operator direction; the existing public home
+  remains in place and contains no internal status leaks.
 
 ## Task Board
 
@@ -88,115 +112,106 @@ Known gaps before production:
 
 **UX-001: Define production information architecture**
 
-- Status: in progress
+- Status: complete
 - Acceptance: sitemap covers patient login, purchase, Pix payment, order status,
   support, team dashboard, patient management, prescription management,
   inventory, cultivation, fulfillment, and audit views.
-- Evidence: checked-in IA document `docs/production-ux-ia.md`; screenshots and
-  wireframes still required.
+- Evidence: IA document `docs/production-ux-ia.md`; mock contract at
+  `.superpowers/brainstorm/70960-1778242539/content/all-pages.html` (20
+  approved screens) implemented surface-by-surface across redesign Phases
+  1–10.
 
 **UX-002: Redesign patient purchase flow**
 
-- Status: in progress
+- Status: complete (Phase 1; commits 00d5fed · 8e3858c · ac0d7d1 · a910bf6 ·
+  3fac042 · 83ee92c · 6e1c48f · screenshots commit 96dd3dc)
 - Acceptance: patient can sign in, understand eligibility state, browse eligible
   products, build cart, start Pix payment, copy Pix code, and track status on
   mobile without layout issues.
-- Evidence: `/paciente` route surface exists and smoke verifies app routes;
-  patient status cards, cart summary, Pix copy/paste panel, and order status
-  screen are implemented in the Next patient route; browser evidence is captured at
-  `artifacts/visual-e2e/patient-cart-pix-mobile.png`; responsive overflow check
-  passed for mobile and desktop routes. `npm run e2e` now covers patient
-  happy path, blocked-patient denial, profile care-plan visibility, and
-  patient-created support request visibility on the team support route.
-  Remaining work: patient copy polish and shipment status polish.
+- Evidence: mode-based PatientPortal (Pedido/Histórico/Suporte tabs);
+  full-screen Pix takeover with live countdown, real qrcode.react QR encoder,
+  copia-e-cola, frete block, and 5-stage timeline; CatalogDrawer + ProfileDrawer
+  with `prefers-reduced-motion` honored; LGPD consent gate + access-recovery
+  screen; mobile parity verified at 390px and 320px. Screenshots
+  `artifacts/visual-e2e/redesign/p1-patient-*-{desktop,mobile}.png` via
+  `scripts/p1-screenshots.py`.
 
 **UX-003: Redesign team operations dashboard**
 
-- Status: in progress
+- Status: complete (Phase 3; commits cac7030 · ea487ce · 68997c8 · f4c29e0 ·
+  screenshots 22e4edf)
 - Acceptance: team can scan daily orders, paid orders, low stock, pending
   prescriptions, patient access problems, and fulfillment backlog from one clear
   workspace.
-- Evidence: route-level command center, patients, stock/cultivation,
-  orders/payments, fulfillment, support, and admin surfaces exist. Each
-  operational route now has search/status filters and rendered worklists instead
-  of form-only screens. Screenshots exist at `artifacts/visual-e2e/team-command-desktop.png`,
-  `artifacts/visual-e2e/team-patients-route-desktop.png`,
-  `artifacts/visual-e2e/team-stock-route-desktop.png`,
-  `artifacts/visual-e2e/team-orders-route-desktop.png`,
-  `artifacts/visual-e2e/team-fulfillment-route-desktop.png`,
-  `artifacts/visual-e2e/team-support-route-desktop.png`, and
-  `artifacts/visual-e2e/team-admin-route-desktop.png`; `npm run e2e` now covers
-  team route filters, Pix confirmation into fulfillment, and responsive route
-  layout.
+- Evidence: TeamShell sidebar app shell mounted across `/equipe/*`; rebuilt
+  TeamCommand with 4 KPI cards + sparklines, live activity feed polling
+  `/api/team/activity?since=` (Route Handler, frozen-server bridge), Pix-by-hour
+  bar chart, and priority queue. Tests 41 → 44 (+3 for activity Route Handler).
+  Screenshots `artifacts/visual-e2e/redesign/p3-team-command-{desktop,mobile}.png`.
 
 **UX-004: Portuguese copy and association tone pass**
 
-- Status: open
+- Status: in progress
 - Acceptance: all user-facing text is Portuguese-first, patient-safe, legal in
   framing, and avoids public ecommerce language.
-- Evidence: reviewed copy inventory.
+- Evidence: redesigned surfaces ship Portuguese-first copy and avoid public
+  ecommerce framing. Public landing redesign (`UX-009`) was deferred per
+  operator direction; existing public home remains free of internal status
+  leaks. Final copy inventory pass remains open.
 
 **UX-005: Apoiar Brasil visual system alignment**
 
-- Status: in progress
-- Acceptance: private app follows the Apoiar Brasil reference direction:
-  deep-green trust framing, white/soft-green content bands, yellow primary
-  actions, editorial serif headings, compact cards, acolhimento language, and
-  cannabis medicinal safety/legal tone without turning the app into a public
-  marketing page.
-- Evidence: reference screenshot captured at
-  `artifacts/reference/apoiarbrasil-home-desktop.png`; implementation and
-  patient/team screenshots still required.
+- Status: complete (Phase 0 + locked-aesthetic spec)
+- Acceptance: private app follows the locked B · Calm Clinical Modern
+  aesthetic: off-white paper, soft greens, refined gold ornament only on
+  product thumbs and CTAs, system sans, generous whitespace, hairline
+  borders, status communicated by colored dots, soft shadows.
+- Evidence: tokens centralized in `app/globals.css :root`; canonical
+  reference at `docs/redesign/tokens.md`; visual contract at
+  `docs/redesign/locked-aesthetic.md`; mock screens at
+  `.superpowers/brainstorm/70960-1778242539/content/all-pages.html`.
 
 **UX-006: Professional login and access system**
 
-- Status: in progress
+- Status: complete (Phase 1 patient + Phase 3 team)
 - Acceptance: patient and team login are professional entry surfaces with clear
   role separation, security copy, lockout/error feedback, session state, logout,
   mobile layout, and hidden rough forms after successful login.
-- Evidence: first branded entry/auth slice implemented in Next route files
-  with shared `public/app.css`; browser screenshots written
-  to `artifacts/visual-e2e/home-entry-desktop.png`,
-  `artifacts/visual-e2e/patient-login-mobile.png`,
-  `artifacts/visual-e2e/patient-authenticated-mobile.png`, and
-  `artifacts/visual-e2e/team-authenticated-desktop.png`; smoke covers route and
-  auth workflow. Remaining work: refine navigation density, error states,
-  password reset/onboarding, and production polish.
+- Evidence: PatientShell + TeamShell ship branded entry surfaces; smoke +
+  E2E selectors `#patient-login`, `#team-login`, `#patient-status`,
+  `#team-status` preserved; access-recovery `#access-issue` screen for
+  blocked patients; mobile parity at 320/390.
 
 **UX-007: Patient portal production UX**
 
-- Status: in progress
+- Status: complete (Phase 1)
 - Acceptance: patient sees eligibility, prescription/card validity, private
   catalog, cart/reservation, Pix copy/paste, order status, shipment, and support
   direction as one coherent mobile-first workflow.
-- Evidence: patient summary cards now show associated patient, eligibility
-  reason, prescription/card validity, latest order state, cart summary, Pix
-  copy/paste panel, payment expiry, order history, responsible contact, profile
-  contact/location, care plan, and support note; mobile screenshots exist
-  at `artifacts/visual-e2e/patient-login-mobile.png`,
-  `artifacts/visual-e2e/patient-authenticated-mobile.png`, and
-  `artifacts/visual-e2e/patient-cart-pix-mobile.png`, plus current profile
-  evidence at `artifacts/visual-e2e/patient-profile-management-mobile.png`.
-  Support requests are backend-backed and visible to the team support queue.
-  Privacy consent is recorded, audited, and visible to the team. Blocked or
-  expired patients can request access recovery without receiving catalog access.
-  Team users can reset private invite codes without exposing existing invites.
-  Remaining work: shipment status polish and copy review.
+- Evidence: see UX-002. Per-component split (EmptyHero, CartHero,
+  HistoryList, SupportThread, PrivacyConsentGate, AccessIssueScreen) keeps
+  PatientPortal a thin glue. Privacy consent recorded + audited; team
+  invite-code reset without exposing existing invites.
 
 **UX-008: Team command center production UX**
 
-- Status: in progress
+- Status: complete (Phase 3)
 - Acceptance: team sees daily queues and exceptions first: pending Pix, paid
   orders needing fulfillment, low stock, expiring prescriptions/cards, blocked
   patients, shipments needing tracking, and audit/payment-provider readiness.
-- Evidence: command center now renders queue cards for pending Pix, fulfillment,
-  low stock, blocked patients, expiring validity, and active reservations plus
-  an actionable "Fila de acao agora"; desktop screenshot exists at
-  `artifacts/visual-e2e/team-command-desktop.png`. Patients, stock, orders,
-  fulfillment, support, and admin routes now have search/status filters and
-  route-level summaries. Checked-in browser coverage exists in
-  `scripts/e2e-production-app.py`. Remaining work: polish provider/admin
-  readiness and deepen support context.
+- Evidence: see UX-003. TeamCommand 4-KPI grid + activity feed + priority
+  queue. ⌘K command palette (Phase 8) globally accessible via TeamShell.
+
+**UX-009: Public landing redesign**
+
+- Status: deferred (operator direction; not in redesign scope)
+- Acceptance: public home reflects Calm Clinical Modern aesthetic with two
+  doors (Paciente / Equipe), 3-step "Como acessar" list, atendimento card,
+  and value-prop strip; no internal status leaks.
+- Evidence: existing public landing remains in place; current implementation
+  contains no internal status leaks (no provider, drill, deploy, webhook
+  copy). Phase 11 from the redesign roadmap was deferred and is tracked
+  here for future scheduling.
 
 ### P0 - Security And Access Control
 
@@ -326,10 +341,19 @@ environment gates` covers the endpoint; `npm run e2e` asserts the admin route
 
 **INV-001: Transactional stock reservation**
 
-- Status: open
+- Status: complete (Phase 2; commits b617b3c · 5df46ed · 4bc2441 · 971a22d ·
+  9fca88d)
 - Acceptance: concurrent checkout cannot oversell stock; reservation and order
   creation are atomic.
-- Evidence: concurrency tests against SQLite production store.
+- Evidence: `runInventoryTransaction` uses `BEGIN IMMEDIATE` with a
+  re-read of `availableStock` inside the synchronous critical section
+  (better-sqlite3 sync semantics + Node single-threaded JS); the await on
+  `paymentProvider.createPayment` happens after the reservation is in
+  `state.stockReservations`, so any concurrent availability read sees it.
+  5-patient race test on the last unit at `test/inventory-race.test.mjs`
+  verifies "exactly one wins" via `Promise.allSettled`. Smoke includes
+  oversell guard. `paid_after_expiry_conflict` audit + `fulfillment_exception`
+  cover the late paid-after-expiry edge.
 
 **INV-002: Reservation expiry worker**
 
@@ -343,24 +367,35 @@ expires order plus payment` covers release behavior.
 
 **INV-003: Lot-level stock decrement**
 
-- Status: open
+- Status: partial (Phase 6 traceability shipped; allocation strategy still
+  open)
 - Acceptance: paid orders decrement specific inventory lots using a clear
   allocation strategy and keep batch/lot traceability.
-- Evidence: stock movement tests and team stock ledger UI.
+- Evidence: Phase 6 (`f422f5c`) ships single product ledger with click-to-
+  expand lot rows (id · quantidade · validade · origem). `listProductLots`
+  derives lots from `state.inventoryLots` (cultivation pipeline) plus
+  synthetic per-stockMovement entries; validity defaults to 12 months from
+  `createdAt`; origin is humanized. `inventory-lots` test covers the
+  contract. Remaining: explicit lot expiry + supplier metadata as
+  first-class fields, and an allocation strategy on payment confirmation
+  (FIFO by validity is the natural default).
 
 **FUL-001: Fulfillment workflow**
 
-- Status: partial
+- Status: shipped UX (Phase 5 kanban); carrier/refund integration still
+  partial
 - Acceptance: team can pick, pack, mark ready, ship, add carrier/tracking, and
   handle cancellation/refund exceptions.
-- Evidence: `/api/team/fulfillment`, `/api/team/shipments`,
-  `/api/team/orders/cancel`, and `/api/team/orders/exception` cover status
-  changes, shipment records, unpaid cancellation with reservation release, and
-  paid-order exception/refund-review notes without silent restock. `/equipe`
-  fulfillment renders exception/cancel controls. Tests cover unpaid cancellation
-  and paid fulfillment exception; smoke verifies both HTTP paths; E2E covers
-  route rendering and overflow. Remaining: real carrier/refund provider
-  integration and formal SOP for refund approval.
+- Evidence: Phase 5 four-column drag-and-drop kanban
+  (`@dnd-kit/core` + `/api/team/orders/status` Route Handler) with
+  optimistic UI, revert-on-error, and `team_order_status_changed` audit
+  envelope. 5 new tests in `test/fulfillment-status.test.mjs` cover RBAC,
+  status validation, lifecycle guard, audit envelope, and idempotent
+  same-column drops. Mobile drops to single-column-with-tabs (Phase 12).
+  Existing endpoints (`/api/team/fulfillment`, `/api/team/shipments`,
+  `/api/team/orders/cancel`, `/api/team/orders/exception`) preserved.
+  Remaining: real carrier/refund provider integration and formal SOP for
+  refund approval.
 
 ### P0 - Architecture And Data
 
@@ -373,10 +408,15 @@ expires order plus payment` covers release behavior.
 
 **ARCH-002: Add schema migrations**
 
-- Status: open
+- Status: complete (Phase 7; commit ea62d88)
 - Acceptance: database changes are versioned and replayable across environments;
   startup does not rely only on ad hoc table creation.
-- Evidence: migration tests from empty DB and previous DB version.
+- Evidence: `SCHEMA_MIGRATIONS = [{1, initial_json_state_schema},
+{15, support_messages_thread}]` in `src/sqlite-store.ts`; `recordMigration`
+  loops the array so future phases append entries (never edit prior).
+  Sqlite-store reload test asserts both v1 and v15 migration rows.
+  `npm run readiness:schema-check` records `user_version`, migration
+  ledger, and required-table evidence for `/admin` and the release gate.
 
 **ARCH-003: Strengthen data constraints**
 
@@ -396,7 +436,7 @@ expires order plus payment` covers release behavior.
 
 **OPS-001: Patient onboarding and access lifecycle**
 
-- Status: open
+- Status: in progress
 - Acceptance: team can create, activate, suspend, renew card, update
   prescription validity, and view why a patient is blocked.
 - Evidence: team UI E2E tests.
@@ -416,18 +456,20 @@ expires order plus payment` covers release behavior.
 
 **OPS-003: Support workflow**
 
-- Status: in progress
+- Status: complete (Phase 7; commits ea62d88 · a5c61ef · ec72c6c · 8d3e3ef ·
+  eebd42d)
 - Acceptance: team can inspect a patient's latest login, eligibility, cart,
   order, payment, and shipment status without direct DB access.
-- Evidence: `/equipe/suporte` route exists with filters and support cards
-  combining patient eligibility, prescription/card validity, latest order,
-  payment, reservation, shipment, document count, latest login, active session
-  expiry, and order history count. Unit test
-  `team dashboard exposes patient support login and reservation context` covers
-  the dashboard data, and `npm run e2e` asserts the support route renders the
-  login/reservation signals. Remaining work: persisted cart visibility and
-  deeper support actions. Screenshot:
-  `artifacts/visual-e2e/team-support-route-desktop.png`.
+- Evidence: Two-pane workbench under `/equipe/suporte`. Left = QueueColumn
+  (priority pill, name, member code, latest summary). Right = CasePanel
+  (Ultimo login, Pedido, Pix, Reserva, Envio, Documentos, Historico,
+  Solicitacoes; Em atendimento / Resolver actions; chronological Thread
+  with patient-LEFT / team-RIGHT bubbles). ReplyBox posts to
+  `/api/team/support-replies` (Route Handler bridge) backed by schema v15
+  `support_messages` table. Tests +2 in `test/support-thread.test.mjs`
+  (RBAC + audit + empty-body rejection; chronological order with seed +
+  replies). Screenshots
+  `artifacts/visual-e2e/redesign/p7-support-{desktop,mobile}.png`.
 
 ### P1 - Compliance And Privacy
 
@@ -515,15 +557,21 @@ expires order plus payment` covers release behavior.
 
 **QA-002: Responsive route checks**
 
-- Status: in progress
+- Status: complete (Phase 12; commits c89a780 · a69d5b2 · bfe879c · 6c320fa ·
+  8f759dc)
 - Acceptance: key screens pass mobile/desktop screenshots, keyboard navigation,
   visible focus, labels, contrast, and no horizontal overflow.
-- Evidence: current browser check asserted no horizontal overflow on mobile
-  `390x844` and desktop `1440x950` for `/paciente`, `/equipe`,
-  `/equipe/pacientes`, `/equipe/estoque`, `/equipe/pedidos`,
-  `/equipe/fulfillment`, `/equipe/suporte`, and `/admin`; screenshot artifacts are under
-  `artifacts/visual-e2e/`. `npm run e2e` now repeats the overflow assertion.
-  Remaining work: route-by-route visual review after each UX rebuild slice.
+- Evidence: `responsive_overflow_check` in `scripts/e2e-production-app.py`
+  widened `mobile_routes` from `["/paciente"]` to all redesigned routes
+  (`/`, `/paciente`, `/equipe`, `/equipe/pacientes`, `/equipe/estoque`,
+  `/equipe/pedidos`, `/equipe/fulfillment`, `/equipe/suporte`, `/admin`)
+  at 390x844 mobile + 1440x950 desktop. Real overflow caught by widened
+  E2E (Phase 10 sidebar badges pushed `/equipe` to scrollWidth=546 at
+  390px); fixed by switching TeamShell sidebar from `flex-wrap` to a
+  horizontally scrollable strip with `flex: 0 0 auto` chips. Phase 12
+  contact sheet at
+  `artifacts/visual-e2e/redesign/p12-mobile-overview-grid.png` composed
+  from 18 individual 390/320 screenshots via `scripts/p12-screenshots.py`.
 
 **QA-003: Release checklist**
 
@@ -539,14 +587,40 @@ expires order plus payment` covers release behavior.
   production deploy/logs, domain/TLS, production session-cookie security, and
   offsite backup schedule.
 
+## Redesign Initiative Status (Phases 0–12, closed 2026-05-08)
+
+The Calm Clinical Modern redesign shipped end-to-end across the patient and
+team experiences. Phase 13 (this docs close-out) marks the initiative
+complete. Remaining work is operations-only:
+
+- `PAY-001` provider approval (business)
+- `PAY-003` final provider signature contract (engineering on provider
+  decision)
+- `DEP-001` host/topology decision
+- `DEP-002` real TLS/domain + offsite backup schedule + production
+  session-cookie `Secure` cookie evidence
+- `DEP-003` post-deploy smoke + rollback drill
+- `OPS-001` patient onboarding lifecycle polish
+- `CMP-001` LGPD data export/deletion + retention policy text
+- `INV-003` lot allocation strategy on payment confirmation (FIFO by
+  validity is the natural default; lot expiry + supplier metadata as
+  first-class fields)
+- `UX-009` public landing redesign (deferred per operator direction)
+
+`npm run readiness:release-gate` is the final mechanical refusal: provider,
+deployment, domain/TLS, signed webhook, schema, session-cookie, backup
+restore, and offsite backup all gate the release.
+
 ## Immediate Next Sprint
 
-1. Complete UX-001, UX-002, and UX-003 before adding more backend surface area.
-2. Complete PAY-001 because provider acceptance can invalidate implementation
-   assumptions.
-3. Complete ARCH-001 and ARCH-002 before the code grows further.
-4. Complete SEC-001 and SEC-002 before any patient data or payment access.
-5. Complete QA-001 for the current production app so regressions are visible.
+1. `PAY-001` business decision on provider — unblocks `PAY-003` and
+   production secrets.
+2. `DEP-001` and `DEP-002` host/domain/TLS — unblocks
+   `readiness:deployment-check`, `readiness:domain-tls`, and
+   production-`Secure` `readiness:session-security`.
+3. `DEP-002` offsite backup schedule with real evidence.
+4. `INV-003` lot allocation strategy on payment confirmation.
+5. `CMP-001` LGPD policy text and data export/deletion process.
 
 ## Definition Of Done
 

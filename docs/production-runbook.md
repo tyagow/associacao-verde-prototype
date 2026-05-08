@@ -173,3 +173,64 @@ npm run dev:reset
 ```
 
 The reset utility refuses `NODE_ENV=production`.
+
+## Dev Environment
+
+The redesign initiative introduced a long-running watchdog so the dev
+server stays available across agent resets and short network blips. It is
+**dev-only** and not used in production.
+
+```bash
+tmux new-session -d -s associacao-verde-watchdog \
+  "bash scripts/dev-watchdog.sh"
+```
+
+Behavior:
+
+- Listens on `:4184` (override with `PORT`).
+- Uses `DB_FILE=/tmp/associacao-verde-dev.sqlite` and
+  `DOCUMENT_STORAGE_DIR=/tmp/associacao-verde-dev-docs` by default.
+- Logs to `/tmp/associacao-verde-dev.log`.
+- Idempotent: each cycle skips if `/health` is already responsive.
+- After a (re)start, runs `node scripts/add-dev-user.mjs` to ensure the
+  TIAGO/TIAGO patient exists for quick agent and operator access.
+
+`scripts/add-dev-user.mjs` is also runnable standalone:
+
+```bash
+node scripts/add-dev-user.mjs http://127.0.0.1:4184
+```
+
+Override credentials via `DEV_PATIENT_CODE`, `DEV_PATIENT_INVITE`, and
+`DEV_PATIENT_NAME`.
+
+## Frozen-Server Bridge Pattern
+
+`server.mjs` is **frozen** — no new endpoints land in it directly. New API
+endpoints are implemented as Next.js Route Handlers under `app/api/` and
+wired into `server.mjs` only by adding a single string to the `appRoutes`
+allow-list (the dispatch returns `404` for `/api/*` paths not in that
+list). Bridge endpoints in service today:
+
+- `GET /api/team/activity` (Phase 3) — live activity feed polling
+- `POST /api/team/orders/status` (Phase 5) — kanban drag-and-drop
+- `POST /api/team/support-replies` (Phase 7) — workbench reply box
+- `GET /api/team/support-thread` (Phase 7) — workbench thread fetch
+
+Phase 5/7 also delegate to thin `*_raw` endpoints inside `server.mjs`
+(NOT in `appRoutes`) where the in-process domain singleton call lives.
+See `CLAUDE.md` for the full policy.
+
+## Schema Migrations
+
+Migrations follow an append-only `SCHEMA_MIGRATIONS` array in
+`src/sqlite-store.ts`. Current ledger:
+
+```
+{ 1,  initial_json_state_schema }
+{ 15, support_messages_thread }
+```
+
+`recordMigration` loops the array. Future phases append entries; never
+edit prior. `npm run readiness:schema-check` records the ledger,
+`user_version`, and required-table evidence for the release gate.
