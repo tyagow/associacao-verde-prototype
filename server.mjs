@@ -78,6 +78,9 @@ const appRoutes = new Set([
   // listing their pathnames here. server.mjs adds NO new endpoint code; the
   // implementation lives in app/api/<name>/route.js.
   "/api/team/activity",
+  // Stage C slice 1 — /health migrated to app/health/route.js (URL stays
+  // /health to keep deployment-check / smoke / domain-tls scripts working).
+  "/health",
   // Phase 7 bridge: support workbench Route Handlers proxy back into
   // server.mjs's raw system calls (/api/team/support-replies/_raw,
   // /api/team/support-thread/_raw) which are NOT allow-listed and stay
