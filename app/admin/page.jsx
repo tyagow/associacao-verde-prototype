@@ -2,6 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Brand from "../components/Brand";
+import ReleaseProgress from "./components/ReleaseProgress";
+import GateCard from "./components/GateCard";
+import GateDetail from "./components/GateDetail";
+import adminStyles from "./admin.module.css";
 
 const initialFilters = { adminQuery: "", adminStatus: "all" };
 
@@ -12,6 +16,7 @@ export default function AdminPage() {
   const [status, setStatus] = useState("carregando");
   const [error, setError] = useState("");
   const [toast, setToast] = useState("");
+  const [selectedGate, setSelectedGate] = useState(null);
 
   useEffect(() => {
     load();
@@ -230,202 +235,13 @@ export default function AdminPage() {
                     />
                   </section>
 
-                  <div className="panel-heading">
-                    <div>
-                      <p className="kicker">Readiness do ambiente</p>
-                      <h3>Gates de producao</h3>
-                    </div>
-                  </div>
-                  <section className="readiness-grid">
-                    {readiness?.gates?.length ? (
-                      readiness.gates.map((gate) => <ReadinessCard key={gate.label} gate={gate} />)
-                    ) : (
-                      <p className="muted">Readiness nao carregado.</p>
-                    )}
-                  </section>
-
-                  <ReleaseGatePanel releaseGate={readiness?.releaseGate} />
-                  <WebhookEvidencePanel evidence={readiness?.webhookDrill} />
-                  <ProviderEvidencePanel evidence={readiness?.providerApproval} />
-                  <DeploymentEvidencePanel evidence={readiness?.deploymentCheck} />
-                  <DomainTlsEvidencePanel evidence={readiness?.domainTls} />
-                  <SchemaEvidencePanel evidence={readiness?.schemaCheck} />
-                  <SessionSecurityEvidencePanel evidence={readiness?.sessionSecurity} />
-                  <BackupEvidencePanel evidence={readiness?.backupRestore} />
-                  <BackupSchedulePanel evidence={readiness?.backupSchedule} />
-
-                  <section className="panel">
-                    <div className="panel-heading">
-                      <div>
-                        <p className="kicker">Evidencias de liberacao</p>
-                        <h3>Registrar provider e backup offsite</h3>
-                        <p className="muted">
-                          Estes registros nao aprovam producao sozinhos. Os gates so ficam ok quando
-                          todos os campos obrigatorios de prova externa estiverem presentes.
-                        </p>
-                      </div>
-                    </div>
-                    <form
-                      id="provider-evidence-form"
-                      className="inline-form"
-                      key={readiness?.providerApproval?.checkedAt || "provider-evidence"}
-                      onSubmit={onProviderEvidence}
-                    >
-                      <label>
-                        Provider Pix
-                        <select
-                          name="provider"
-                          defaultValue={readiness?.providerApproval?.provider || "asaas"}
-                        >
-                          <option value="asaas">Asaas</option>
-                          <option value="mercado-pago">Mercado Pago</option>
-                          <option value="pagarme">Pagar.me</option>
-                        </select>
-                      </label>
-                      <label>
-                        Status
-                        <select
-                          name="status"
-                          defaultValue={readiness?.providerApproval?.status || "pending"}
-                        >
-                          <option value="pending">Pendente</option>
-                          <option value="approved">Aprovado</option>
-                          <option value="rejected">Rejeitado</option>
-                        </select>
-                      </label>
-                      <label>
-                        Conta/CNPJ
-                        <input
-                          name="accountStatus"
-                          defaultValue={readiness?.providerApproval?.accountStatus || ""}
-                          placeholder="Conta aprovada para CNPJ ..."
-                        />
-                      </label>
-                      <label>
-                        Protocolo de aceite
-                        <input
-                          name="evidenceRef"
-                          defaultValue={readiness?.providerApproval?.evidenceRef || ""}
-                          placeholder="Ticket, email, contrato ou protocolo"
-                        />
-                      </label>
-                      <label>
-                        Termos/contrato
-                        <input
-                          name="termsRef"
-                          defaultValue={readiness?.providerApproval?.termsRef || ""}
-                          placeholder="Referencia dos termos aceitos"
-                        />
-                      </label>
-                      <label>
-                        Docs de webhook
-                        <input
-                          name="webhookDocsRef"
-                          defaultValue={readiness?.providerApproval?.webhookDocsRef || ""}
-                          placeholder="Referencia da configuracao webhook"
-                        />
-                      </label>
-                      <label className="wide-field">
-                        Repasse/fees
-                        <input
-                          name="settlementNotes"
-                          defaultValue={readiness?.providerApproval?.settlementNotes || ""}
-                          placeholder="Resumo de taxas, prazo de repasse e responsavel"
-                        />
-                      </label>
-                      <button className="primary" type="submit">
-                        Registrar provider
-                      </button>
-                    </form>
-
-                    <form
-                      id="backup-schedule-form"
-                      className="inline-form"
-                      key={readiness?.backupSchedule?.checkedAt || "backup-schedule"}
-                      onSubmit={onBackupScheduleEvidence}
-                    >
-                      <label>
-                        Status
-                        <select
-                          name="status"
-                          defaultValue={readiness?.backupSchedule?.status || "pending"}
-                        >
-                          <option value="pending">Pendente</option>
-                          <option value="configured">Configurado</option>
-                          <option value="disabled">Desativado</option>
-                        </select>
-                      </label>
-                      <label>
-                        Destino offsite
-                        <input
-                          name="offsiteTargetRef"
-                          defaultValue={readiness?.backupSchedule?.offsiteTargetRef || ""}
-                          placeholder="S3/Backblaze/Drive corporativo"
-                        />
-                      </label>
-                      <label>
-                        Frequencia
-                        <input
-                          name="frequency"
-                          defaultValue={readiness?.backupSchedule?.frequency || ""}
-                          placeholder="Diario 03:00 BRT"
-                        />
-                      </label>
-                      <label>
-                        Retencao
-                        <input
-                          name="retention"
-                          defaultValue={readiness?.backupSchedule?.retention || ""}
-                          placeholder="30 dias + mensal 12 meses"
-                        />
-                      </label>
-                      <label>
-                        Criptografia
-                        <input
-                          name="encryptionRef"
-                          defaultValue={readiness?.backupSchedule?.encryptionRef || ""}
-                          placeholder="KMS/chave/responsavel"
-                        />
-                      </label>
-                      <label>
-                        Ultimo sucesso
-                        <input
-                          name="lastSuccessfulBackupAt"
-                          defaultValue={readiness?.backupSchedule?.lastSuccessfulBackupAt || ""}
-                          placeholder="2026-05-08T03:00:00-03:00"
-                        />
-                      </label>
-                      <label>
-                        Ultimo backup
-                        <input
-                          name="lastBackupRef"
-                          defaultValue={readiness?.backupSchedule?.lastBackupRef || ""}
-                          placeholder="URI ou job id do backup offsite"
-                        />
-                      </label>
-                      <label>
-                        Operador
-                        <input
-                          name="operatorRef"
-                          defaultValue={readiness?.backupSchedule?.operatorRef || ""}
-                          placeholder="Responsavel pela rotina"
-                        />
-                      </label>
-                      <input
-                        type="hidden"
-                        name="restoreDrillSha256"
-                        value={
-                          readiness?.backupRestore?.sha256 ||
-                          readiness?.backupSchedule?.restoreDrillSha256 ||
-                          ""
-                        }
-                        readOnly
-                      />
-                      <button className="primary" type="submit">
-                        Registrar backup offsite
-                      </button>
-                    </form>
-                  </section>
+                  <ReadinessSection
+                    readiness={readiness}
+                    selectedGate={selectedGate}
+                    onSelectGate={setSelectedGate}
+                    onProviderEvidence={onProviderEvidence}
+                    onBackupScheduleEvidence={onBackupScheduleEvidence}
+                  />
 
                   <section className="panel">
                     <div className="panel-heading">
@@ -578,374 +394,553 @@ export default function AdminPage() {
   );
 }
 
-function ReadinessCard({ gate }) {
-  const tone = gate.status === "ok" ? "good" : "warn";
+function ReadinessSection({
+  readiness,
+  selectedGate,
+  onSelectGate,
+  onProviderEvidence,
+  onBackupScheduleEvidence,
+}) {
+  const gates = readiness?.gates || [];
+  const releaseGate = readiness?.releaseGate;
+  const passing = gates.filter((gate) => gate.status === "ok").length;
+  const total = gates.length;
+  const blockers = gates.filter((gate) => gate.status !== "ok").map((gate) => gate.label);
+  const releaseChecks = releaseGate?.checks || [];
+  const selected = selectedGate ? gates.find((gate) => gate.label === selectedGate) || null : null;
   return (
-    <article className={`readiness-card ${tone}`}>
-      <span>{gate.status}</span>
-      <strong>{gate.label}</strong>
-      <p>{gate.detail}</p>
-    </article>
-  );
-}
+    <>
+      <ReleaseProgress
+        passing={passing}
+        total={total}
+        blockers={blockers}
+        checkedAt={releaseGate?.checkedAt ? formatDateTime(releaseGate.checkedAt) : null}
+      />
 
-function ReleaseGatePanel({ releaseGate }) {
-  if (!releaseGate) {
-    return (
-      <section className="admin-evidence-panel warn">
+      <section
+        className={`admin-evidence-panel ${releaseGate?.ok ? "good" : "warn"}`}
+        aria-label="Resumo do release gate"
+      >
         <div>
           <span>release gate</span>
-          <strong>Release gate sem evidencia carregada</strong>
-          <p>Execute os drills de readiness antes de avaliar a liberacao de producao.</p>
-        </div>
-      </section>
-    );
-  }
-  const blockers = releaseGate.checks?.filter((check) => !check.ok) || [];
-  return (
-    <section className={`admin-evidence-panel ${releaseGate.ok ? "good" : "warn"}`}>
-      <div>
-        <span>release gate</span>
-        <strong>
-          {releaseGate.ok
-            ? "Release liberado por evidencias"
-            : "Release bloqueado por evidencias pendentes"}
-        </strong>
-        <p>
-          {releaseGate.ok
-            ? "Todos os gates de producao estao completos."
-            : `${blockers.length} bloqueio(s) impedem declarar producao pronta.`}
-        </p>
-        <p className="muted">Verificado em {formatDateTime(releaseGate.checkedAt)}.</p>
-      </div>
-      <dl>
-        {(releaseGate.checks || []).map((check) => (
-          <div key={check.name}>
-            <dt>{check.name}</dt>
-            <dd>{check.ok ? "ok" : "pendente"}</dd>
-          </div>
-        ))}
-      </dl>
-    </section>
-  );
-}
-
-function BackupEvidencePanel({ evidence }) {
-  if (!evidence) {
-    return (
-      <section className="admin-evidence-panel warn">
-        <div>
-          <span>restore drill</span>
-          <strong>Sem evidencia local registrada</strong>
-          <p>Execute npm run readiness:backup-drill antes de liberar producao.</p>
-        </div>
-      </section>
-    );
-  }
-  const counts = evidence.counts || {};
-  return (
-    <section className={`admin-evidence-panel ${evidence.ok ? "good" : "warn"}`}>
-      <div>
-        <span>restore drill</span>
-        <strong>{evidence.ok ? "Backup restaurado e validado" : "Evidencia invalida"}</strong>
-        <p>
-          {evidence.backupFileName || "arquivo nao registrado"} ·{" "}
-          {formatDateTime(evidence.checkedAt)} · {formatBytes(evidence.bytes)}
-        </p>
-        <p className="muted">sha256 {String(evidence.sha256 || "").slice(0, 16)}...</p>
-      </div>
-      <dl>
-        <EvidenceMetric label="Pacientes" value={counts.patients} />
-        <EvidenceMetric label="Produtos" value={counts.products} />
-        <EvidenceMetric label="Equipe" value={counts.teamUsers} />
-        <EvidenceMetric label="Auditoria" value={counts.auditEvents} />
-      </dl>
-    </section>
-  );
-}
-
-function WebhookEvidencePanel({ evidence }) {
-  if (!evidence) {
-    return (
-      <section className="admin-evidence-panel warn">
-        <div>
-          <span>webhook drill</span>
-          <strong>Sem prova local da assinatura Pix</strong>
+          <strong>
+            {releaseGate?.ok
+              ? "Release liberado por evidencias"
+              : "Release bloqueado por evidencias pendentes"}
+          </strong>
           <p>
-            Execute npm run readiness:webhook-drill para validar rejeicao sem segredo e confirmacao
-            assinada.
+            {releaseGate?.ok
+              ? "Todos os gates de producao estao completos."
+              : `${blockers.length} bloqueio(s) impedem declarar producao pronta.`}
+          </p>
+          <p className="muted">Verificado em {formatDateTime(releaseGate?.checkedAt)}.</p>
+        </div>
+        <dl>
+          {releaseChecks.map((check) => (
+            <div key={check.name}>
+              <dt>{check.name}</dt>
+              <dd>{check.ok ? "ok" : "pendente"}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      <div className="panel-heading">
+        <div>
+          <p className="kicker">Readiness do ambiente</p>
+          <h3>Gates de producao</h3>
+          <p className="muted">
+            Clique em um gate para ver evidencias e registrar provas. As escritas continuam indo
+            para os mesmos endpoints `/api/team/readiness/*`.
           </p>
         </div>
-      </section>
-    );
-  }
-  return (
-    <section className={`admin-evidence-panel ${evidence.ok ? "good" : "warn"}`}>
-      <div>
-        <span>webhook drill</span>
-        <strong>{evidence.ok ? "Webhook Pix assinado validado" : "Evidencia Pix invalida"}</strong>
-        <p>
-          {evidence.orderId || "pedido nao registrado"} · {formatDateTime(evidence.checkedAt)} ·{" "}
-          {Number(evidence.durationMs || 0)} ms
-        </p>
-        <p className="muted">
-          Pagamento {evidence.paymentId || "nao registrado"} terminou como{" "}
-          {evidence.finalOrderStatus || "sem status"}.
-        </p>
       </div>
-      <dl>
-        <EvidenceMetric label="Sem assinatura" value={evidence.unsignedStatus} />
-        <EvidenceMetric label="Assinado" value={evidence.signedStatus} />
-        <EvidenceMetric label="Estoque final" value={evidence.stockAfterPayment} />
-        <EvidenceMetric label="Ok" value={evidence.ok ? 1 : 0} />
-      </dl>
-    </section>
-  );
-}
 
-function ProviderEvidencePanel({ evidence }) {
-  if (!evidence) {
-    return (
-      <section className="admin-evidence-panel warn">
-        <div>
-          <span>provider approval</span>
-          <strong>Aceite formal ainda nao registrado</strong>
-          <p>
-            Registre provider, status da conta, termos, fees/repasse e contrato de webhook antes da
-            liberacao.
-          </p>
-        </div>
-      </section>
-    );
-  }
-  return (
-    <section className={`admin-evidence-panel ${evidence.ok ? "good" : "warn"}`}>
-      <div>
-        <span>provider approval</span>
-        <strong>
-          {evidence.ok ? "Provider aprovado para a associacao" : "Aceite do provider pendente"}
-        </strong>
-        <p>
-          {evidence.provider || "provider nao definido"} · {evidence.status || "pending"} ·{" "}
-          {formatDateTime(evidence.checkedAt)}
-        </p>
-        <p className="muted">{evidence.evidenceRef || "Sem referencia formal registrada."}</p>
-      </div>
-      <dl>
-        <EvidenceTextMetric label="Conta" value={evidence.accountStatus || "pendente"} />
-        <EvidenceTextMetric label="Termos" value={evidence.termsRef ? "registrado" : "pendente"} />
-        <EvidenceTextMetric
-          label="Webhook"
-          value={evidence.webhookDocsRef ? "registrado" : "pendente"}
+      {gates.length ? (
+        <section className={adminStyles.readinessGrid} aria-label="Gates de readiness">
+          {gates.map((gate) => (
+            <GateCard
+              key={gate.label}
+              id={gate.label}
+              label={gate.label}
+              detail={gate.detail}
+              tone={toneFor(gate)}
+              pillText={gate.status === "ok" ? "Passa" : "Pendente"}
+              selected={selectedGate === gate.label}
+              onSelect={(id) => onSelectGate(id === selectedGate ? null : id)}
+            />
+          ))}
+        </section>
+      ) : (
+        <p className="muted">Readiness nao carregado.</p>
+      )}
+
+      {selected ? (
+        <GateDetailForGate
+          gate={selected}
+          readiness={readiness}
+          onClose={() => onSelectGate(null)}
+          onProviderEvidence={onProviderEvidence}
+          onBackupScheduleEvidence={onBackupScheduleEvidence}
         />
-        <EvidenceTextMetric
-          label="Repasse"
-          value={evidence.settlementNotes ? "registrado" : "pendente"}
+      ) : null}
+    </>
+  );
+}
+
+function toneFor(gate) {
+  if (gate.status === "ok") return "good";
+  if (gate.status === "blocked" || gate.status === "danger") return "danger";
+  if (gate.status === "pending") return "warn";
+  return "warn";
+}
+
+function GateDetailForGate({
+  gate,
+  readiness,
+  onClose,
+  onProviderEvidence,
+  onBackupScheduleEvidence,
+}) {
+  const tone = toneFor(gate);
+  const detail = buildDetailForGate(gate, readiness);
+  return (
+    <GateDetail
+      title={gate.label}
+      tone={tone}
+      summary={detail.summary || gate.detail}
+      meta={detail.meta}
+      evidence={detail.evidence}
+      runHint={detail.runHint}
+      onClose={onClose}
+    >
+      {gate.label === "Aceite do provider" ? (
+        <ProviderEvidenceForm
+          evidence={readiness?.providerApproval}
+          onSubmit={onProviderEvidence}
         />
-      </dl>
-    </section>
-  );
-}
-
-function DeploymentEvidencePanel({ evidence }) {
-  if (!evidence) {
-    return (
-      <section className="admin-evidence-panel warn">
-        <div>
-          <span>deployment check</span>
-          <strong>Deploy, dominio e logs sem prova</strong>
-          <p>
-            Execute npm run readiness:deployment-check contra a URL de release e anexe referencia de
-            logs.
-          </p>
-        </div>
-      </section>
-    );
-  }
-  return (
-    <section className={`admin-evidence-panel ${evidence.ok ? "good" : "warn"}`}>
-      <div>
-        <span>deployment check</span>
-        <strong>
-          {evidence.ok ? "Runtime de release verificado" : "Evidencia de deploy invalida"}
-        </strong>
-        <p>
-          {evidence.baseUrl || "URL nao registrada"} · {formatDateTime(evidence.checkedAt)}
-        </p>
-        <p className="muted">Logs: {evidence.logsRef || "referencia nao registrada"}</p>
-      </div>
-      <dl>
-        <EvidenceMetric label="Health" value={evidence.healthStatus} />
-        <EvidenceMetric label="Catalogo negado" value={evidence.catalogDeniedStatus} />
-        <EvidenceMetric label="Rota protegida" value={evidence.protectedRouteStatus} />
-        <EvidenceTextMetric label="HTTPS" value={evidence.https ? "sim" : "nao"} />
-      </dl>
-    </section>
-  );
-}
-
-function DomainTlsEvidencePanel({ evidence }) {
-  if (!evidence) {
-    return (
-      <section className="admin-evidence-panel warn">
-        <div>
-          <span>domain tls</span>
-          <strong>Dominio profissional e TLS sem prova</strong>
-          <p>
-            Execute READINESS_DOMAIN_URL=https://dominio npm run readiness:domain-tls contra a URL
-            publica de producao.
-          </p>
-        </div>
-      </section>
-    );
-  }
-  return (
-    <section className={`admin-evidence-panel ${evidence.ok ? "good" : "warn"}`}>
-      <div>
-        <span>domain tls</span>
-        <strong>
-          {evidence.ok ? "Dominio e certificado verificados" : "Dominio/TLS pendente"}
-        </strong>
-        <p>
-          {evidence.hostname || "dominio nao registrado"} · {formatDateTime(evidence.checkedAt)}
-        </p>
-        <p className="muted">
-          Certificado ate {evidence.validTo || "data nao registrada"} · issuer{" "}
-          {evidence.issuer?.O || evidence.issuer?.CN || "nao registrado"}
-        </p>
-      </div>
-      <dl>
-        <EvidenceTextMetric label="HTTPS" value={evidence.https ? "sim" : "nao"} />
-        <EvidenceTextMetric
-          label="Host publico"
-          value={evidence.professionalHost ? "sim" : "nao"}
+      ) : null}
+      {gate.label === "Backup offsite" ? (
+        <BackupScheduleForm
+          evidence={readiness?.backupSchedule}
+          restoreDrillSha256={
+            readiness?.backupRestore?.sha256 || readiness?.backupSchedule?.restoreDrillSha256 || ""
+          }
+          onSubmit={onBackupScheduleEvidence}
         />
-        <EvidenceTextMetric label="TLS autorizado" value={evidence.authorized ? "sim" : "nao"} />
-        <EvidenceMetric label="Health" value={evidence.healthStatus} />
-      </dl>
-    </section>
+      ) : null}
+      {detail.tag ? (
+        <p className={adminStyles.detailTag} aria-hidden="true">
+          {detail.tag}
+        </p>
+      ) : null}
+    </GateDetail>
   );
 }
 
-function SchemaEvidencePanel({ evidence }) {
-  if (!evidence) {
-    return (
-      <section className="admin-evidence-panel warn">
-        <div>
-          <span>schema db</span>
-          <strong>Schema SQLite sem prova</strong>
-          <p>
-            Execute DB_FILE=&lt;sqlite&gt; npm run readiness:schema-check antes de liberar producao.
-          </p>
-        </div>
-      </section>
-    );
+function buildDetailForGate(gate, readiness) {
+  switch (gate.label) {
+    case "Webhook Pix": {
+      const evidence = readiness?.webhookDrill;
+      if (!evidence) {
+        return {
+          tag: "webhook drill",
+          summary: "Sem prova local da assinatura Pix.",
+          runHint: "npm run readiness:webhook-drill",
+          meta: [],
+          evidence: [],
+        };
+      }
+      return {
+        tag: "webhook drill",
+        summary: evidence.ok ? "Webhook Pix assinado validado" : "Evidencia Pix invalida",
+        meta: [
+          { label: "Sem assinatura", value: Number(evidence.unsignedStatus || 0) },
+          { label: "Assinado", value: Number(evidence.signedStatus || 0) },
+          { label: "Estoque final", value: Number(evidence.stockAfterPayment || 0) },
+          { label: "Duracao", value: `${Number(evidence.durationMs || 0)} ms` },
+        ],
+        evidence: [
+          { label: "Pedido", value: evidence.orderId || "nao registrado" },
+          { label: "Pagamento", value: evidence.paymentId || "nao registrado" },
+          { label: "Status final", value: evidence.finalOrderStatus || "sem status" },
+          { label: "Verificado em", value: formatDateTime(evidence.checkedAt) },
+        ],
+      };
+    }
+    case "Aceite do provider": {
+      const evidence = readiness?.providerApproval;
+      if (!evidence) {
+        return {
+          tag: "provider approval",
+          summary: "Aceite do provider ainda nao registrado.",
+          runHint: "Registre provider, conta, termos, fees e contrato de webhook abaixo.",
+          meta: [],
+          evidence: [],
+        };
+      }
+      return {
+        tag: "provider approval",
+        summary: evidence.ok
+          ? "Provider aprovado para a associacao"
+          : "Aceite do provider pendente",
+        meta: [
+          { label: "Provider", value: evidence.provider || "nao definido" },
+          { label: "Status", value: evidence.status || "pending" },
+          { label: "Verificado em", value: formatDateTime(evidence.checkedAt) },
+          { label: "Protocolo", value: evidence.evidenceRef || "pendente" },
+        ],
+        evidence: [
+          { label: "Conta", value: evidence.accountStatus || "pendente" },
+          { label: "Termos", value: evidence.termsRef ? "registrado" : "pendente" },
+          { label: "Webhook", value: evidence.webhookDocsRef ? "registrado" : "pendente" },
+          { label: "Repasse", value: evidence.settlementNotes ? "registrado" : "pendente" },
+        ],
+      };
+    }
+    case "Deploy/domain/logs": {
+      const evidence = readiness?.deploymentCheck;
+      if (!evidence) {
+        return {
+          tag: "deployment check",
+          summary: "Deploy, dominio e logs sem prova.",
+          runHint: "npm run readiness:deployment-check",
+          meta: [],
+          evidence: [],
+        };
+      }
+      return {
+        tag: "deployment check",
+        summary: evidence.ok ? "Runtime de release verificado" : "Evidencia de deploy invalida",
+        meta: [
+          { label: "Health", value: Number(evidence.healthStatus || 0) },
+          { label: "Catalogo negado", value: Number(evidence.catalogDeniedStatus || 0) },
+          { label: "Rota protegida", value: Number(evidence.protectedRouteStatus || 0) },
+          { label: "HTTPS", value: evidence.https ? "sim" : "nao" },
+        ],
+        evidence: [
+          { label: "URL", value: evidence.baseUrl || "nao registrada" },
+          { label: "Logs", value: evidence.logsRef || "nao registrada" },
+          { label: "Verificado em", value: formatDateTime(evidence.checkedAt) },
+        ],
+      };
+    }
+    case "Dominio/TLS": {
+      const evidence = readiness?.domainTls;
+      if (!evidence) {
+        return {
+          tag: "domain tls",
+          summary: "Dominio profissional e TLS sem prova.",
+          runHint: "READINESS_DOMAIN_URL=https://dominio npm run readiness:domain-tls",
+          meta: [],
+          evidence: [],
+        };
+      }
+      return {
+        tag: "domain tls",
+        summary: evidence.ok ? "Dominio e certificado verificados" : "Dominio/TLS pendente",
+        meta: [
+          { label: "HTTPS", value: evidence.https ? "sim" : "nao" },
+          { label: "Host publico", value: evidence.professionalHost ? "sim" : "nao" },
+          { label: "TLS autorizado", value: evidence.authorized ? "sim" : "nao" },
+          { label: "Health", value: Number(evidence.healthStatus || 0) },
+        ],
+        evidence: [
+          { label: "Hostname", value: evidence.hostname || "nao registrado" },
+          { label: "Validade", value: evidence.validTo || "nao registrada" },
+          {
+            label: "Issuer",
+            value: evidence.issuer?.O || evidence.issuer?.CN || "nao registrado",
+          },
+          { label: "Verificado em", value: formatDateTime(evidence.checkedAt) },
+        ],
+      };
+    }
+    case "Schema DB": {
+      const evidence = readiness?.schemaCheck;
+      if (!evidence) {
+        return {
+          tag: "schema db",
+          summary: "Schema SQLite sem prova.",
+          runHint: "DB_FILE=<sqlite> npm run readiness:schema-check",
+          meta: [],
+          evidence: [],
+        };
+      }
+      return {
+        tag: "schema db",
+        summary: evidence.ok ? "Schema e migrations validados" : "Schema DB pendente",
+        meta: [
+          { label: "Esperado", value: Number(evidence.expectedVersion || 0) },
+          { label: "Atual", value: Number(evidence.schemaVersion || 0) },
+          { label: "Tabelas", value: Number(evidence.tableCount || 0) },
+          { label: "Migrations", value: Number(evidence.migrations?.length || 0) },
+        ],
+        evidence: [
+          { label: "DB", value: evidence.dbFile || "nao registrado" },
+          {
+            label: "Faltando",
+            value: evidence.missingTables?.length ? evidence.missingTables.join(", ") : "nenhuma",
+          },
+          { label: "Verificado em", value: formatDateTime(evidence.checkedAt) },
+        ],
+      };
+    }
+    case "Sessao/cookie": {
+      const evidence = readiness?.sessionSecurity;
+      if (!evidence) {
+        return {
+          tag: "session cookie",
+          summary: "Cookie de sessao sem prova.",
+          runHint: "READINESS_BASE_URL=<url> npm run readiness:session-security",
+          meta: [],
+          evidence: [],
+        };
+      }
+      const cookie = evidence.cookie || {};
+      return {
+        tag: "session cookie",
+        summary: evidence.ok ? "Sessao assinada validada" : "Cookie de sessao pendente",
+        meta: [
+          { label: "HttpOnly", value: cookie.httpOnly ? "sim" : "nao" },
+          { label: "SameSite", value: cookie.sameSite || "pendente" },
+          { label: "Secure", value: cookie.secure ? "sim" : "nao" },
+          { label: "Assinado", value: cookie.signedValue ? "sim" : "nao" },
+        ],
+        evidence: [
+          { label: "URL", value: evidence.baseUrl || "nao registrada" },
+          { label: "Login", value: Number(evidence.loginStatus || 0) },
+          {
+            label: "Secure obrigatorio",
+            value: evidence.secureRequired ? "sim" : "nao (HTTP local)",
+          },
+          { label: "Verificado em", value: formatDateTime(evidence.checkedAt) },
+        ],
+      };
+    }
+    case "Backup/restore": {
+      const evidence = readiness?.backupRestore;
+      if (!evidence) {
+        return {
+          tag: "restore drill",
+          summary: "Sem evidencia local registrada.",
+          runHint: "npm run readiness:backup-drill",
+          meta: [],
+          evidence: [],
+        };
+      }
+      const counts = evidence.counts || {};
+      return {
+        tag: "restore drill",
+        summary: evidence.ok ? "Backup restaurado e validado" : "Evidencia invalida",
+        meta: [
+          { label: "Pacientes", value: Number(counts.patients || 0) },
+          { label: "Produtos", value: Number(counts.products || 0) },
+          { label: "Equipe", value: Number(counts.teamUsers || 0) },
+          { label: "Auditoria", value: Number(counts.auditEvents || 0) },
+        ],
+        evidence: [
+          { label: "Arquivo", value: evidence.backupFileName || "nao registrado" },
+          { label: "Tamanho", value: formatBytes(evidence.bytes) },
+          {
+            label: "sha256",
+            value: `${String(evidence.sha256 || "").slice(0, 16)}${evidence.sha256 ? "..." : ""}`,
+          },
+          { label: "Verificado em", value: formatDateTime(evidence.checkedAt) },
+        ],
+      };
+    }
+    case "Backup offsite": {
+      const evidence = readiness?.backupSchedule;
+      if (!evidence) {
+        return {
+          tag: "backup offsite",
+          summary: "Agenda e destino offsite sem prova.",
+          runHint: "Preencha o formulario abaixo com destino, retencao e ultimo backup.",
+          meta: [],
+          evidence: [],
+        };
+      }
+      return {
+        tag: "backup offsite",
+        summary: evidence.ok ? "Backup offsite configurado" : "Backup offsite pendente",
+        meta: [
+          { label: "Frequencia", value: evidence.frequency || "pendente" },
+          { label: "Retencao", value: evidence.retention || "pendente" },
+          {
+            label: "Criptografia",
+            value: evidence.encryptionRef ? "registrada" : "pendente",
+          },
+          { label: "Status", value: evidence.status || "pending" },
+        ],
+        evidence: [
+          { label: "Destino", value: evidence.offsiteTargetRef || "nao registrado" },
+          { label: "Ultimo backup", value: evidence.lastBackupRef || "sem referencia" },
+          {
+            label: "Restore drill sha",
+            value: `${String(evidence.restoreDrillSha256 || "").slice(0, 16)}${evidence.restoreDrillSha256 ? "..." : ""}`,
+          },
+          { label: "Verificado em", value: formatDateTime(evidence.checkedAt) },
+        ],
+      };
+    }
+    default:
+      return {
+        summary: gate.detail,
+        meta: [{ label: "Status", value: gate.status }],
+        evidence: [],
+      };
   }
-  return (
-    <section className={`admin-evidence-panel ${evidence.ok ? "good" : "warn"}`}>
-      <div>
-        <span>schema db</span>
-        <strong>{evidence.ok ? "Schema e migrations validados" : "Schema DB pendente"}</strong>
-        <p>
-          {evidence.dbFile || "banco nao registrado"} · {formatDateTime(evidence.checkedAt)}
-        </p>
-        <p className="muted">
-          {evidence.missingTables?.length
-            ? `Faltando: ${evidence.missingTables.join(", ")}`
-            : "Tabela de migrations e tabelas obrigatorias presentes."}
-        </p>
-      </div>
-      <dl>
-        <EvidenceMetric label="Esperado" value={evidence.expectedVersion} />
-        <EvidenceMetric label="Atual" value={evidence.schemaVersion} />
-        <EvidenceMetric label="Tabelas" value={evidence.tableCount} />
-        <EvidenceMetric label="Migrations" value={evidence.migrations?.length || 0} />
-      </dl>
-    </section>
-  );
 }
 
-function SessionSecurityEvidencePanel({ evidence }) {
-  if (!evidence) {
-    return (
-      <section className="admin-evidence-panel warn">
-        <div>
-          <span>session cookie</span>
-          <strong>Cookie de sessao sem prova</strong>
-          <p>
-            Execute READINESS_BASE_URL=&lt;url&gt; npm run readiness:session-security para validar
-            login e atributos do cookie.
-          </p>
-        </div>
-      </section>
-    );
-  }
-  const cookie = evidence.cookie || {};
+function ProviderEvidenceForm({ evidence, onSubmit }) {
   return (
-    <section className={`admin-evidence-panel ${evidence.ok ? "good" : "warn"}`}>
-      <div>
-        <span>session cookie</span>
-        <strong>{evidence.ok ? "Sessao assinada validada" : "Cookie de sessao pendente"}</strong>
-        <p>
-          {evidence.baseUrl || "URL nao registrada"} · {formatDateTime(evidence.checkedAt)} · login{" "}
-          {evidence.loginStatus || 0}
-        </p>
-        <p className="muted">
-          {evidence.secureRequired
-            ? "Secure obrigatorio neste ambiente."
-            : "Secure sera obrigatorio em HTTPS/producao."}
-        </p>
-      </div>
-      <dl>
-        <EvidenceTextMetric label="HttpOnly" value={cookie.httpOnly ? "sim" : "nao"} />
-        <EvidenceTextMetric label="SameSite" value={cookie.sameSite || "pendente"} />
-        <EvidenceTextMetric label="Secure" value={cookie.secure ? "sim" : "nao"} />
-        <EvidenceTextMetric label="Assinado" value={cookie.signedValue ? "sim" : "nao"} />
-      </dl>
-    </section>
-  );
-}
-
-function BackupSchedulePanel({ evidence }) {
-  if (!evidence) {
-    return (
-      <section className="admin-evidence-panel warn">
-        <div>
-          <span>backup offsite</span>
-          <strong>Agenda e destino offsite sem prova</strong>
-          <p>
-            Registre destino, frequencia, retencao e ultimo backup offsite vinculado ao restore
-            drill.
-          </p>
-        </div>
-      </section>
-    );
-  }
-  return (
-    <section className={`admin-evidence-panel ${evidence.ok ? "good" : "warn"}`}>
-      <div>
-        <span>backup offsite</span>
-        <strong>{evidence.ok ? "Backup offsite configurado" : "Backup offsite pendente"}</strong>
-        <p>
-          {evidence.offsiteTargetRef || "destino nao registrado"} ·{" "}
-          {formatDateTime(evidence.checkedAt)}
-        </p>
-        <p className="muted">
-          Ultimo backup: {evidence.lastBackupRef || "sem referencia"} · restore{" "}
-          {String(evidence.restoreDrillSha256 || "").slice(0, 16)}
-          {evidence.restoreDrillSha256 ? "..." : ""}
-        </p>
-      </div>
-      <dl>
-        <EvidenceTextMetric label="Frequencia" value={evidence.frequency || "pendente"} />
-        <EvidenceTextMetric label="Retencao" value={evidence.retention || "pendente"} />
-        <EvidenceTextMetric
-          label="Criptografia"
-          value={evidence.encryptionRef ? "registrada" : "pendente"}
+    <form
+      id="provider-evidence-form"
+      className="inline-form"
+      key={evidence?.checkedAt || "provider-evidence"}
+      onSubmit={onSubmit}
+    >
+      <label>
+        Provider Pix
+        <select name="provider" defaultValue={evidence?.provider || "asaas"}>
+          <option value="asaas">Asaas</option>
+          <option value="mercado-pago">Mercado Pago</option>
+          <option value="pagarme">Pagar.me</option>
+        </select>
+      </label>
+      <label>
+        Status
+        <select name="status" defaultValue={evidence?.status || "pending"}>
+          <option value="pending">Pendente</option>
+          <option value="approved">Aprovado</option>
+          <option value="rejected">Rejeitado</option>
+        </select>
+      </label>
+      <label>
+        Conta/CNPJ
+        <input
+          name="accountStatus"
+          defaultValue={evidence?.accountStatus || ""}
+          placeholder="Conta aprovada para CNPJ ..."
         />
-        <EvidenceTextMetric label="Status" value={evidence.status || "pending"} />
-      </dl>
-    </section>
+      </label>
+      <label>
+        Protocolo de aceite
+        <input
+          name="evidenceRef"
+          defaultValue={evidence?.evidenceRef || ""}
+          placeholder="Ticket, email, contrato ou protocolo"
+        />
+      </label>
+      <label>
+        Termos/contrato
+        <input
+          name="termsRef"
+          defaultValue={evidence?.termsRef || ""}
+          placeholder="Referencia dos termos aceitos"
+        />
+      </label>
+      <label>
+        Docs de webhook
+        <input
+          name="webhookDocsRef"
+          defaultValue={evidence?.webhookDocsRef || ""}
+          placeholder="Referencia da configuracao webhook"
+        />
+      </label>
+      <label className="wide-field">
+        Repasse/fees
+        <input
+          name="settlementNotes"
+          defaultValue={evidence?.settlementNotes || ""}
+          placeholder="Resumo de taxas, prazo de repasse e responsavel"
+        />
+      </label>
+      <button className="primary" type="submit">
+        Registrar provider
+      </button>
+    </form>
+  );
+}
+
+function BackupScheduleForm({ evidence, restoreDrillSha256, onSubmit }) {
+  return (
+    <form
+      id="backup-schedule-form"
+      className="inline-form"
+      key={evidence?.checkedAt || "backup-schedule"}
+      onSubmit={onSubmit}
+    >
+      <label>
+        Status
+        <select name="status" defaultValue={evidence?.status || "pending"}>
+          <option value="pending">Pendente</option>
+          <option value="configured">Configurado</option>
+          <option value="disabled">Desativado</option>
+        </select>
+      </label>
+      <label>
+        Destino offsite
+        <input
+          name="offsiteTargetRef"
+          defaultValue={evidence?.offsiteTargetRef || ""}
+          placeholder="S3/Backblaze/Drive corporativo"
+        />
+      </label>
+      <label>
+        Frequencia
+        <input
+          name="frequency"
+          defaultValue={evidence?.frequency || ""}
+          placeholder="Diario 03:00 BRT"
+        />
+      </label>
+      <label>
+        Retencao
+        <input
+          name="retention"
+          defaultValue={evidence?.retention || ""}
+          placeholder="30 dias + mensal 12 meses"
+        />
+      </label>
+      <label>
+        Criptografia
+        <input
+          name="encryptionRef"
+          defaultValue={evidence?.encryptionRef || ""}
+          placeholder="KMS/chave/responsavel"
+        />
+      </label>
+      <label>
+        Ultimo sucesso
+        <input
+          name="lastSuccessfulBackupAt"
+          defaultValue={evidence?.lastSuccessfulBackupAt || ""}
+          placeholder="2026-05-08T03:00:00-03:00"
+        />
+      </label>
+      <label>
+        Ultimo backup
+        <input
+          name="lastBackupRef"
+          defaultValue={evidence?.lastBackupRef || ""}
+          placeholder="URI ou job id do backup offsite"
+        />
+      </label>
+      <label>
+        Operador
+        <input
+          name="operatorRef"
+          defaultValue={evidence?.operatorRef || ""}
+          placeholder="Responsavel pela rotina"
+        />
+      </label>
+      <input type="hidden" name="restoreDrillSha256" value={restoreDrillSha256} readOnly />
+      <button className="primary" type="submit">
+        Registrar backup offsite
+      </button>
+    </form>
   );
 }
 
@@ -955,24 +950,6 @@ function Metric({ label, value }) {
       <span>{label}</span>
       <strong>{value}</strong>
     </article>
-  );
-}
-
-function EvidenceMetric({ label, value }) {
-  return (
-    <div>
-      <dt>{label}</dt>
-      <dd>{Number(value || 0)}</dd>
-    </div>
-  );
-}
-
-function EvidenceTextMetric({ label, value }) {
-  return (
-    <div>
-      <dt>{label}</dt>
-      <dd>{value || "-"}</dd>
-    </div>
   );
 }
 

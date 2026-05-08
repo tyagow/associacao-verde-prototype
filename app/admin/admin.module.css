@@ -1,0 +1,19 @@
+.readinessGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 720px) {
+  .readinessGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.detailTag {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+  color: var(--muted, #687970);
+  margin: 0;
+}
