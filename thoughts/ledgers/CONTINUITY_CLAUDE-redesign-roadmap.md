@@ -12,9 +12,10 @@ ledger update.
 
 ### Stats
 
-- **Phases shipped**: 13 of 14 (Phase 11 public landing deferred per
-  operator direction; tracked as `UX-009` in
-  `docs/production-delivery-plan.md`).
+- **Phases shipped**: **14 of 14** (Phase 11 public landing redesign
+  shipped 2026-05-08 via task #21 — apoiarbrasil.org-modeled institutional
+  voice, no internal-feature jargon; commits `5ab66d9`, `8e57265`,
+  `dbd14ad`, `b3f0416`).
 - **Phase 1 was sliced** into 1a / 1b / 1c / 1d (4 sub-slices).
 - **Commits across the redesign**: 65 (counting from `a234760` "import
   existing app code as baseline"; the four Phase 13 docs commits land at
@@ -24,10 +25,10 @@ ledger update.
   Phase 3 team activity Route Handler (×3), Phase 5 fulfillment status
   (×5), Phase 6 inventory lots (×2), Phase 7 support thread (×2),
   Phase 10 audit timeline grouping (×4), plus a few smaller paths.
-- **Surfaces redesigned**: 8 authenticated surfaces — `/paciente`,
-  `/equipe`, `/equipe/pacientes`, `/equipe/estoque`, `/equipe/pedidos`,
-  `/equipe/fulfillment`, `/equipe/suporte`, `/admin`. Public home (`/`)
-  intentionally not redesigned (deferred).
+- **Surfaces redesigned**: 9 surfaces — `/paciente`, `/equipe`,
+  `/equipe/pacientes`, `/equipe/estoque`, `/equipe/pedidos`,
+  `/equipe/fulfillment`, `/equipe/suporte`, `/admin`, plus the public
+  home (`/`) shipped via task #21.
 - **Schema versions**: v1 (initial JSON state) and v15
   (`support_messages_thread`); append-only `SCHEMA_MIGRATIONS` ledger
   in `src/sqlite-store.ts`.
