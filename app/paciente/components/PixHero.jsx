@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import OrderTimeline from "./OrderTimeline";
 import styles from "./PixHero.module.css";
 
@@ -18,85 +19,6 @@ function formatCountdown(seconds) {
   const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
   const ss = String(seconds % 60).padStart(2, "0");
   return `${mm}:${ss}`;
-}
-
-// Deterministic placeholder QR pattern. Hashes the input to a 21x21 grid of
-// modules with the standard three finder patterns. Visually evokes a QR for
-// the hero; real QR encoding can be swapped in via qrcode.react later without
-// touching the consumer.
-function PixQrPlaceholder({ value }) {
-  const SIZE = 21;
-  const grid = useMemo(() => buildPattern(value, SIZE), [value]);
-  const cell = 100 / SIZE;
-  return (
-    <svg
-      viewBox="0 0 100 100"
-      role="img"
-      aria-label="QR code Pix (representacao visual)"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <rect width="100" height="100" fill="#fff" />
-      {grid.flatMap((row, y) =>
-        row.map((on, x) =>
-          on ? (
-            <rect
-              key={`${x}-${y}`}
-              x={x * cell}
-              y={y * cell}
-              width={cell}
-              height={cell}
-              fill="#0d1f17"
-            />
-          ) : null,
-        ),
-      )}
-    </svg>
-  );
-}
-
-function buildPattern(seed, size) {
-  const grid = Array.from({ length: size }, () => Array(size).fill(false));
-  // Seeded pseudo-random fill
-  let h = 2166136261;
-  const src = String(seed || "PIX");
-  for (let i = 0; i < src.length; i += 1) {
-    h ^= src.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  function rand() {
-    h ^= h << 13;
-    h ^= h >>> 17;
-    h ^= h << 5;
-    return ((h >>> 0) % 1000) / 1000;
-  }
-  for (let y = 0; y < size; y += 1) {
-    for (let x = 0; x < size; x += 1) {
-      grid[y][x] = rand() > 0.55;
-    }
-  }
-  // Three finder patterns at top-left, top-right, bottom-left (7x7).
-  const corners = [
-    [0, 0],
-    [size - 7, 0],
-    [0, size - 7],
-  ];
-  for (const [cx, cy] of corners) {
-    for (let y = 0; y < 7; y += 1) {
-      for (let x = 0; x < 7; x += 1) {
-        const onBorder = x === 0 || x === 6 || y === 0 || y === 6;
-        const inCenter = x >= 2 && x <= 4 && y >= 2 && y <= 4;
-        grid[cy + y][cx + x] = onBorder || inCenter;
-      }
-    }
-    // separator
-    for (let i = 0; i < 8; i += 1) {
-      if (cy + 7 < size && cx + i < size) grid[cy + 7][cx + i] = false;
-      if (cx + 7 < size && cy + i < size) grid[cy + i][cx + 7] = false;
-      if (cy - 1 >= 0 && cx + i < size) grid[cy - 1][cx + i] = false;
-      if (cx - 1 >= 0 && cy + i < size) grid[cy + i][cx - 1] = false;
-    }
-  }
-  return grid;
 }
 
 export default function PixHero({ order, onMarkPaid, onCopyPix }) {
@@ -180,7 +102,11 @@ export default function PixHero({ order, onMarkPaid, onCopyPix }) {
                 </p>
               </div>
               <span className={styles["px-hero__product-price"]}>
-                {money.format(((item.priceCents || 0) * item.quantity) / 100)}
+                {money.format(
+                  (item.subtotalCents != null
+                    ? item.subtotalCents
+                    : (item.unitPriceCents || 0) * item.quantity) / 100,
+                )}
               </span>
             </div>
           ))}
@@ -222,7 +148,22 @@ export default function PixHero({ order, onMarkPaid, onCopyPix }) {
         <p className={styles["px-hero__section-title"]}>Pague pelo Pix</p>
         <div className={styles["px-hero__qr-block"]}>
           <div className={styles["px-hero__qr"]}>
-            <PixQrPlaceholder value={copia || order?.id || "pix"} />
+            {copia ? (
+              <QRCodeSVG
+                value={copia}
+                size={180}
+                level="M"
+                bgColor="#ffffff"
+                fgColor="#0d1f17"
+                aria-label="QR code Pix"
+              />
+            ) : (
+              <div
+                className={styles["px-hero__qr-empty"]}
+                role="img"
+                aria-label="QR code Pix indisponivel"
+              />
+            )}
           </div>
           <p className={styles["px-hero__qr-hint"]}>
             Aponte a camera do app do banco ou copie o codigo abaixo.
