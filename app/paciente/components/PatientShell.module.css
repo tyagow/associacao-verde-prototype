@@ -1,0 +1,68 @@
+/* Phase 1a — Patient shell layout. Uses Phase 0 utilities (.app-shell, .app-topbar, .app-work)
+   from app/globals.css. The .px-* namespace covers patient-experience-specific bits that
+   sit alongside those primitives. */
+
+.shell {
+  /* Override .app-shell sidebar for now; sidebar arrives in a later slice. */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--paper);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-3) var(--sp-6);
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+}
+
+.brandSlot {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+
+.identity {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.identityName {
+  font-weight: 600;
+  color: var(--ink);
+  font-size: var(--fs-sm);
+}
+
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.work {
+  flex: 1;
+  padding: var(--sp-6) var(--sp-7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .topbar {
+    padding: var(--sp-3) var(--sp-4);
+    flex-wrap: wrap;
+  }
+  .work {
+    padding: var(--sp-5) var(--sp-4);
+    gap: var(--sp-5);
+  }
+}

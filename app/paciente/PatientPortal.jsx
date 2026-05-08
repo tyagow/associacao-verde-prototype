@@ -2,6 +2,9 @@
 
 import Brand from "../components/Brand";
 import { useEffect, useMemo, useState } from "react";
+import PatientShell from "./components/PatientShell";
+import PatientTabs, { PATIENT_TABS } from "./components/PatientTabs";
+import Toast from "./components/Toast";
 
 const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
@@ -17,6 +20,7 @@ export default function PatientPortal() {
   const [accessIssue, setAccessIssue] = useState("");
   const [toast, setToast] = useState("");
   const [busy, setBusy] = useState(false);
+  const [currentTab, setCurrentTab] = useState("pedido");
 
   const patient = session?.role === "patient" ? session.patient : null;
   const hasPrivacyConsent = Boolean(patient?.privacyConsentAt);
@@ -170,6 +174,7 @@ export default function PatientPortal() {
     setOrders([]);
     setCart({});
     setAccessIssue("");
+    setCurrentTab("pedido");
     showToast("Sessao encerrada.");
   }
 
@@ -207,73 +212,67 @@ export default function PatientPortal() {
     showToast.timeout = window.setTimeout(() => setToast(""), 3200);
   }
 
-  return (
-    <>
-      <header className="topbar">
-        <Brand />
-        <nav className="patient-nav" aria-label="Portal do paciente">
-          <a className="ghost active" href="/paciente">
-            Paciente
-          </a>
-          <a className="ghost" href="/">
-            Inicio
-          </a>
-          {patient ? (
-            <button className="ghost" type="button" onClick={logout}>
-              Sair
-            </button>
-          ) : null}
-        </nav>
-      </header>
+  // ---- Render: logged-out path keeps the legacy hero + login form. ----
+  if (!patient) {
+    return (
+      <>
+        <header className="topbar">
+          <Brand />
+          <nav className="patient-nav" aria-label="Portal do paciente">
+            <a className="ghost active" href="/paciente">
+              Paciente
+            </a>
+            <a className="ghost" href="/">
+              Inicio
+            </a>
+          </nav>
+        </header>
 
-      <main className="patient-portal">
-        <section className="patient-portal-hero" aria-labelledby="patient-title">
-          <div>
-            <p className="kicker">Portal privado do paciente</p>
-            <h1 id="patient-title">Acesso seguro ao tratamento autorizado.</h1>
-            <p>
-              Entre com seu codigo de associado e convite privado. O catalogo so abre depois que o
-              servidor confirma cadastro ativo, receita valida, carteirinha vigente e associacao
-              liberada.
-            </p>
-          </div>
-          <aside className="patient-trust-panel" aria-label="Como o acesso funciona">
-            <article>
-              <span>1</span>
-              <strong>Validacao</strong>
-              <p>Cadastro, convite, receita e carteirinha.</p>
-            </article>
-            <article>
-              <span>2</span>
-              <strong>Pedido</strong>
-              <p>Produtos autorizados e reserva controlada.</p>
-            </article>
-            <article>
-              <span>3</span>
-              <strong>Pix</strong>
-              <p>Pagamento com codigo e vencimento claros.</p>
-            </article>
-          </aside>
-        </section>
-
-        <section className="patient-workspace">
-          <article className="patient-profile-card">
-            <div className="panel-heading compact-heading">
-              <div>
-                <p className="kicker">Perfil e elegibilidade</p>
-                <h2>{patient ? patient.name : "Entrar no portal"}</h2>
-                <p className="muted">
-                  {patient
-                    ? `${patient.memberCode} · ${patient.eligibility?.reason || "Paciente liberado."}`
-                    : "Use suas credenciais privadas para abrir o catalogo autorizado."}
-                </p>
-              </div>
-              <span className="status" id="patient-status">
-                {patient ? `${patient.name} liberado` : "acesso bloqueado"}
-              </span>
+        <main className="patient-portal">
+          <section className="patient-portal-hero" aria-labelledby="patient-title">
+            <div>
+              <p className="kicker">Portal privado do paciente</p>
+              <h1 id="patient-title">Acesso seguro ao tratamento autorizado.</h1>
+              <p>
+                Entre com seu codigo de associado e convite privado. O catalogo so abre depois que o
+                servidor confirma cadastro ativo, receita valida, carteirinha vigente e associacao
+                liberada.
+              </p>
             </div>
+            <aside className="patient-trust-panel" aria-label="Como o acesso funciona">
+              <article>
+                <span>1</span>
+                <strong>Validacao</strong>
+                <p>Cadastro, convite, receita e carteirinha.</p>
+              </article>
+              <article>
+                <span>2</span>
+                <strong>Pedido</strong>
+                <p>Produtos autorizados e reserva controlada.</p>
+              </article>
+              <article>
+                <span>3</span>
+                <strong>Pix</strong>
+                <p>Pagamento com codigo e vencimento claros.</p>
+              </article>
+            </aside>
+          </section>
 
-            {!patient ? (
+          <section className="patient-workspace">
+            <article className="patient-profile-card">
+              <div className="panel-heading compact-heading">
+                <div>
+                  <p className="kicker">Perfil e elegibilidade</p>
+                  <h2>Entrar no portal</h2>
+                  <p className="muted">
+                    Use suas credenciais privadas para abrir o catalogo autorizado.
+                  </p>
+                </div>
+                <span className="status" id="patient-status">
+                  acesso bloqueado
+                </span>
+              </div>
+
               <form id="patient-login" className="patient-login-card" onSubmit={onPatientLogin}>
                 <label>
                   Codigo de associado
@@ -297,105 +296,148 @@ export default function PatientPortal() {
                   Entrar com seguranca
                 </button>
               </form>
-            ) : null}
 
-            <section
-              id="access-issue"
-              className="access-issue-panel"
-              hidden={patient || !accessIssue}
-            >
-              {!patient && accessIssue ? (
-                <AccessIssuePanel message={accessIssue} busy={busy} onSubmit={onAccessRecovery} />
-              ) : null}
-            </section>
+              <section id="access-issue" className="access-issue-panel" hidden={!accessIssue}>
+                {accessIssue ? (
+                  <AccessIssuePanel message={accessIssue} busy={busy} onSubmit={onAccessRecovery} />
+                ) : null}
+              </section>
 
-            <div id="patient-summary" className="patient-profile-grid">
-              <article className="access-card primary-access">
-                <span>Associado</span>
-                <strong>{patient ? patient.name : "Acesso restrito"}</strong>
-                <p>
-                  {patient
-                    ? patient.memberCode
-                    : "O sistema valida os requisitos antes de liberar qualquer produto."}
-                </p>
-              </article>
-              <article className="access-card">
-                <span>Receita</span>
-                <strong>
-                  {patient
-                    ? `Valida ate ${formatDate(patient.prescriptionExpiresAt)}`
-                    : "Obrigatoria"}
-                </strong>
-                <p>
-                  {patient
-                    ? `Carteirinha valida ate ${formatDate(patient.cardExpiresAt)}.`
-                    : "Receita e carteirinha precisam estar vigentes."}
-                </p>
-              </article>
-              <article className={`access-card ${latestOrder ? "" : "muted-card"}`}>
-                <span>Pedido atual</span>
-                <strong>{latestOrder ? latestOrder.id : "Nenhum pedido aberto"}</strong>
-                <p>
-                  {latestOrder
-                    ? patientOrderStatusText(latestOrder)
-                    : "Escolha produtos autorizados e gere Pix para reservar estoque."}
-                </p>
-              </article>
+              <div id="patient-summary" className="patient-profile-grid">
+                <article className="access-card primary-access">
+                  <span>Associado</span>
+                  <strong>Acesso restrito</strong>
+                  <p>O sistema valida os requisitos antes de liberar qualquer produto.</p>
+                </article>
+                <article className="access-card">
+                  <span>Receita</span>
+                  <strong>Obrigatoria</strong>
+                  <p>Receita e carteirinha precisam estar vigentes.</p>
+                </article>
+                <article className="access-card muted-card">
+                  <span>Pedido atual</span>
+                  <strong>Nenhum pedido aberto</strong>
+                  <p>Escolha produtos autorizados e gere Pix para reservar estoque.</p>
+                </article>
+              </div>
+            </article>
+          </section>
+        </main>
+
+        <Toast message={toast} />
+      </>
+    );
+  }
+
+  // ---- Render: authenticated path uses the new shell + tab sections. ----
+  // Inactive sections stay mounted via `display:none` so every E2E selector
+  // remains reachable regardless of which tab is active. Phase 1d will
+  // tighten this back to true conditional rendering once selectors are
+  // re-mapped per section.
+  const isPedido = currentTab === "pedido";
+  const isHistorico = currentTab === "historico";
+  const isSuporte = currentTab === "suporte";
+  const hidden = (active) => (active ? undefined : { display: "none" });
+
+  return (
+    <>
+      <PatientShell
+        name={patient.name}
+        statusText={`${patient.name} liberado`}
+        statusTone="good"
+        tabs={
+          <PatientTabs
+            current={PATIENT_TABS.includes(currentTab) ? currentTab : "pedido"}
+            onChange={setCurrentTab}
+          />
+        }
+        actions={
+          <button className="ghost" type="button" onClick={logout}>
+            Sair
+          </button>
+        }
+      >
+        {/* ---- Cross-cutting blocks (always visible regardless of tab) ---- */}
+        <article className="patient-profile-card">
+          <div className="panel-heading compact-heading">
+            <div>
+              <p className="kicker">Perfil e elegibilidade</p>
+              <h2>{patient.name}</h2>
+              <p className="muted">
+                {patient.memberCode} · {patient.eligibility?.reason || "Paciente liberado."}
+              </p>
             </div>
+          </div>
 
-            <section
-              className="patient-profile-details"
-              id="patient-profile-details"
-              aria-label="Dados do associado"
-              hidden={!patient}
-            >
-              {patient ? (
-                <PatientProfileDetails patient={patient} latestOrder={latestOrder} />
-              ) : null}
-            </section>
+          <div id="patient-summary" className="patient-profile-grid">
+            <article className="access-card primary-access">
+              <span>Associado</span>
+              <strong>{patient.name}</strong>
+              <p>{patient.memberCode}</p>
+            </article>
+            <article className="access-card">
+              <span>Receita</span>
+              <strong>Valida ate {formatDate(patient.prescriptionExpiresAt)}</strong>
+              <p>Carteirinha valida ate {formatDate(patient.cardExpiresAt)}.</p>
+            </article>
+            <article className={`access-card ${latestOrder ? "" : "muted-card"}`}>
+              <span>Pedido atual</span>
+              <strong>{latestOrder ? latestOrder.id : "Nenhum pedido aberto"}</strong>
+              <p>
+                {latestOrder
+                  ? patientOrderStatusText(latestOrder)
+                  : "Escolha produtos autorizados e gere Pix para reservar estoque."}
+              </p>
+            </article>
+          </div>
 
-            <section
-              id="privacy-consent-panel"
-              className={`privacy-consent-panel ${patient?.privacyConsentAt ? "good" : "warn"}`}
-              hidden={!patient}
-            >
-              {patient ? (
-                patient.privacyConsentAt ? (
-                  <>
-                    <span className="kicker">Privacidade e LGPD</span>
-                    <h3>Consentimento registrado</h3>
-                    <p>
-                      Versao {patient.privacyConsentVersion || "lgpd-2026-05"} aceita em{" "}
-                      {formatDateTime(patient.privacyConsentAt)}.
-                    </p>
-                  </>
-                ) : (
-                  <form onSubmit={onPrivacyConsent}>
-                    <span className="kicker">Privacidade e LGPD</span>
-                    <h3>Autorizar uso dos dados para atendimento</h3>
-                    <p>
-                      Usamos cadastro, receita, pedidos e mensagens apenas para elegibilidade,
-                      preparo, pagamento, envio e suporte da associacao.
-                    </p>
-                    <button className="primary" type="submit" disabled={busy}>
-                      Aceitar e continuar
-                    </button>
-                  </form>
-                )
-              ) : null}
-            </section>
-          </article>
+          <section
+            className="patient-profile-details"
+            id="patient-profile-details"
+            aria-label="Dados do associado"
+          >
+            <PatientProfileDetails patient={patient} latestOrder={latestOrder} />
+          </section>
 
+          <section
+            id="privacy-consent-panel"
+            className={`privacy-consent-panel ${patient.privacyConsentAt ? "good" : "warn"}`}
+          >
+            {patient.privacyConsentAt ? (
+              <>
+                <span className="kicker">Privacidade e LGPD</span>
+                <h3>Consentimento registrado</h3>
+                <p>
+                  Versao {patient.privacyConsentVersion || "lgpd-2026-05"} aceita em{" "}
+                  {formatDateTime(patient.privacyConsentAt)}.
+                </p>
+              </>
+            ) : (
+              <form onSubmit={onPrivacyConsent}>
+                <span className="kicker">Privacidade e LGPD</span>
+                <h3>Autorizar uso dos dados para atendimento</h3>
+                <p>
+                  Usamos cadastro, receita, pedidos e mensagens apenas para elegibilidade, preparo,
+                  pagamento, envio e suporte da associacao.
+                </p>
+                <button className="primary" type="submit" disabled={busy}>
+                  Aceitar e continuar
+                </button>
+              </form>
+            )}
+          </section>
+        </article>
+
+        {/* ---- Tab: Pedido ---- */}
+        <div data-patient-section="pedido" style={hidden(isPedido)}>
           <section className="patient-current-order" aria-label="Proxima acao do paciente">
-            {patient ? (
-              <PatientNextAction
-                order={latestOrder}
-                cartCount={cartCount}
-                hasPrivacyConsent={hasPrivacyConsent}
-                onRefresh={loadOrders}
-                onCopyPix={copyPix}
-              />
-            ) : null}
+            <PatientNextAction
+              order={latestOrder}
+              cartCount={cartCount}
+              hasPrivacyConsent={hasPrivacyConsent}
+              onRefresh={loadOrders}
+              onCopyPix={copyPix}
+            />
           </section>
 
           <article className="patient-order-card">
@@ -407,47 +449,39 @@ export default function PatientPortal() {
               </div>
             </div>
 
-            <div
-              className="catalog-tools"
-              id="catalog-tools"
-              hidden={!patient || !hasPrivacyConsent}
-            >
-              {patient ? (
-                <>
-                  <label>
-                    Buscar produto autorizado
-                    <input
-                      data-catalog-query
-                      type="search"
-                      value={catalogQuery}
-                      onChange={(event) => setCatalogQuery(event.target.value)}
-                      placeholder="Buscar por oleo, flor, goma..."
-                    />
-                  </label>
-                  <div
-                    className="segment-control"
-                    role="group"
-                    aria-label="Filtrar produtos autorizados"
+            <div className="catalog-tools" id="catalog-tools" hidden={!hasPrivacyConsent}>
+              <label>
+                Buscar produto autorizado
+                <input
+                  data-catalog-query
+                  type="search"
+                  value={catalogQuery}
+                  onChange={(event) => setCatalogQuery(event.target.value)}
+                  placeholder="Buscar por oleo, flor, goma..."
+                />
+              </label>
+              <div
+                className="segment-control"
+                role="group"
+                aria-label="Filtrar produtos autorizados"
+              >
+                {CATALOG_FILTERS.map((filter) => (
+                  <button
+                    key={filter.value}
+                    type="button"
+                    data-catalog-filter={filter.value}
+                    className={catalogFilter === filter.value ? "active" : undefined}
+                    aria-pressed={catalogFilter === filter.value}
+                    onClick={() => setCatalogFilter(filter.value)}
                   >
-                    {CATALOG_FILTERS.map((filter) => (
-                      <button
-                        key={filter.value}
-                        type="button"
-                        data-catalog-filter={filter.value}
-                        className={catalogFilter === filter.value ? "active" : undefined}
-                        aria-pressed={catalogFilter === filter.value}
-                        onClick={() => setCatalogFilter(filter.value)}
-                      >
-                        {filter.label}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              ) : null}
+                    {filter.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div id="catalog" className="patient-product-list">
-              {patient && !hasPrivacyConsent ? (
+              {!hasPrivacyConsent ? (
                 <section className="consent-required-panel">
                   <span className="kicker">Privacidade obrigatoria</span>
                   <h3>Aceite LGPD para abrir catalogo, suporte e Pix</h3>
@@ -456,123 +490,115 @@ export default function PatientPortal() {
                     so libera a operacao depois do consentimento registrado.
                   </p>
                 </section>
-              ) : patient ? (
-                filteredProducts.length ? (
-                  filteredProducts.map((product) => (
-                    <article className="patient-product-card" key={product.id}>
-                      <div className="patient-product-main">
-                        <span className="product-category">
-                          {productCategoryLabel(productCategory(product))}
-                        </span>
-                        <h3>{product.name}</h3>
-                        <p>{product.description}</p>
-                      </div>
-                      <div className="patient-product-stock">
-                        <span>Estoque autorizado</span>
-                        <strong className={product.availableStock <= 5 ? "warn-text" : undefined}>
-                          {product.availableStock} {product.unit}
-                        </strong>
-                      </div>
-                      <div className="patient-product-price">
-                        <span>Valor</span>
-                        <strong>{money.format(product.priceCents / 100)}</strong>
-                      </div>
-                      <div className="patient-product-action">
-                        <label>
-                          Qtd.
-                          <input
-                            className="qty"
-                            data-qty={product.id}
-                            type="number"
-                            min="1"
-                            max={Math.max(1, product.availableStock)}
-                            value={productQuantities[product.id] || 1}
-                            onChange={(event) =>
-                              onProductQuantity(
-                                product.id,
-                                event.target.value,
-                                product.availableStock,
-                              )
-                            }
-                            disabled={product.availableStock <= 0}
-                          />
-                        </label>
-                        <button
-                          className="mini"
-                          type="button"
-                          data-add={product.id}
-                          onClick={() => addProduct(product.id)}
+              ) : filteredProducts.length ? (
+                filteredProducts.map((product) => (
+                  <article className="patient-product-card" key={product.id}>
+                    <div className="patient-product-main">
+                      <span className="product-category">
+                        {productCategoryLabel(productCategory(product))}
+                      </span>
+                      <h3>{product.name}</h3>
+                      <p>{product.description}</p>
+                    </div>
+                    <div className="patient-product-stock">
+                      <span>Estoque autorizado</span>
+                      <strong className={product.availableStock <= 5 ? "warn-text" : undefined}>
+                        {product.availableStock} {product.unit}
+                      </strong>
+                    </div>
+                    <div className="patient-product-price">
+                      <span>Valor</span>
+                      <strong>{money.format(product.priceCents / 100)}</strong>
+                    </div>
+                    <div className="patient-product-action">
+                      <label>
+                        Qtd.
+                        <input
+                          className="qty"
+                          data-qty={product.id}
+                          type="number"
+                          min="1"
+                          max={Math.max(1, product.availableStock)}
+                          value={productQuantities[product.id] || 1}
+                          onChange={(event) =>
+                            onProductQuantity(
+                              product.id,
+                              event.target.value,
+                              product.availableStock,
+                            )
+                          }
                           disabled={product.availableStock <= 0}
-                        >
-                          {cart[product.id] ? "Atualizar" : "Adicionar"}
-                        </button>
-                      </div>
-                    </article>
-                  ))
-                ) : (
-                  <p className="muted">Nenhum produto autorizado encontrado para este filtro.</p>
-                )
+                        />
+                      </label>
+                      <button
+                        className="mini"
+                        type="button"
+                        data-add={product.id}
+                        onClick={() => addProduct(product.id)}
+                        disabled={product.availableStock <= 0}
+                      >
+                        {cart[product.id] ? "Atualizar" : "Adicionar"}
+                      </button>
+                    </div>
+                  </article>
+                ))
               ) : (
-                <p className="muted">Entre para ver produtos autorizados pela associacao.</p>
+                <p className="muted">Nenhum produto autorizado encontrado para este filtro.</p>
               )}
             </div>
 
             <div id="cart-summary">
-              {patient ? (
-                cartItems.length ? (
-                  <section className="cart-panel patient-cart-panel">
-                    <div>
-                      <span className="kicker">Resumo antes do Pix</span>
-                      <h3>{cartCount} item(ns) selecionado(s)</h3>
-                      <p className="muted">
-                        Ao gerar Pix, o servidor reserva o estoque ate o vencimento do pagamento.
-                      </p>
-                    </div>
-                    <div className="cart-lines">
-                      {cartItems.map(({ product, quantity, subtotalCents }) => (
-                        <article key={product.id}>
-                          <div>
-                            <strong>
-                              {quantity} {product.unit} · {product.name}
-                            </strong>
-                            <span>{money.format(subtotalCents / 100)}</span>
-                          </div>
-                          <button
-                            className="mini"
-                            type="button"
-                            onClick={() =>
-                              setCart((current) => removeCartItem(current, product.id))
-                            }
-                          >
-                            Remover
-                          </button>
-                        </article>
-                      ))}
-                    </div>
-                    <div className="cart-total">
-                      <span>Total estimado</span>
-                      <strong>{money.format(cartTotal / 100)}</strong>
-                    </div>
-                  </section>
-                ) : latestOrder ? null : (
-                  <section className="cart-panel muted-card patient-cart-panel">
-                    <div>
-                      <span className="kicker">Pedido privado</span>
-                      <h3>Seu pedido ainda esta vazio.</h3>
-                      <p className="muted">
-                        Escolha uma quantidade no catalogo autorizado e clique em adicionar.
-                      </p>
-                    </div>
-                  </section>
-                )
-              ) : null}
+              {cartItems.length ? (
+                <section className="cart-panel patient-cart-panel">
+                  <div>
+                    <span className="kicker">Resumo antes do Pix</span>
+                    <h3>{cartCount} item(ns) selecionado(s)</h3>
+                    <p className="muted">
+                      Ao gerar Pix, o servidor reserva o estoque ate o vencimento do pagamento.
+                    </p>
+                  </div>
+                  <div className="cart-lines">
+                    {cartItems.map(({ product, quantity, subtotalCents }) => (
+                      <article key={product.id}>
+                        <div>
+                          <strong>
+                            {quantity} {product.unit} · {product.name}
+                          </strong>
+                          <span>{money.format(subtotalCents / 100)}</span>
+                        </div>
+                        <button
+                          className="mini"
+                          type="button"
+                          onClick={() => setCart((current) => removeCartItem(current, product.id))}
+                        >
+                          Remover
+                        </button>
+                      </article>
+                    ))}
+                  </div>
+                  <div className="cart-total">
+                    <span>Total estimado</span>
+                    <strong>{money.format(cartTotal / 100)}</strong>
+                  </div>
+                </section>
+              ) : latestOrder ? null : (
+                <section className="cart-panel muted-card patient-cart-panel">
+                  <div>
+                    <span className="kicker">Pedido privado</span>
+                    <h3>Seu pedido ainda esta vazio.</h3>
+                    <p className="muted">
+                      Escolha uma quantidade no catalogo autorizado e clique em adicionar.
+                    </p>
+                  </div>
+                </section>
+              )}
             </div>
 
             <form
               id="checkout"
               className="checkout patient-checkout"
               onSubmit={onCheckout}
-              hidden={!patient || !hasPrivacyConsent}
+              hidden={!hasPrivacyConsent}
             >
               <label>
                 Entrega
@@ -593,66 +619,69 @@ export default function PatientPortal() {
               </button>
             </form>
           </article>
-        </section>
+        </div>
 
-        <section className="patient-aftercare" hidden={!patient || !hasPrivacyConsent}>
-          <form
-            id="support-request-form"
-            className="support-request-form"
-            onSubmit={onSupportRequest}
-          >
-            <div>
-              <span className="kicker">Solicitar atendimento</span>
-              <h3>Fale com a equipe sobre cadastro, Pix, receita ou entrega</h3>
-              <p className="muted">
-                Use este canal quando a proxima acao do pedido ou a elegibilidade precisar de
-                revisao humana.
-              </p>
-            </div>
-            <label>
-              Assunto
-              <input name="subject" placeholder="Renovar receita, duvida sobre Pix..." required />
-            </label>
-            <label>
-              Prioridade
-              <select name="priority" defaultValue="normal">
-                <option value="normal">Normal</option>
-                <option value="high">Alta</option>
-                <option value="urgent">Urgente</option>
-              </select>
-            </label>
-            <label className="wide-field">
-              Mensagem
-              <textarea
-                name="message"
-                rows={3}
-                placeholder="Descreva o que precisa ser revisado pela equipe."
-                required
-              />
-            </label>
-            {latestOrder ? (
-              <input type="hidden" name="relatedOrderId" value={latestOrder.id} />
-            ) : null}
-            <button className="primary" type="submit" disabled={busy}>
-              Enviar ao suporte
-            </button>
-          </form>
-        </section>
+        {/* ---- Tab: Historico ---- */}
+        <div data-patient-section="historico" style={hidden(isHistorico)}>
+          <section id="patient-orders" className="patient-orders stack">
+            <h3>Historico de pedidos</h3>
+            {orders.length ? (
+              orders.map((order) => <OrderCard order={order} key={order.id} />)
+            ) : (
+              <p className="muted">Nenhum pedido criado nesta conta.</p>
+            )}
+          </section>
+        </div>
 
-        <section id="patient-orders" className="patient-orders stack">
-          {patient ? <h3>Historico de pedidos</h3> : null}
-          {patient && orders.length
-            ? orders.map((order) => <OrderCard order={order} key={order.id} />)
-            : null}
-          {patient && !orders.length ? (
-            <p className="muted">Nenhum pedido criado nesta conta.</p>
-          ) : null}
-        </section>
-      </main>
+        {/* ---- Tab: Suporte ---- */}
+        <div data-patient-section="suporte" style={hidden(isSuporte)}>
+          <section className="patient-aftercare" hidden={!hasPrivacyConsent}>
+            <form
+              id="support-request-form"
+              className="support-request-form"
+              onSubmit={onSupportRequest}
+            >
+              <div>
+                <span className="kicker">Solicitar atendimento</span>
+                <h3>Fale com a equipe sobre cadastro, Pix, receita ou entrega</h3>
+                <p className="muted">
+                  Use este canal quando a proxima acao do pedido ou a elegibilidade precisar de
+                  revisao humana.
+                </p>
+              </div>
+              <label>
+                Assunto
+                <input name="subject" placeholder="Renovar receita, duvida sobre Pix..." required />
+              </label>
+              <label>
+                Prioridade
+                <select name="priority" defaultValue="normal">
+                  <option value="normal">Normal</option>
+                  <option value="high">Alta</option>
+                  <option value="urgent">Urgente</option>
+                </select>
+              </label>
+              <label className="wide-field">
+                Mensagem
+                <textarea
+                  name="message"
+                  rows={3}
+                  placeholder="Descreva o que precisa ser revisado pela equipe."
+                  required
+                />
+              </label>
+              {latestOrder ? (
+                <input type="hidden" name="relatedOrderId" value={latestOrder.id} />
+              ) : null}
+              <button className="primary" type="submit" disabled={busy}>
+                Enviar ao suporte
+              </button>
+            </form>
+          </section>
+        </div>
+      </PatientShell>
 
-      <div className={`toast ${toast ? "show" : ""}`} id="toast" role="status" aria-live="polite">
-        {toast}
-      </div>
+      <Toast message={toast} />
     </>
   );
 }

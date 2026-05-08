@@ -1,0 +1,6 @@
+/* Phase 1a — Toast wrapper. The visual styling lives on the legacy `.toast` class
+   in app/globals.css; this module just hosts overrides if we need them later. */
+
+.host {
+  /* Reserved for Phase 1d polish (animation tweaks, region overrides). */
+}

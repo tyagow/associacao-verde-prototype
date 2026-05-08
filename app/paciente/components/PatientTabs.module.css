@@ -1,0 +1,21 @@
+/* Phase 1a — Tab strip. Composes with .app-tabs / .app-tabs__tab from globals. */
+
+.bar {
+  /* Mirrors .app-tabs but stays self-contained so future variants can swap it. */
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.tabButton {
+  /* Reset native button styling so it matches the .app-tabs__tab visual. */
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.tabButton:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
