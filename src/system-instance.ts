@@ -1,22 +1,19 @@
 // @ts-nocheck
-// Stage A of server.mjs → Next.js migration: module-level lazy singleton
-// for the ProductionSystem + SqliteStateStore. Importable from any Next.js
-// Route Handler. Preserves the exact construction sequence from server.mjs
-// (lines ~14-127): env reads, store init, payment provider selection,
-// system construction, team-user seeding, reservation-expiry timer.
+// Stage 1 of TRUE single-process Next.js migration: shared singleton.
 //
-// IMPORTANT: server.mjs and Next.js Route Handlers do NOT share this
-// module instance. server.mjs loads it via tsx in its Node module graph;
-// Next.js bundles Route Handlers through Turbopack with a separate module
-// graph. Calling getSystem() from a Route Handler will construct a SECOND
-// SqliteStateStore + ProductionSystem on the same DB file, which races on
-// writes (Phase 2 inventory race coverage exists for a reason).
+// server.mjs (run via `node --import tsx`) and Next.js Route Handlers
+// (bundled through Turbopack) load this file in DIFFERENT module graphs.
+// Module-local `cached` would therefore yield TWO ProductionSystem +
+// SqliteStateStore instances on the same DB file, racing on writes.
 //
-// Therefore Route Handlers MUST proxy state-touching operations back to
-// server.mjs (via fetch + cookie/origin forwarding, the Phase 3/5/7
-// pattern) instead of importing getSystem() directly. Pure config-readout
-// handlers (e.g. /health) read process.env without instantiating the
-// system at all. server.mjs itself uses getSystem() for its own init.
+// Solution: we cache the built system on `globalThis` (the same object
+// across every module graph in the same Node process). Both server.mjs
+// and Route Handlers see the same instance — the SqliteStateStore +
+// reservation-expiry timer + team-user seeding run exactly once, and
+// every getSystem() call returns the same handle.
+//
+// This is the architectural foundation that lets Route Handlers do real
+// state-touching work without proxying back to server.mjs over fetch.
 
 import { join } from "node:path";
 import { createAsaasPixProvider, ProductionSystem } from "./production-system.ts";
@@ -34,7 +31,7 @@ function requiredEnv(name, fallback) {
 // statically analyze it when this module is imported from a Route Handler.
 const repoRoot = process.env.AV_REPO_ROOT || process.cwd();
 
-let cached = null;
+const GLOBAL_KEY = "__avSystemInstance";
 
 function build() {
   const production = process.env.NODE_ENV === "production";
@@ -102,6 +99,7 @@ function build() {
 }
 
 export function getSystem() {
-  if (!cached) cached = build();
-  return cached;
+  const g = globalThis;
+  if (!g[GLOBAL_KEY]) g[GLOBAL_KEY] = build();
+  return g[GLOBAL_KEY];
 }
