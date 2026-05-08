@@ -157,7 +157,38 @@ finds the current `[→]`, completes its acceptance criteria, then advances.
         /equipe/fulfillment, /equipe/suporte) still render their own
         topbar/side-nav. Phases 4-7 own migrating their routes onto
         the shell via the passthrough app/equipe/layout.jsx seam.
-- Now: [→] **Phase 6 — Estoque & cultivo (single ledger + lot detail)** (concurrent)
+- Now: [x] **Phase 6 — Estoque & cultivo (single ledger + lot detail)** (concurrent)
+        (7bcfced listProductLots + updateProductMeta append-only on
+         ProductionSystem · 0240e11 server.mjs one-line dispatches for
+         GET /api/team/inventory-ledger and POST /api/team/product-meta
+         + test/inventory-lots.test.mjs · phase-6 components commit
+         ProductLedger + ProductRow + LotRow + CultivoPanel
+         (.tx-* CSS Modules) · f422f5c rebuild StockRoute mounting
+         TeamShell with single product ledger + click-to-expand lot
+         detail + inline edit + Cultivo sibling panel + legacy forms
+         preserved as <details> drawers · this commit p6 screenshots
+         script + ledger close). Backend method shape returns
+         {products:[{id,name,stock,reserved,category,status,lots:
+         [{id,quantity,validity,origin}]}]}; lots are derived from
+         state.inventoryLots (cultivation pipeline) plus synthetic
+         per-stockMovement entries; validity defaults to 12 months
+         from createdAt; origin humanized ("Cultivo · 24k", "Saldo
+         inicial", "Entrada manual"). updateProductMeta strict subset
+         of updateProduct touching only lowStockThreshold, category,
+         controlled, internalNote; emits team_product_meta_changed
+         audit action so Phase 10 audit timeline can separate ledger
+         churn from bulk product updates. E2E selectors preserved
+         (kicker "Produtos, estoque e cultivo", data-filter='stockQuery'
+         input, data-filter='stockStatus' select). Test count delta:
+         +3 (RBAC + ledger contract + meta audit). Screenshots at
+         artifacts/visual-e2e/redesign/p6-stock-{desktop,mobile}.png.
+         Unblocks OPS-002 lot-level allocation/traceability from the
+         legacy delivery plan. Open question: lots currently lack
+         explicit expiry and supplier metadata — Phase 13 should
+         consider promoting `validity` and `origin` to first-class
+         fields on the lot record so cultivation handoff carries
+         provenance through audit.
+- Now: [→] (advance to Phase 7 / 10 / 11 once concurrent agents finish)
 - Done in this batch:
   - [x] Phase 5 — Fulfillment kanban (dnd-kit)
         (febf520 chore(deps) @dnd-kit/core+sortable · 0240e11
@@ -194,7 +225,7 @@ finds the current `[→]`, completes its acceptance criteria, then advances.
         revisit per-column horizontal swipe; today flex-wraps at
         <=1024px.
 - Next:
-  - [ ] Phase 6 — Estoque & cultivo (single ledger + lot detail)
+  - [x] Phase 6 — Estoque & cultivo (single ledger + lot detail)
   - [ ] Phase 7 — Support workbench
   - [x] Phase 8 — Command palette ⌘K
         (4b57c3e CommandPalette component using cmdk · 5f87e12 wire ⌘K
