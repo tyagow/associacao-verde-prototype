@@ -1,7 +1,9 @@
 /* Phase 5 — Fulfillment kanban grid (.tx-* namespace).
  *
- * Four columns by default; flex-wraps on narrower viewports so phase 12
- * mobile sweep can revisit per-column swipe without breaking the grid.
+ * Four columns by default; flex-wraps on narrower viewports.
+ * Phase 12 mobile sweep: under 720px we render a tab strip and only
+ * show the active column at full width. Cross-column moves on mobile
+ * happen by switching tabs first, then dragging within that column.
  */
 
 .txKanban {
@@ -14,8 +16,77 @@
   padding-bottom: var(--sp-3);
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1024px) and (min-width: 721px) {
   .txKanban {
     flex-wrap: wrap;
+  }
+}
+
+/* Phase 12 — mobile single-column-with-tabs mode. */
+.txTabs {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .txKanban {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    overflow-x: hidden;
+  }
+  .txTabs {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: var(--paper-warm, #f3f5f1);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin-bottom: var(--sp-3);
+  }
+  .txTabs::-webkit-scrollbar {
+    display: none;
+  }
+  .txTab {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: var(--fs-xs, 12px);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 8px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+  }
+  .txTabActive {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .txTabCount {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 18px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--line);
+    color: var(--ink);
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .txTabActive .txTabCount {
+    background: rgba(255, 255, 255, 0.18);
+    color: var(--paper);
   }
 }

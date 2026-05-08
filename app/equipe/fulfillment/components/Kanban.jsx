@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   DndContext,
   PointerSensor,
@@ -38,6 +38,26 @@ const COLUMN_STATUSES = new Set(COLUMNS.map((c) => c.status));
 export default function Kanban({ orders, onPersistMove, onPrintLabel, query, statusFilter }) {
   const [overrides, setOverrides] = useState({});
   const [activeId, setActiveId] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [activeTab, setActiveTab] = useState(COLUMNS[0].status);
+
+  // Phase 12 — mobile single-column-with-tabs mode. Below 720px we render
+  // only the active column; cross-column moves happen by switching tabs
+  // first then dragging within that column. matchMedia keeps state in sync
+  // with viewport changes (rotate, resize).
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
+    const mql = window.matchMedia("(max-width: 720px)");
+    const apply = () => setIsMobile(mql.matches);
+    apply();
+    if (typeof mql.addEventListener === "function") {
+      mql.addEventListener("change", apply);
+      return () => mql.removeEventListener("change", apply);
+    }
+    // Older Safari fallback
+    mql.addListener(apply);
+    return () => mql.removeListener(apply);
+  }, []);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -81,6 +101,26 @@ export default function Kanban({ orders, onPersistMove, onPrintLabel, query, sta
     [activeId, visibleOrders],
   );
 
+  // On mobile, default the active tab to the column with the most cards
+  // (typically "paid_pending_fulfillment"). Recalculates only when the
+  // mobile breakpoint flips, not on every drop, to avoid yanking the user
+  // away from the column they're working in.
+  useEffect(() => {
+    if (!isMobile) return;
+    const fullest = COLUMNS.reduce(
+      (best, col) =>
+        (byColumn[col.status]?.length || 0) > (byColumn[best.status]?.length || 0) ? col : best,
+      COLUMNS[0],
+    );
+    setActiveTab((current) =>
+      COLUMN_STATUSES.has(current) && (byColumn[current]?.length || 0) > 0
+        ? current
+        : fullest.status,
+    );
+    // intentionally omit byColumn from deps: only re-pick on isMobile flip.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMobile]);
+
   function findStatus(id) {
     if (COLUMN_STATUSES.has(id)) return id;
     const order = visibleOrders.find((o) => o.id === id);
@@ -119,16 +159,41 @@ export default function Kanban({ orders, onPersistMove, onPrintLabel, query, sta
       onDragCancel={() => setActiveId(null)}
       onDragEnd={handleDragEnd}
     >
+      {isMobile ? (
+        <nav className={styles.txTabs} role="tablist" aria-label="Etapa de fulfillment">
+          {COLUMNS.map((column) => {
+            const count = byColumn[column.status]?.length || 0;
+            const isActive = activeTab === column.status;
+            return (
+              <button
+                key={column.status}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                data-kanban-tab={column.status}
+                className={`${styles.txTab} ${isActive ? styles.txTabActive : ""}`.trim()}
+                onClick={() => setActiveTab(column.status)}
+              >
+                <span>{column.label}</span>
+                <span className={styles.txTabCount}>{count}</span>
+              </button>
+            );
+          })}
+        </nav>
+      ) : null}
       <div className={styles.txKanban} data-fulfillment-kanban>
-        {COLUMNS.map((column) => (
-          <KanbanColumn
-            key={column.status}
-            status={column.status}
-            label={column.label}
-            orders={byColumn[column.status]}
-            onPrintLabel={onPrintLabel}
-          />
-        ))}
+        {COLUMNS.map((column) => {
+          if (isMobile && activeTab !== column.status) return null;
+          return (
+            <KanbanColumn
+              key={column.status}
+              status={column.status}
+              label={column.label}
+              orders={byColumn[column.status]}
+              onPrintLabel={onPrintLabel}
+            />
+          );
+        })}
       </div>
       <DragOverlay>
         {activeOrder ? <OrderCard order={activeOrder} onPrintLabel={onPrintLabel} /> : null}
