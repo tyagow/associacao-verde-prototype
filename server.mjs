@@ -93,6 +93,9 @@ const appRoutes = new Set([
   "/api/my-orders",
   "/api/checkout",
   "/api/webhooks/pix",
+  "/api/patient/access-recovery",
+  "/api/patient/consent",
+  "/api/support-requests",
   // Phase 7 bridge: support workbench Route Handlers proxy back into
   // server.mjs's raw system calls (/api/team/support-replies/_raw,
   // /api/team/support-thread/_raw) which are NOT allow-listed and stay
@@ -140,27 +143,6 @@ const server = createServer(async (request, response) => {
       return nextHandler(request, response);
     }
 
-    if (url.pathname === "/api/patient/access-recovery" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(response, 201, {
-        ticket: system.createAccessRecoveryRequest(await body(request)),
-      });
-    }
-    if (url.pathname === "/api/patient/consent" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(response, 200, {
-        patient: system.acceptPrivacyConsent(
-          readCookie(request, "av_session"),
-          await body(request),
-        ),
-      });
-    }
-    if (url.pathname === "/api/support-requests" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(response, 201, {
-        ticket: system.createSupportRequest(readCookie(request, "av_session"), await body(request)),
-      });
-    }
     if (url.pathname === "/api/team/dashboard" && request.method === "GET") {
       return json(response, 200, system.dashboard(readCookie(request, "av_session")));
     }
