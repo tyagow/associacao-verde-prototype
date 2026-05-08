@@ -1678,6 +1678,180 @@ export class ProductionSystem {
   persist() {
     this.save(this.state);
   }
+
+  // Phase 5 — Kanban-driven fulfillment transitions.
+  //
+  // Sibling of `updateFulfillmentStatus` (which the legacy form-driven UI
+  // calls under /api/team/fulfillment). We keep that method untouched for
+  // the legacy callers and existing audit envelope (`fulfillment_updated`).
+  //
+  // This method is the entry point used by the new drag-and-drop kanban
+  // surface (POST /api/team/orders/status). It enforces the same RBAC
+  // permission ("fulfillment:write"), validates the destination column,
+  // captures the previous status for audit traceability, and emits the
+  // `team_order_status_changed` audit event so the redesigned audit
+  // timeline can distinguish kanban moves from legacy ledger updates.
+  //
+  // Append-only: do NOT modify or remove `updateFulfillmentStatus` here.
+  updateOrderFulfillmentStatus(sessionId, { orderId, status }) {
+    const actor = this.requireTeam(sessionId, "fulfillment:write");
+    const allowed = ["paid_pending_fulfillment", "separating", "ready_to_ship", "sent"];
+    if (!allowed.includes(status)) {
+      throw problem(400, "Status de fulfillment invalido.");
+    }
+    const order = this.orderById(orderId);
+    if (order.status === "awaiting_payment" || order.status === "payment_expired") {
+      throw problem(409, "Pedido ainda nao esta pago para fulfillment.");
+    }
+    if (order.status === "cancelled") {
+      throw problem(409, "Pedido cancelado nao pode mover de coluna.");
+    }
+    const previousStatus = order.status;
+    if (previousStatus === status) {
+      // No-op move (e.g. drop on same column). Still return the public
+      // shape so the optimistic client doesn't have to special-case.
+      return this.publicOrder(order);
+    }
+    order.status = status;
+    order.updatedAt = this.now().toISOString();
+    this.audit("team_order_status_changed", actor.id, {
+      orderId,
+      fromStatus: previousStatus,
+      toStatus: status,
+      surface: "kanban",
+    });
+    this.persist();
+    return this.publicOrder(order);
+  }
+
+  // Phase 6 — Inventory ledger with lot detail.
+  //
+  // Returns one row per product enriched with reservation totals and a list
+  // of lots (cultivation-derived from state.inventoryLots, plus synthetic
+  // lots derived from stockMovements "in" entries that record physical
+  // entries outside of the cultivation pipeline). Validity defaults to 12
+  // months from creation when no explicit expiry exists. Origin is humanized
+  // for the ledger UI.
+  //
+  // No state mutation; safe to call on every dashboard refresh. RBAC mirrors
+  // the existing dashboard view permission so non-team callers cannot read
+  // it. Append-only addition, disjoint from Phase 5's fulfillment methods.
+  listProductLots(sessionId) {
+    this.requireTeam(sessionId, "dashboard:view");
+    const products = this.state.products.map((product) => {
+      const reservedQuantity = this.reservedQuantity(product.id);
+      const cultivationLots = (this.state.inventoryLots || [])
+        .filter((lot) => lot.productId === product.id)
+        .map((lot) => ({
+          id: lot.id,
+          quantity: lot.quantity,
+          unit: lot.unit || product.unit,
+          validity: lot.validity || defaultLotValidity(lot.createdAt),
+          origin: `Cultivo · ${lot.strain || lot.batchId || "lote"}`,
+          status: lot.status || "available",
+          createdAt: lot.createdAt,
+        }));
+      const movementLots = (this.state.stockMovements || [])
+        .filter((mvt) => mvt.productId === product.id && mvt.type === "in")
+        .map((mvt) => ({
+          id: `mvt_${mvt.id}`,
+          quantity: mvt.quantity,
+          unit: product.unit,
+          validity: defaultLotValidity(mvt.date),
+          origin: humanizeMovementNote(mvt.note),
+          status: "available",
+          createdAt: mvt.date,
+        }));
+      const lots = [...cultivationLots, ...movementLots].sort((a, b) =>
+        String(b.createdAt || "").localeCompare(String(a.createdAt || "")),
+      );
+      const threshold = product.lowStockThreshold || 5;
+      const available = product.stock - reservedQuantity;
+      let status = "active";
+      if (product.active === false) status = "inactive";
+      else if (available <= threshold) status = "low";
+      return {
+        id: product.id,
+        name: product.name,
+        unit: product.unit,
+        priceCents: product.priceCents,
+        stock: product.stock,
+        availableStock: available,
+        reserved: reservedQuantity,
+        category: product.category || "other",
+        controlled: product.controlled === true,
+        active: product.active !== false,
+        lowStockThreshold: threshold,
+        internalNote: product.internalNote || "",
+        description: product.description || "",
+        status,
+        lots,
+      };
+    });
+    return { products };
+  }
+
+  // Phase 6 — Inline edit of product metadata from the inventory ledger.
+  //
+  // Strict subset of `updateProduct` that ONLY accepts the four fields the
+  // ledger exposes inline (lowStockThreshold, category, controlled,
+  // internalNote). Emits a distinct audit action so the audit timeline can
+  // separate inline-edit churn from the bulk product update form.
+  updateProductMeta(sessionId, update) {
+    const actor = this.requireTeam(sessionId, "products:write");
+    const product = this.productById(update?.productId);
+    const before = {
+      lowStockThreshold: product.lowStockThreshold || 5,
+      category: product.category || "",
+      controlled: product.controlled === true,
+      internalNote: product.internalNote || "",
+    };
+    if (update.lowStockThreshold !== undefined && update.lowStockThreshold !== "") {
+      product.lowStockThreshold = normalizeLowStockThreshold(
+        update.lowStockThreshold,
+        product.lowStockThreshold || 5,
+      );
+    }
+    if (update.category !== undefined && update.category !== "") {
+      product.category = normalizeProductCategory(update.category);
+    }
+    if (update.controlled !== undefined) {
+      product.controlled =
+        update.controlled === true ||
+        update.controlled === "true" ||
+        update.controlled === "controlled";
+    }
+    if (update.internalNote !== undefined) {
+      product.internalNote = String(update.internalNote || "").trim();
+    }
+    this.audit("team_product_meta_changed", actor.id, {
+      productId: product.id,
+      before,
+      after: {
+        lowStockThreshold: product.lowStockThreshold,
+        category: product.category,
+        controlled: product.controlled,
+        internalNote: product.internalNote,
+      },
+    });
+    this.persist();
+    return this.publicProduct(product);
+  }
+}
+
+function defaultLotValidity(createdAt) {
+  const base = createdAt ? new Date(createdAt) : new Date();
+  if (Number.isNaN(base.getTime())) return "";
+  const expiry = new Date(base.getTime());
+  expiry.setMonth(expiry.getMonth() + 12);
+  return expiry.toISOString().slice(0, 10);
+}
+
+function humanizeMovementNote(note) {
+  const trimmed = String(note || "").trim();
+  if (!trimmed) return "Entrada manual";
+  if (/saldo inicial/i.test(trimmed)) return "Saldo inicial";
+  return trimmed;
 }
 
 function movement(productId, type, quantity, note, date) {
