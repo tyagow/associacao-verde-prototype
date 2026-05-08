@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import QueueColumn from "./QueueColumn";
 import CasePanel from "./CasePanel";
 import Thread from "./Thread";
@@ -31,6 +31,8 @@ export default function Workbench({ dashboard, onDashboardRefresh, error, status
   const [threadLoading, setThreadLoading] = useState(false);
   const [threadError, setThreadError] = useState("");
   const [actionError, setActionError] = useState("");
+  const caseSectionRef = useRef(null);
+  const userSelectedRef = useRef(false);
 
   const cases = useMemo(() => supportCases(dashboard, filters), [dashboard, filters]);
   const selectedCase =
@@ -53,10 +55,28 @@ export default function Workbench({ dashboard, onDashboardRefresh, error, status
     }
   }, [cases, selectedPatientId]);
 
-  // Reset selected ticket when patient changes.
+  // Reset selected ticket when patient changes. On mobile, also scroll the
+  // case panel into view so the user doesn't have to scroll down past the
+  // queue strip after picking a case (Phase 12 mobile stack UX).
   useEffect(() => {
     setSelectedTicketId("");
+    if (!userSelectedRef.current) return;
+    userSelectedRef.current = false;
+    if (typeof window === "undefined") return;
+    const isMobile = window.matchMedia?.("(max-width: 720px)")?.matches;
+    if (!isMobile) return;
+    const node = caseSectionRef.current;
+    if (!node || typeof node.scrollIntoView !== "function") return;
+    // Use rAF so the layout settles after state change before scrolling.
+    window.requestAnimationFrame(() => {
+      node.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   }, [selectedPatientId]);
+
+  const handleSelectPatient = useCallback((id) => {
+    userSelectedRef.current = true;
+    setSelectedPatientId(id);
+  }, []);
 
   const refreshThread = useCallback(async () => {
     if (!selectedTicket?.id) {
@@ -179,10 +199,10 @@ export default function Workbench({ dashboard, onDashboardRefresh, error, status
               <QueueColumn
                 cases={cases}
                 selectedPatientId={selectedCase?.patient.id || ""}
-                onSelect={setSelectedPatientId}
+                onSelect={handleSelectPatient}
               />
               {selectedCase ? (
-                <div className={styles.txWorkbenchSection}>
+                <div ref={caseSectionRef} className={styles.txWorkbenchSection}>
                   <CasePanel item={selectedCase} onUpdateTicket={updateTicket}>
                     {selectedTicket ? (
                       <>

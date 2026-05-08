@@ -62,3 +62,22 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* Phase 12 — mobile stack: queue collapses above the case panel and the
+ * case panel becomes the focused surface. Selecting a case scrolls down
+ * to it (handled in Workbench.jsx). The summary metrics shrink to 2-up
+ * with reduced padding so they fit narrow screens without truncation. */
+@media (max-width: 720px) {
+  .txWorkbench {
+    gap: var(--sp-3);
+  }
+  .txWorkbenchSection {
+    scroll-margin-top: var(--sp-4);
+  }
+  .txMetric {
+    padding: var(--sp-2) var(--sp-3);
+  }
+  .txMetric strong {
+    font-size: var(--fs-h3, 18px);
+  }
+}
