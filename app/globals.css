@@ -2699,6 +2699,16 @@ textarea {
   .recovery-request-form { grid-template-columns: 1fr; }
   .support-request-form { grid-template-columns: 1fr; }
 
+  /* Phase 1d additive: shrink heavy patient containers at 320–540px so
+     they fit inside narrow phones (audit found .patient-order-card and
+     #checkout overflowing at 320px). */
+  .patient-order-card { padding: 1rem; }
+  .patient-order-card * { min-width: 0; }
+  #checkout select,
+  .patient-checkout select { width: 100%; min-width: 0; max-width: 100%; }
+  #checkout button[type="submit"],
+  .patient-checkout button[type="submit"] { white-space: normal; }
+
   .auth-form { grid-template-columns: 1fr; }
   .team-account-panel { grid-template-columns: 1fr; }
   .team-session-form { grid-template-columns: 1fr; }
