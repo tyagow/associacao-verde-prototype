@@ -1,7 +1,39 @@
 "use client";
 
+/* Phase 4 — Pedidos & Pix ledgers (rebuild).
+
+   Replaces the legacy single-table view with the mock's two-ledger layout:
+     - Top ledger: "Pix pendentes" — countdown column, reconcile/cancel
+       inline actions per row.
+     - Bottom ledger: "Pedidos pagos" — status pills and per-row actions
+       (Etiqueta / Rastrear / Revisar exceção). Filters above narrow the
+       list.
+
+   Detail opens in a right-side drawer (OrderDrawer), which mirrors the
+   patient CatalogDrawer pattern from Phase 1b: pointer-events + transform
+   animation, never display:none, so future E2E selectors stay reachable.
+
+   Hard E2E invariants preserved:
+     - Body still contains "Pedidos e Pix" (kicker) and the heading
+       "Reservas, pagamentos e reconciliação".
+     - [data-filter='ordersQuery'] (input) and [data-filter='ordersStatus']
+       (select with awaiting_payment option) still drive filtering.
+     - #orders-surface contains a [data-pay='<paymentId>'] button as the
+       FIRST visible Pay action when a Pix is pending.
+     - After clicking [data-pay], the body shows "Webhook Pix simulado".
+
+   No new endpoints. Existing endpoints used:
+     GET  /api/team/dashboard
+     POST /api/team/payments/reconcile
+     POST /api/team/simulate-pix
+     POST /api/team/orders/cancel
+*/
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Brand from "../../components/Brand";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import Ledger from "./components/Ledger.jsx";
+import OrderRow from "./components/OrderRow.jsx";
+import OrderDrawer from "./components/OrderDrawer.jsx";
 
 const TEAM_ROUTES = [
   ["/equipe", "Comando"],
@@ -13,7 +45,10 @@ const TEAM_ROUTES = [
   ["/admin", "Admin"],
 ];
 
-const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+const moneyFmt = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+});
 
 export default function OrdersClient() {
   const [dashboard, setDashboard] = useState(null);
@@ -22,6 +57,12 @@ export default function OrdersClient() {
   const [busyPaymentId, setBusyPaymentId] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerSubject, setDrawerSubject] = useState(null); // { kind: "order"|"payment", id }
+  // Tick state to keep countdowns live (1s cadence). The dashboard payload
+  // is the source of truth; we only re-derive labels per second.
+  const [, setNowTick] = useState(0);
+  const tickRef = useRef(null);
 
   const loadDashboard = useCallback(async () => {
     setError("");
@@ -40,17 +81,26 @@ export default function OrdersClient() {
     };
   }, [loadDashboard]);
 
+  useEffect(() => {
+    tickRef.current = setInterval(() => setNowTick((n) => (n + 1) % 60), 1000);
+    return () => clearInterval(tickRef.current);
+  }, []);
+
   const pendingPayments = useMemo(
-    () => (dashboard?.payments || []).filter((payment) => payment.status === "pending"),
+    () => (dashboard?.payments || []).filter((p) => p.status === "pending"),
     [dashboard],
   );
   const activeReservations = useMemo(
-    () => (dashboard?.reservations || []).filter((item) => item.status === "active"),
+    () => (dashboard?.reservations || []).filter((r) => r.status === "active"),
     [dashboard],
   );
-  const filteredOrders = useMemo(
-    () => filterOrders(dashboard?.orders || [], ordersQuery, ordersStatus),
-    [dashboard, ordersQuery, ordersStatus],
+  const paidOrders = useMemo(
+    () => (dashboard?.orders || []).filter((order) => order.status !== "awaiting_payment"),
+    [dashboard],
+  );
+  const filteredPaidOrders = useMemo(
+    () => filterOrders(paidOrders, ordersQuery, ordersStatus),
+    [paidOrders, ordersQuery, ordersStatus],
   );
 
   async function runPaymentAction(paymentId, action) {
@@ -96,10 +146,45 @@ export default function OrdersClient() {
       form.reset();
       await loadDashboard();
       setMessage("Pedido cancelado ou enviado para revisao de excecao.");
+      setDrawerOpen(false);
     } catch (nextError) {
       setError(nextError.message);
     }
   }
+
+  function openOrderDrawer(orderId) {
+    setDrawerSubject({ kind: "order", id: orderId });
+    setDrawerOpen(true);
+  }
+
+  function openPaymentDrawer(paymentId) {
+    setDrawerSubject({ kind: "payment", id: paymentId });
+    setDrawerOpen(true);
+  }
+
+  const drawerOrder = useMemo(() => {
+    if (!drawerSubject || !dashboard) return null;
+    if (drawerSubject.kind === "order") {
+      return (dashboard.orders || []).find((o) => o.id === drawerSubject.id) || null;
+    }
+    const payment = (dashboard.payments || []).find((p) => p.id === drawerSubject.id);
+    if (!payment) return null;
+    return (dashboard.orders || []).find((o) => o.id === payment.orderId) || null;
+  }, [drawerSubject, dashboard]);
+
+  const drawerPayment = useMemo(() => {
+    if (!drawerSubject || !dashboard) return null;
+    if (drawerSubject.kind === "payment") {
+      return (dashboard.payments || []).find((p) => p.id === drawerSubject.id) || null;
+    }
+    // Order kind: include payment if it's still pending.
+    const order = (dashboard.orders || []).find((o) => o.id === drawerSubject.id);
+    if (!order) return null;
+    return (
+      (dashboard.payments || []).find((p) => p.orderId === order.id && p.status === "pending") ||
+      null
+    );
+  }, [drawerSubject, dashboard]);
 
   return (
     <>
@@ -195,15 +280,101 @@ export default function OrdersClient() {
                   {!dashboard && !error ? (
                     <p className="muted">Carregando pedidos e Pix...</p>
                   ) : dashboard ? (
-                    <OrdersSurface
-                      dashboard={dashboard}
-                      pendingPayments={pendingPayments}
-                      activeReservations={activeReservations}
-                      filteredOrders={filteredOrders}
-                      busyPaymentId={busyPaymentId}
-                      onPaymentAction={runPaymentAction}
-                      onCancelOrder={cancelOrder}
-                    />
+                    <>
+                      <section className="route-summary">
+                        <Metric label="Pedidos" value={(dashboard.orders || []).length} />
+                        <Metric label="Pix pendentes" value={pendingPayments.length} />
+                        <Metric label="Reservas ativas" value={activeReservations.length} />
+                      </section>
+
+                      <Ledger
+                        title="Pix pendentes"
+                        ariaLabel="Pix pendentes"
+                        count={pendingPayments.length}
+                        tone={pendingPayments.length ? "warn" : undefined}
+                        meta={
+                          pendingPayments.length ? `${pendingPayments.length} em aberto` : undefined
+                        }
+                        emptyMessage="Nenhum Pix pendente."
+                      >
+                        {pendingPayments.map((payment) => {
+                          const countdown = describeCountdown(payment.expiresAt);
+                          const order = (dashboard.orders || []).find(
+                            (o) => o.id === payment.orderId,
+                          );
+                          return (
+                            <OrderRow
+                              key={payment.id}
+                              variant="pending"
+                              primary={{
+                                id: payment.orderId,
+                                subtitle: `${payment.provider || "pix"} · pending`,
+                              }}
+                              patient={{
+                                name: order?.patientName || "Paciente",
+                                summary: summarizeItems(order?.items),
+                              }}
+                              amount={formatCents(payment.amountCents)}
+                              countdown={countdown}
+                              onOpen={() => openPaymentDrawer(payment.id)}
+                              actions={[
+                                {
+                                  key: "reconcile",
+                                  label:
+                                    busyPaymentId === `reconcile:${payment.id}`
+                                      ? "Conciliando..."
+                                      : "Conciliar",
+                                  onClick: () => runPaymentAction(payment.id, "reconcile"),
+                                  disabled: busyPaymentId === `reconcile:${payment.id}`,
+                                  dataAttr: { key: "reconcile", value: payment.id },
+                                },
+                                {
+                                  key: "pay",
+                                  label:
+                                    busyPaymentId === `pay:${payment.id}`
+                                      ? "Simulando..."
+                                      : "Simular webhook pago",
+                                  onClick: () => runPaymentAction(payment.id, "pay"),
+                                  disabled: busyPaymentId === `pay:${payment.id}`,
+                                  tone: "primary",
+                                  dataAttr: { key: "pay", value: payment.id },
+                                },
+                              ]}
+                            />
+                          );
+                        })}
+                      </Ledger>
+
+                      <Ledger
+                        title="Pedidos pagos"
+                        ariaLabel="Pedidos pagos"
+                        count={filteredPaidOrders.length}
+                        meta={`${filteredPaidOrders.length} no filtro atual`}
+                        emptyMessage="Nenhum pedido encontrado para o filtro atual."
+                      >
+                        {filteredPaidOrders.map((order) => {
+                          const status = orderStatusDescriptor(order.status);
+                          return (
+                            <OrderRow
+                              key={order.id}
+                              variant="paid"
+                              primary={{
+                                id: order.id,
+                                subtitle: `${order.paymentProvider || "pix"} · ${order.paymentStatus || "—"}`,
+                              }}
+                              patient={{
+                                name: order.patientName || "Paciente",
+                                summary: summarizeItems(order.items),
+                              }}
+                              amount={formatCents(order.totalCents)}
+                              statusPill={status}
+                              onOpen={() => openOrderDrawer(order.id)}
+                              actions={rowActionsForOrder(order, openOrderDrawer)}
+                            />
+                          );
+                        })}
+                      </Ledger>
+                    </>
                   ) : (
                     <p className="muted">
                       Entre como equipe para acompanhar pedidos, Pix e reservas.
@@ -215,187 +386,49 @@ export default function OrdersClient() {
           </section>
         </div>
       </main>
+
+      <OrderDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        order={drawerOrder}
+        payment={drawerPayment}
+        busyKey={busyPaymentId}
+        onCancelOrder={cancelOrder}
+        onPaymentAction={runPaymentAction}
+      />
     </>
   );
 }
 
-function OrdersSurface({
-  dashboard,
-  pendingPayments,
-  activeReservations,
-  filteredOrders,
-  busyPaymentId,
-  onPaymentAction,
-  onCancelOrder,
-}) {
-  return (
-    <>
-      <section className="route-summary">
-        <Metric label="Pedidos" value={(dashboard.orders || []).length} />
-        <Metric label="Pix pendentes" value={pendingPayments.length} />
-        <Metric label="Reservas ativas" value={activeReservations.length} />
-      </section>
-
-      <div className="ledger-section-heading">
-        <h3>Pix pendentes</h3>
-        <span>{pendingPayments.length} em aberto</span>
-      </div>
-      {pendingPayments.length ? (
-        <section className="orders-ledger payment-ledger" aria-label="Pix pendentes">
-          <div className="orders-ledger-head">
-            <span>Pedido</span>
-            <span>Valor</span>
-            <span>Provider</span>
-            <span>Acoes</span>
-          </div>
-          {pendingPayments.map((payment) => (
-            <PaymentCard
-              key={payment.id}
-              payment={payment}
-              busyPaymentId={busyPaymentId}
-              onPaymentAction={onPaymentAction}
-            />
-          ))}
-        </section>
-      ) : (
-        <p className="muted">Nenhum Pix pendente.</p>
-      )}
-
-      <div className="ledger-section-heading">
-        <h3>Pedidos</h3>
-        <span>{filteredOrders.length} no filtro atual</span>
-      </div>
-      {filteredOrders.length ? (
-        <section className="orders-ledger" aria-label="Pedidos">
-          <div className="orders-ledger-head">
-            <span>Pedido</span>
-            <span>Paciente e itens</span>
-            <span>Valor</span>
-            <span>Status</span>
-            <span>Acoes</span>
-          </div>
-          {filteredOrders.map((order) => (
-            <OrderCard key={order.id} order={order} onCancelOrder={onCancelOrder} />
-          ))}
-        </section>
-      ) : (
-        <p className="muted">Nenhum pedido encontrado para o filtro atual.</p>
-      )}
-    </>
-  );
-}
-
-function PaymentCard({ payment, busyPaymentId, onPaymentAction }) {
-  return (
-    <article className="orders-ledger-row payment-ledger-row">
-      <div className="ledger-primary">
-        <strong>{payment.orderId}</strong>
-        <span>Expira {formatDateTime(payment.expiresAt)}</span>
-      </div>
-      <strong className="money">{formatPaymentAmount(payment.amountCents)}</strong>
-      <div className="ledger-primary">
-        <strong>{payment.provider}</strong>
-        <span>{payment.providerPaymentId}</span>
-      </div>
-      <div className="ledger-actions">
-        <button
-          className="mini"
-          type="button"
-          data-reconcile={payment.id}
-          disabled={busyPaymentId === `reconcile:${payment.id}`}
-          onClick={() => onPaymentAction(payment.id, "reconcile")}
-        >
-          {busyPaymentId === `reconcile:${payment.id}` ? "Conciliando..." : "Conciliar provider"}
-        </button>
-        <button
-          className="accent"
-          type="button"
-          data-pay={payment.id}
-          disabled={busyPaymentId === `pay:${payment.id}`}
-          onClick={() => onPaymentAction(payment.id, "pay")}
-        >
-          {busyPaymentId === `pay:${payment.id}` ? "Simulando..." : "Simular webhook pago"}
-        </button>
-      </div>
-    </article>
-  );
-}
-
-function OrderCard({ order, onCancelOrder }) {
-  const statusClass =
-    order.status.includes("expired") ||
-    order.status.includes("exception") ||
-    order.status === "cancelled"
-      ? "danger"
-      : order.status.includes("awaiting")
-        ? "warn"
-        : "";
-  const canReview = [
-    "awaiting_payment",
-    "paid_pending_fulfillment",
-    "separating",
-    "ready_to_ship",
-  ].includes(order.status);
-
-  return (
-    <article className="orders-ledger-row order-management-row">
-      <div className="ledger-primary">
-        <strong>{order.id}</strong>
-        <span>
-          {order.paymentProvider || "Pix"} · {order.paymentStatus || "sem pagamento"}
-        </span>
-      </div>
-      <div className="ledger-primary">
-        <strong>{order.patientName}</strong>
-        <span>
-          {(order.items || [])
-            .map((item) => `${item.quantity} ${item.unit} ${item.name}`)
-            .join(" | ")}
-        </span>
-        {order.shipment ? (
-          <span>
-            Envio: {order.shipment.carrier} · {order.shipment.status} ·{" "}
-            {order.shipment.trackingCode || "sem rastreio"}
-          </span>
-        ) : null}
-        {order.pix ? <span>Pix copia-e-cola: {order.pix.copiaECola}</span> : null}
-        {order.exceptions?.length ? (
-          <span>Excecao: {order.exceptions[order.exceptions.length - 1].note}</span>
-        ) : null}
-      </div>
-      <strong className="money">{formatPaymentAmount(order.totalCents)}</strong>
-      <span className={`pill ${statusClass}`.trim()}>{orderStatusLabel(order.status)}</span>
-      <div className="ledger-actions">
-        {canReview ? (
-          <details className="row-action-drawer">
-            <summary>{order.status === "awaiting_payment" ? "Cancelar" : "Revisar"}</summary>
-            <form
-              className="order-cancel-inline"
-              onSubmit={(event) => onCancelOrder(event, order.id)}
-            >
-              <label>
-                Excecao/cancelamento
-                <input
-                  name="reason"
-                  placeholder={
-                    order.status === "awaiting_payment"
-                      ? "Motivo para liberar reserva"
-                      : "Motivo para revisar reembolso"
-                  }
-                  required
-                />
-              </label>
-              <button className="mini danger" type="submit">
-                {order.status === "awaiting_payment" ? "Cancelar e liberar" : "Revisar excecao"}
-              </button>
-            </form>
-          </details>
-        ) : (
-          <span className="muted">Sem acao</span>
-        )}
-      </div>
-    </article>
-  );
+function rowActionsForOrder(order, openOrderDrawer) {
+  const actions = [];
+  if (order.status === "ready_to_ship") {
+    actions.push({
+      key: "label",
+      label: "Etiqueta",
+      onClick: () => openOrderDrawer(order.id),
+    });
+  } else if (order.status === "sent") {
+    actions.push({
+      key: "track",
+      label: "Rastrear",
+      onClick: () => openOrderDrawer(order.id),
+    });
+  } else if (order.status === "fulfillment_exception") {
+    actions.push({
+      key: "exception",
+      label: "Revisar exceção",
+      onClick: () => openOrderDrawer(order.id),
+      tone: "danger",
+    });
+  } else {
+    actions.push({
+      key: "open",
+      label: "Abrir",
+      onClick: () => openOrderDrawer(order.id),
+    });
+  }
+  return actions;
 }
 
 function Metric({ label, value }) {
@@ -405,6 +438,60 @@ function Metric({ label, value }) {
       <h2>{value}</h2>
     </article>
   );
+}
+
+function describeCountdown(expiresAt) {
+  if (!expiresAt) return { label: "sem vencimento", tone: undefined };
+  const target = new Date(expiresAt).getTime();
+  const now = Date.now();
+  const diff = target - now;
+  if (diff <= 0) return { label: "expirado", tone: "danger" };
+  const totalSec = Math.floor(diff / 1000);
+  const minutes = Math.floor(totalSec / 60);
+  const seconds = totalSec % 60;
+  if (minutes >= 60) {
+    const hours = Math.floor(minutes / 60);
+    return { label: `${hours}h${String(minutes % 60).padStart(2, "0")}`, tone: "warn" };
+  }
+  if (minutes >= 10) return { label: `${minutes}min`, tone: "warn" };
+  return {
+    label: `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`,
+    tone: minutes < 5 ? "danger" : "warn",
+  };
+}
+
+function summarizeItems(items) {
+  if (!items || !items.length) return "";
+  const head = items
+    .slice(0, 2)
+    .map((item) => `${item.quantity}× ${item.name}`)
+    .join(" · ");
+  const extra = items.length > 2 ? ` +${items.length - 2}` : "";
+  return `${head}${extra}`;
+}
+
+function orderStatusDescriptor(status) {
+  const labels = {
+    awaiting_payment: "Pix pendente",
+    paid_pending_fulfillment: "Pago, aguardando separacao",
+    separating: "Em separacao",
+    ready_to_ship: "Pronto para envio",
+    sent: "Enviado",
+    payment_expired: "Pagamento expirado",
+    cancelled: "Cancelado",
+    fulfillment_exception: "Excecao operacional",
+  };
+  let tone = "neutral";
+  if (status === "sent" || status === "ready_to_ship") tone = "good";
+  else if (
+    status === "payment_expired" ||
+    status === "cancelled" ||
+    status === "fulfillment_exception"
+  )
+    tone = "danger";
+  else if (status === "awaiting_payment" || status.startsWith("paid") || status === "separating")
+    tone = "warn";
+  return { label: labels[status] || status, tone };
 }
 
 function filterOrders(orders, rawQuery, status) {
@@ -439,32 +526,8 @@ function normalized(value) {
     .toLowerCase();
 }
 
-function formatPaymentAmount(amountCents) {
-  return money.format((amountCents || 0) / 100);
-}
-
-function orderStatusLabel(status) {
-  return (
-    {
-      awaiting_payment: "Pix pendente",
-      paid_pending_fulfillment: "Pago, aguardando separacao",
-      separating: "Em separacao",
-      ready_to_ship: "Pronto para envio",
-      sent: "Enviado",
-      payment_expired: "Pagamento expirado",
-      cancelled: "Cancelado",
-      fulfillment_exception: "Excecao operacional",
-    }[status] || status
-  );
-}
-
-function formatDateTime(value) {
-  if (!value) return "sem vencimento";
-  return new Intl.DateTimeFormat("pt-BR", {
-    dateStyle: "short",
-    timeStyle: "short",
-    timeZone: "America/Sao_Paulo",
-  }).format(new Date(value));
+function formatCents(amountCents) {
+  return moneyFmt.format((amountCents || 0) / 100);
 }
 
 async function api(path, options = {}) {
