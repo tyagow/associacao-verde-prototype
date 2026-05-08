@@ -146,9 +146,7 @@ function rateBucket() {
 
 export function ipFromRequest(request) {
   const xff =
-    request.headers?.get?.("x-forwarded-for") ||
-    request.headers?.["x-forwarded-for"] ||
-    "";
+    request.headers?.get?.("x-forwarded-for") || request.headers?.["x-forwarded-for"] || "";
   return String(xff).split(",")[0].trim() || "local";
 }
 

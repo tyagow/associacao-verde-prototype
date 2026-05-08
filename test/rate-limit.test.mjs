@@ -1,10 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import {
-  assertRateLimit,
-  recordRateLimitHit,
-  ipFromRequest,
-} from "../src/route-helpers.ts";
+import { assertRateLimit, recordRateLimitHit, ipFromRequest } from "../src/route-helpers.ts";
 
 function resetBucket() {
   globalThis.__avRateLimits = new Map();
