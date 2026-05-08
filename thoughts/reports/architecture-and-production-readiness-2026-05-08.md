@@ -46,7 +46,8 @@
 │   3. next.config.mjs::rewrites() — /public/* → /*          │
 │   4. App Router resolves the request:                      │
 │       • Pages: app/<route>/page.jsx                        │
-│       • APIs:  app/api/<path>/route.js (46 handlers)       │
+│       • APIs:  app/api/<path>/route.js + /health           │
+│         (47 Route Handlers total)                          │
 │       • Static: public/<asset> served at /<asset>          │
 │                                                            │
 │  Domain singleton (lazy, globalThis-cached):               │
