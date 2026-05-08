@@ -86,8 +86,13 @@ test("SQLite store persists production entities across process-style reloads", a
       reloadedStore.migrations().map((row) => ({ ...row })),
       [
         {
-          version: SQLITE_SCHEMA_VERSION,
+          version: 1,
           name: "initial_json_state_schema",
+          appliedAt: "2026-05-07T15:00:00.000Z",
+        },
+        {
+          version: SQLITE_SCHEMA_VERSION,
+          name: "support_messages_thread",
           appliedAt: "2026-05-07T15:00:00.000Z",
         },
       ],

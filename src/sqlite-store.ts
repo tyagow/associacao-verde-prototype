@@ -5,7 +5,22 @@ import { dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { createInitialState } from "./production-system.ts";
 
-export const SQLITE_SCHEMA_VERSION = 1;
+// Migration ledger (append-only). Each entry is recorded in schema_migrations
+// the first time the store opens a fresh database. Existing databases are
+// reconciled by `addColumnIfMissing` and idempotent CREATE TABLE IF NOT EXISTS
+// statements in `migrate()`.
+//
+// Phase 7 (Support workbench) adds v15: support_messages table -- append-only
+// thread of patient + team replies on a support ticket. Prior phases between
+// v1 and v14 are reserved/inferred from the working tree (the original
+// migrate() block was authored in a single shot at v1; v15 is the first
+// explicit append). Never edit prior migration entries; only append.
+export const SCHEMA_MIGRATIONS = [
+  { version: 1, name: "initial_json_state_schema" },
+  { version: 15, name: "support_messages_thread" },
+];
+export const SQLITE_SCHEMA_VERSION =
+  SCHEMA_MIGRATIONS[SCHEMA_MIGRATIONS.length - 1].version;
 
 export class SqliteStateStore {
   constructor({ filePath, now = () => new Date() }) {
@@ -213,6 +228,21 @@ export class SqliteStateStore {
         data TEXT NOT NULL
       );
 
+      -- Phase 7 (schema v15): support_messages -- append-only thread of
+      -- replies (patient + team) on a single support ticket. Indexed by
+      -- ticket id + created_at for fast thread fetches. Replies never
+      -- mutate (audit-friendly).
+      CREATE TABLE IF NOT EXISTS support_messages (
+        id TEXT PRIMARY KEY,
+        ticket_id TEXT NOT NULL,
+        author_type TEXT NOT NULL,
+        author_id TEXT NOT NULL,
+        body TEXT NOT NULL,
+        created_at TEXT NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS idx_support_messages_ticket
+        ON support_messages (ticket_id, created_at);
+
       CREATE TABLE IF NOT EXISTS shipments (
         id TEXT PRIMARY KEY,
         order_id TEXT NOT NULL,
@@ -232,7 +262,9 @@ export class SqliteStateStore {
     `);
     this.addColumnIfMissing("products", "stock", "INTEGER NOT NULL DEFAULT 0");
     this.addColumnIfMissing("products", "price_cents", "INTEGER NOT NULL DEFAULT 0");
-    this.recordMigration(SQLITE_SCHEMA_VERSION, "initial_json_state_schema");
+    for (const migration of SCHEMA_MIGRATIONS) {
+      this.recordMigration(migration.version, migration.name);
+    }
   }
 
   seedIfEmpty() {
@@ -374,6 +406,19 @@ export class SqliteStateStore {
         this.db
           .prepare("INSERT INTO payment_events (id, payment_id, status, data) VALUES (?, ?, ?, ?)")
           .run(id, value.paymentId, value.status, json),
+      support_messages: () =>
+        this.db
+          .prepare(
+            "INSERT INTO support_messages (id, ticket_id, author_type, author_id, body, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+          )
+          .run(
+            value.id,
+            value.ticketId,
+            value.authorType,
+            value.authorId,
+            value.body,
+            value.createdAt,
+          ),
       prescription_documents: () =>
         this.db
           .prepare(
@@ -431,6 +476,31 @@ export class SqliteStateStore {
         "INSERT OR IGNORE INTO schema_migrations (version, name, applied_at) VALUES (?, ?, ?)",
       )
       .run(version, name, this.now().toISOString());
+  }
+
+  // Phase 7 (schema v15) -- support_messages thread queries. The thread is
+  // stored row-per-message (append-only) so replies never mutate prior rows
+  // and history is audit-friendly. ProductionSystem owns the public API
+  // (createSupportReply / listSupportThread); these helpers carry the SQL.
+  appendSupportMessage(message) {
+    const row = {
+      id: message.id,
+      ticketId: message.ticketId,
+      authorType: message.authorType,
+      authorId: message.authorId,
+      body: message.body,
+      createdAt: message.createdAt,
+    };
+    this.insertJson("support_messages", row.id, row);
+    return row;
+  }
+
+  listSupportMessages(ticketId) {
+    return this.db
+      .prepare(
+        "SELECT id, ticket_id AS ticketId, author_type AS authorType, author_id AS authorId, body, created_at AS createdAt FROM support_messages WHERE ticket_id = ? ORDER BY created_at ASC, id ASC",
+      )
+      .all(ticketId);
   }
 
   schemaVersion() {

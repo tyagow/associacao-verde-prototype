@@ -25,6 +25,7 @@ const requiredTables = [
   "payment_events",
   "prescription_documents",
   "support_tickets",
+  "support_messages",
   "shipments",
   "audit_log",
 ];
