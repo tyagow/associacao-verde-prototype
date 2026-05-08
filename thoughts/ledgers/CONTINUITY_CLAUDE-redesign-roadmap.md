@@ -420,9 +420,38 @@ finds the current `[→]`, completes its acceptance criteria, then advances.
         input). next build clean. Screenshots:
         artifacts/visual-e2e/redesign/p10-admin-{audit,users}-desktop.png
         via scripts/p10-screenshots.py.
-  - [~] Phase 11 — Public home redesign (DEFERRED per operator direction;
-        existing public home retained, no internal status leaks; tracked
-        as `UX-009` in `docs/production-delivery-plan.md`)
+  - [x] Phase 11 — Public home redesign (SHIPPED 2026-05-08, supersedes
+        original deferred slice with a tighter brief modeled on
+        apoiarbrasil.org)
+        Three atomic feat commits ship the institutional public landing:
+        5ab66d9 hero + Quem somos, 8e57265 Programas + Como acessar +
+        Profissionais e parceiros, dbd14ad Transparencia + Contato +
+        secondary two-doors footer. The previous home leaked internal
+        feature labels (Autenticacao, Catalogo, "Reserva no checkout",
+        "Provider, dominio, cookie, backup e deploy seguem gates") to
+        public visitors. The redesign rewrites the page in pure
+        institutional voice — acolhimento, acesso ao tratamento
+        autorizado, plano de cuidado, atendimento humano — addressed to
+        actual visitors (patients, families, prescribing physicians,
+        partner organizations). The two-doors entry (Paciente / Equipe)
+        is preserved but demoted to a small mini-button in the topbar
+        and a paired card in the footer; the hero no longer carries
+        them. New CSS Module under app/components/landing/Landing.module.css
+        with .lx-* namespace pulls only from the Phase 0 token system.
+        Mobile-first: single-column collapse at 540px, tightened padding
+        at 360px. Six screenshots at
+        artifacts/visual-e2e/redesign/p11-public-{hero,middle,footer}-{desktop,mobile}.png
+        via scripts/p11-screenshots.py. Source-privacy verified:
+        `curl http://127.0.0.1:4184/ | grep -i admin` returns empty;
+        the forbidden-word grep (provider, drill, deploy, webhook,
+        reserva, Autenticacao, Catalogo, RBAC, escrow) returns clean on
+        the rendered HTML. No E2E assertions touched — `/` was already
+        out of the responsive_overflow_check list and no test asserted
+        on its body text. Tests stay 58/58. E2E 5/5. The
+        apoiarbrasil.org-modeled redesign closes the public-landing gap
+        identified in the original Phase 13 close-out summary; the
+        UX-009 deferral note in docs/production-delivery-plan.md should
+        be marked DONE in a follow-up doc pass.
   - [x] Phase 12 — Mobile polish sweep
         (c89a780 chore(mobile): patient experience 390/320 sweep —
          globals.css 540px/360px safety nets for monospace ids, pix
