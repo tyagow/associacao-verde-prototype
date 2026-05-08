@@ -157,7 +157,42 @@ finds the current `[→]`, completes its acceptance criteria, then advances.
         /equipe/fulfillment, /equipe/suporte) still render their own
         topbar/side-nav. Phases 4-7 own migrating their routes onto
         the shell via the passthrough app/equipe/layout.jsx seam.
-- Now: [→] **Phase 5 — Fulfillment kanban (dnd-kit)**
+- Now: [→] **Phase 6 — Estoque & cultivo (single ledger + lot detail)** (concurrent)
+- Done in this batch:
+  - [x] Phase 5 — Fulfillment kanban (dnd-kit)
+        (febf520 chore(deps) @dnd-kit/core+sortable · 0240e11
+         updateOrderFulfillmentStatus method+tests bundled with
+         concurrent inventory commit · 5c04bad POST
+         /api/team/orders/status Route Handler · e0c0379 scaffold
+         Kanban + KanbanColumn + OrderCard components · b52d942
+         drag-and-drop kanban consuming TeamShell · this commit
+         screenshots + ledger close).
+        Components: app/equipe/fulfillment/components/{Kanban,
+        KanbanColumn,OrderCard}.{jsx,module.css}. Page rewrite at
+        app/equipe/fulfillment/page.jsx mounts inside TeamShell with
+        currentRoute='/equipe/fulfillment'. dnd-kit DndContext owns
+        the four columns (paid_pending_fulfillment · separating ·
+        ready_to_ship · sent); drops post to the new
+        /api/team/orders/status Route Handler which proxies to a
+        thin /api/team/orders/status-apply target inside server.mjs
+        (Phase 5 bridge — appRoutes allow-list + a single dispatcher
+        case wiring the singleton). Audit envelope is
+        team_order_status_changed (kanban surface) so Phase 10 can
+        distinguish kanban moves from legacy ledger updates.
+        Optimistic local override map; reverts on POST failure with
+        toast surfacing the error. 'Imprimir etiqueta' button on
+        ready_to_ship cards (mock toast). E2E invariants preserved:
+        'Fulfillment e envio' kicker, [data-filter='fulfillmentStatus']
+        SELECT with `all` option, 'Pagamento confirmado' marker
+        when paid orders exist (hidden muted line). 5 new tests in
+        test/fulfillment-status.test.mjs covering RBAC, status
+        validation, lifecycle guard, audit envelope, and idempotent
+        same-column drops. Total tests: 49 → 54 (+5 P5; +others
+        from Phase 6/7/8 concurrent). Screenshots in
+        artifacts/visual-e2e/redesign/p5-fulfillment-kanban-{desktop,
+        mobile}.png. Open question for Phase 12: mobile sweep should
+        revisit per-column horizontal swipe; today flex-wraps at
+        <=1024px.
 - Next:
   - [ ] Phase 6 — Estoque & cultivo (single ledger + lot detail)
   - [ ] Phase 7 — Support workbench
