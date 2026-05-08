@@ -2,11 +2,17 @@
 
 import Brand from "../components/Brand";
 import { useEffect, useMemo, useState } from "react";
+import AccessIssueScreen from "./components/AccessIssueScreen";
+import CartHero from "./components/CartHero";
 import CatalogDrawer from "./components/CatalogDrawer";
+import EmptyHero from "./components/EmptyHero";
+import HistoryList from "./components/HistoryList";
 import PatientShell from "./components/PatientShell";
 import PatientTabs, { PATIENT_TABS } from "./components/PatientTabs";
 import PixHero from "./components/PixHero";
+import PrivacyConsentGate from "./components/PrivacyConsentGate";
 import ProfileDrawer from "./components/ProfileDrawer";
+import SupportThread from "./components/SupportThread";
 import Toast from "./components/Toast";
 
 const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
@@ -302,11 +308,7 @@ export default function PatientPortal() {
                 </button>
               </form>
 
-              <section id="access-issue" className="access-issue-panel" hidden={!accessIssue}>
-                {accessIssue ? (
-                  <AccessIssuePanel message={accessIssue} busy={busy} onSubmit={onAccessRecovery} />
-                ) : null}
-              </section>
+              <AccessIssueScreen message={accessIssue} busy={busy} onSubmit={onAccessRecovery} />
 
               <div id="patient-summary" className="patient-profile-grid">
                 <article className="access-card primary-access">
@@ -396,33 +398,7 @@ export default function PatientPortal() {
             </article>
           </div>
 
-          <section
-            id="privacy-consent-panel"
-            className={`privacy-consent-panel ${patient.privacyConsentAt ? "good" : "warn"}`}
-          >
-            {patient.privacyConsentAt ? (
-              <>
-                <span className="kicker">Privacidade e LGPD</span>
-                <h3>Consentimento registrado</h3>
-                <p>
-                  Versao {patient.privacyConsentVersion || "lgpd-2026-05"} aceita em{" "}
-                  {formatDateTime(patient.privacyConsentAt)}.
-                </p>
-              </>
-            ) : (
-              <form onSubmit={onPrivacyConsent}>
-                <span className="kicker">Privacidade e LGPD</span>
-                <h3>Autorizar uso dos dados para atendimento</h3>
-                <p>
-                  Usamos cadastro, receita, pedidos e mensagens apenas para elegibilidade, preparo,
-                  pagamento, envio e suporte da associacao.
-                </p>
-                <button className="primary" type="submit" disabled={busy}>
-                  Aceitar e continuar
-                </button>
-              </form>
-            )}
-          </section>
+          <PrivacyConsentGate patient={patient} busy={busy} onSubmit={onPrivacyConsent} />
         </article>
 
         {/* ---- Tab: Pedido ---- */}
@@ -469,48 +445,19 @@ export default function PatientPortal() {
 
             <div id="cart-summary">
               {cartItems.length ? (
-                <section className="cart-panel patient-cart-panel">
-                  <div>
-                    <span className="kicker">Resumo antes do Pix</span>
-                    <h3>{cartCount} item(ns) selecionado(s)</h3>
-                    <p className="muted">
-                      Ao gerar Pix, o servidor reserva o estoque ate o vencimento do pagamento.
-                    </p>
-                  </div>
-                  <div className="cart-lines">
-                    {cartItems.map(({ product, quantity, subtotalCents }) => (
-                      <article key={product.id}>
-                        <div>
-                          <strong>
-                            {quantity} {product.unit} · {product.name}
-                          </strong>
-                          <span>{money.format(subtotalCents / 100)}</span>
-                        </div>
-                        <button
-                          className="mini"
-                          type="button"
-                          onClick={() => setCart((current) => removeCartItem(current, product.id))}
-                        >
-                          Remover
-                        </button>
-                      </article>
-                    ))}
-                  </div>
-                  <div className="cart-total">
-                    <span>Total estimado</span>
-                    <strong>{money.format(cartTotal / 100)}</strong>
-                  </div>
-                </section>
+                <CartHero
+                  items={cartItems}
+                  total={cartTotal}
+                  count={cartCount}
+                  onRemove={(productId) => setCart((current) => removeCartItem(current, productId))}
+                />
               ) : latestOrder ? null : (
-                <section className="cart-panel muted-card patient-cart-panel">
-                  <div>
-                    <span className="kicker">Pedido privado</span>
-                    <h3>Seu pedido ainda esta vazio.</h3>
-                    <p className="muted">
-                      Escolha uma quantidade no catalogo autorizado e clique em adicionar.
-                    </p>
-                  </div>
-                </section>
+                <EmptyHero
+                  patientName={patient.name}
+                  onOpenCatalog={() => setCatalogOpen(true)}
+                  onOpenProfile={() => setProfileOpen(true)}
+                  disabled={!hasPrivacyConsent}
+                />
               )}
             </div>
 
@@ -543,61 +490,17 @@ export default function PatientPortal() {
 
         {/* ---- Tab: Historico ---- */}
         <div data-patient-section="historico" style={hidden(isHistorico)}>
-          <section id="patient-orders" className="patient-orders stack">
-            <h3>Historico de pedidos</h3>
-            {orders.length ? (
-              orders.map((order) => <OrderCard order={order} key={order.id} />)
-            ) : (
-              <p className="muted">Nenhum pedido criado nesta conta.</p>
-            )}
-          </section>
+          <HistoryList orders={orders} />
         </div>
 
         {/* ---- Tab: Suporte ---- */}
         <div data-patient-section="suporte" style={hidden(isSuporte)}>
-          <section className="patient-aftercare" hidden={!hasPrivacyConsent}>
-            <form
-              id="support-request-form"
-              className="support-request-form"
-              onSubmit={onSupportRequest}
-            >
-              <div>
-                <span className="kicker">Solicitar atendimento</span>
-                <h3>Fale com a equipe sobre cadastro, Pix, receita ou entrega</h3>
-                <p className="muted">
-                  Use este canal quando a proxima acao do pedido ou a elegibilidade precisar de
-                  revisao humana.
-                </p>
-              </div>
-              <label>
-                Assunto
-                <input name="subject" placeholder="Renovar receita, duvida sobre Pix..." required />
-              </label>
-              <label>
-                Prioridade
-                <select name="priority" defaultValue="normal">
-                  <option value="normal">Normal</option>
-                  <option value="high">Alta</option>
-                  <option value="urgent">Urgente</option>
-                </select>
-              </label>
-              <label className="wide-field">
-                Mensagem
-                <textarea
-                  name="message"
-                  rows={3}
-                  placeholder="Descreva o que precisa ser revisado pela equipe."
-                  required
-                />
-              </label>
-              {latestOrder ? (
-                <input type="hidden" name="relatedOrderId" value={latestOrder.id} />
-              ) : null}
-              <button className="primary" type="submit" disabled={busy}>
-                Enviar ao suporte
-              </button>
-            </form>
-          </section>
+          <SupportThread
+            busy={busy}
+            hasPrivacyConsent={hasPrivacyConsent}
+            latestOrder={latestOrder}
+            onSubmit={onSupportRequest}
+          />
         </div>
       </PatientShell>
 
@@ -806,43 +709,6 @@ function PatientNextAction({ order, cartCount, hasPrivacyConsent, onRefresh, onC
   );
 }
 
-function AccessIssuePanel({ message, busy, onSubmit }) {
-  return (
-    <>
-      <span className="pill danger">Acesso nao liberado</span>
-      <h3>Atendimento precisa revisar seu cadastro</h3>
-      <p>{message}</p>
-      <ul>
-        <li>Confira se a receita e a carteirinha estao vigentes.</li>
-        <li>Use o mesmo codigo de associado informado pela equipe.</li>
-        <li>Procure o suporte da associacao para atualizar documentos antes de tentar comprar.</li>
-      </ul>
-      <form className="recovery-request-form" onSubmit={onSubmit}>
-        <label>
-          Codigo de associado
-          <input name="memberCode" placeholder="APO-1027" required />
-        </label>
-        <label>
-          Convite privado
-          <input name="inviteCode" placeholder="HELENA2026" required />
-        </label>
-        <label className="wide-field">
-          Mensagem para suporte
-          <textarea
-            name="message"
-            rows={3}
-            defaultValue={`Preciso revisar meu acesso: ${message}`}
-            required
-          />
-        </label>
-        <button className="primary" type="submit" disabled={busy}>
-          Enviar revisao
-        </button>
-      </form>
-    </>
-  );
-}
-
 function PatientProfileDetails({ patient, latestOrder }) {
   return (
     <>
@@ -903,35 +769,6 @@ function PatientProfileDetails({ patient, latestOrder }) {
         </p>
       </article>
     </>
-  );
-}
-
-function OrderCard({ order }) {
-  return (
-    <article className="order-card patient-history-card">
-      <div className="order-row">
-        <div>
-          <h3>{order.id}</h3>
-          <p>{patientOrderStatusText(order)}</p>
-          {order.items?.length ? (
-            <p>
-              {order.items.map((item) => `${item.quantity} ${item.unit} ${item.name}`).join(" | ")}
-            </p>
-          ) : null}
-          <p className="muted">
-            {order.deliveryMethod || "Entrega a combinar"}
-            {order.paymentExpiresAt ? ` · Pix vence ${formatDateTime(order.paymentExpiresAt)}` : ""}
-            {order.shipment
-              ? ` · ${order.shipment.carrier} ${order.shipment.trackingCode || ""}`
-              : ""}
-          </p>
-          <span className={`pill ${statusTone(order.status)}`.trim()}>
-            {statusLabel(order.status)}
-          </span>
-        </div>
-        <div className="money">{money.format(order.totalCents / 100)}</div>
-      </div>
-    </article>
   );
 }
 

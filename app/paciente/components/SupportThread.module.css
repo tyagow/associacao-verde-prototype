@@ -1,0 +1,42 @@
+.px-support {
+  display: grid;
+  gap: var(--sp-3);
+}
+
+.px-support__form {
+  display: grid;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+}
+
+.px-support__head h3 {
+  margin: var(--sp-1) 0;
+  font-size: var(--fs-md, 16px);
+}
+
+.px-support__field {
+  display: grid;
+  gap: 4px;
+}
+
+.px-support__field input,
+.px-support__field select,
+.px-support__field textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.px-support__field.wide {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 720px) {
+  .px-support__form {
+    grid-template-columns: 1fr 1fr;
+  }
+  .px-support__head,
+  .px-support__field.wide,
+  .px-support__form > button[type="submit"] {
+    grid-column: 1 / -1;
+  }
+}

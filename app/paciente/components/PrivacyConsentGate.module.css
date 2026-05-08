@@ -1,0 +1,41 @@
+.px-consent {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.px-consent.warn {
+  border-color: var(--warn, #d39a2c);
+  background: color-mix(in srgb, var(--warn, #d39a2c) 6%, var(--paper));
+}
+
+.px-consent.good {
+  border-color: var(--ok, #2f8a4a);
+  background: color-mix(in srgb, var(--ok, #2f8a4a) 4%, var(--paper));
+}
+
+.px-consent h3 {
+  margin: var(--sp-1) 0;
+  font-size: var(--fs-md, 16px);
+}
+
+.px-consent form {
+  display: grid;
+  gap: var(--sp-2);
+}
+
+.px-consent form button[type="submit"] {
+  justify-self: start;
+}
+
+@media (max-width: 480px) {
+  .px-consent {
+    padding: var(--sp-3);
+  }
+  .px-consent form button[type="submit"] {
+    width: 100%;
+  }
+}

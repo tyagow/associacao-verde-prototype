@@ -1,0 +1,65 @@
+.px-access {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  border-radius: var(--r-md);
+  border: 1px solid var(--danger, #c8553d);
+  background: color-mix(in srgb, var(--danger, #c8553d) 5%, var(--paper));
+}
+
+.px-access[hidden] {
+  display: none;
+}
+
+.px-access__pill {
+  justify-self: start;
+}
+
+.px-access h3 {
+  margin: var(--sp-1) 0;
+}
+
+.px-access ul {
+  margin: 0;
+  padding-left: var(--sp-4);
+}
+
+.px-access__form {
+  display: grid;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+}
+
+.px-access__form label {
+  display: grid;
+  gap: 4px;
+}
+
+.px-access__form input,
+.px-access__form textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.px-access__form .wide {
+  grid-column: 1 / -1;
+}
+
+.px-access__form button[type="submit"] {
+  justify-self: start;
+}
+
+@media (min-width: 720px) {
+  .px-access__form {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .px-access {
+    padding: var(--sp-3);
+  }
+  .px-access__form button[type="submit"] {
+    width: 100%;
+  }
+}

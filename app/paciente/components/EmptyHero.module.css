@@ -1,0 +1,30 @@
+.px-empty {
+  display: grid;
+  gap: var(--sp-3);
+  padding: var(--sp-5);
+}
+
+.px-empty__head h2 {
+  margin: var(--sp-1) 0;
+  font-size: var(--fs-lg, 20px);
+}
+
+.px-empty__head p {
+  margin: 0;
+}
+
+.px-empty__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+@media (max-width: 480px) {
+  .px-empty {
+    padding: var(--sp-4);
+  }
+  .px-empty__actions .btn {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
