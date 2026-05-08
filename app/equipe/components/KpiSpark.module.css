@@ -1,0 +1,68 @@
+/* Phase 3 — KPI card with sparkline */
+
+.txKpi {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-5);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--paper-warm);
+  min-width: 0;
+}
+
+.txKpiHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.txKpiLabel {
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.txKpiTone {
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+
+.txKpiTone.warn {
+  color: var(--warn-ink);
+}
+
+.txKpiTone.danger {
+  color: var(--danger);
+}
+
+.txKpiTone.good {
+  color: var(--good);
+}
+
+.txKpiValue {
+  font-family: var(--font-display);
+  font-size: var(--fs-h1);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-tight);
+  color: var(--ink);
+  line-height: 1;
+}
+
+.txKpiUnit {
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  margin-left: var(--sp-1);
+}
+
+.txKpiChart {
+  height: 56px;
+  margin-top: var(--sp-2);
+}
+
+.txKpiHelp {
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
