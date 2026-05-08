@@ -174,11 +174,31 @@ export class ProductionSystem {
     now = () => new Date(),
     save = () => {},
     paymentProvider = createDevPixProvider({ now }),
+    // Phase 7 (schema v15) — append-only support_messages thread. The
+    // ProductionSystem holds the public API (createSupportReply,
+    // listSupportThread); the SQL is in SqliteStateStore. In-memory tests
+    // get a tiny in-process fallback so they don't need a real SQLite file.
+    appendSupportMessage,
+    listSupportMessages,
   }) {
     this.state = state;
     this.now = now;
     this.save = save;
     this.paymentProvider = paymentProvider;
+    if (appendSupportMessage && listSupportMessages) {
+      this.appendSupportMessage = appendSupportMessage;
+      this.listSupportMessages = listSupportMessages;
+    } else {
+      const buffer = [];
+      this.appendSupportMessage = (message) => {
+        buffer.push({ ...message });
+        return { ...message };
+      };
+      this.listSupportMessages = (ticketId) =>
+        buffer
+          .filter((row) => row.ticketId === ticketId)
+          .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));
+    }
     this.expireReservations();
   }
 
@@ -1836,6 +1856,83 @@ export class ProductionSystem {
     });
     this.persist();
     return this.publicProduct(product);
+  }
+
+  // Phase 7 — Support workbench reply API.
+  //
+  // Append a team reply to a support ticket thread. RBAC mirrors the
+  // existing ticket-update path (`support:write`). The reply is persisted
+  // to the support_messages table (schema v15) via the injected
+  // `appendSupportMessage` adapter; the audit envelope emits
+  // `team_support_reply` so the audit timeline can distinguish reply
+  // traffic from status transitions.
+  //
+  // Append-only: never edits prior messages. The ticket's updatedAt is
+  // bumped so the queue ordering reflects fresh activity.
+  createSupportReply(sessionId, { ticketId, body }) {
+    const actor = this.requireTeam(sessionId, "support:write");
+    const ticket = (this.state.supportTickets || []).find((item) => item.id === ticketId);
+    if (!ticket) throw problem(404, "Atendimento nao encontrado.");
+    const trimmed = String(body || "").trim();
+    if (!trimmed) throw problem(400, "Resposta nao pode estar vazia.");
+    const message = {
+      id: `msg_${randomUUID()}`,
+      ticketId: ticket.id,
+      authorType: "team",
+      authorId: actor.id,
+      body: trimmed,
+      createdAt: this.now().toISOString(),
+    };
+    const stored = this.appendSupportMessage(message);
+    ticket.updatedAt = message.createdAt;
+    this.audit("team_support_reply", actor.id, {
+      ticketId: ticket.id,
+      memberCode: ticket.memberCode,
+      messageId: message.id,
+    });
+    this.persist();
+    return {
+      id: stored.id,
+      ticketId: stored.ticketId,
+      authorType: stored.authorType,
+      authorId: stored.authorId,
+      authorName: actor.name || actor.email || "Equipe",
+      body: stored.body,
+      createdAt: stored.createdAt,
+    };
+  }
+
+  // Read the full conversation for a ticket, in chronological order.
+  // Open to any team session (dashboard:view) so the support workbench can
+  // hydrate threads on selection without needing write permission.
+  listSupportThread(sessionId, ticketId) {
+    this.requireTeam(sessionId, "dashboard:view");
+    const ticket = (this.state.supportTickets || []).find((item) => item.id === ticketId);
+    if (!ticket) throw problem(404, "Atendimento nao encontrado.");
+    const messages = this.listSupportMessages(ticket.id).map((row) => ({
+      id: row.id,
+      ticketId: row.ticketId,
+      authorType: row.authorType,
+      authorId: row.authorId,
+      body: row.body,
+      createdAt: row.createdAt,
+    }));
+    // The original ticket message is rendered in the thread as the first
+    // patient message. We synthesize it from the ticket record so the UI
+    // doesn't need a special case for the seed message.
+    const seed = {
+      id: `seed_${ticket.id}`,
+      ticketId: ticket.id,
+      authorType: "patient",
+      authorId: ticket.patientId,
+      authorName: ticket.patientName,
+      body: ticket.message,
+      createdAt: ticket.createdAt,
+    };
+    return {
+      ticket: this.publicSupportTicket(ticket),
+      messages: [seed, ...messages],
+    };
   }
 }
 
