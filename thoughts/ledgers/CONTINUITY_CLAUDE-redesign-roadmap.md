@@ -1,5 +1,5 @@
 # Session: redesign-roadmap
-Updated: 2026-05-08T12:43:21.597Z
+Updated: 2026-05-08T13:00:00.000Z
 Source of truth: **YES** (this ledger supersedes CONTINUITY_CLAUDE-production-system.md as the active roadmap)
 
 ## Goal
@@ -130,9 +130,35 @@ finds the current `[→]`, completes its acceptance criteria, then advances.
         #orders-surface [data-pay], [data-filter='ordersQuery|ordersStatus'],
         body texts "Pedidos e Pix" / "Reservas, pagamentos e reconciliacao".
         Tests still 41/41 green.
-- Now: [→] **Phase 3 — Team shell + Command center**
+  - [x] **Phase 3 — Team shell + Command center**
+        (cac7030 scaffold TeamShell + sidebar layout · ea487ce
+         GET /api/team/activity Route Handler + first frozen-server
+         bridge · 68997c8 KpiSpark/ActivityFeed/PixByHour/PriorityQueue
+         components · f4c29e0 rebuild TeamCommand with 4 KPIs +
+         activity feed + Pix-by-hour + priority queue · screenshots
+         p3-team-command-{desktop,mobile}.png).
+        Tests 41 → 44 (3 new for activity Route Handler: since
+        filtering, full-list when no since, upstream auth error
+        propagation). E2E selectors preserved verbatim:
+        #team-login (visible logged-out / hidden logged-in),
+        #team-status ('acesso restrito' / 'equipe autenticada'),
+        #team-dashboard (contains 'Fila de acao agora' /
+        'SLA / vencimento' / 'Separacao/envio' / 'Validades').
+        Visible literals 'Comando da operacao' and 'Acesso restrito
+        da equipe' preserved.
+        Bridge with FROZEN server.mjs: server.mjs's pathname switch
+        returns 404 for /api/* unless the path is in `appRoutes`. We
+        added one path '/api/team/activity' to that allow-list — a
+        one-line routing-policy delegation, not new business logic.
+        All behavior lives in app/api/team/activity/route.js. CLAUDE.md
+        documents this pattern for Phases 5/8 to reuse.
+        TeamShell mounts ONLY in /equipe (TeamCommand). Sibling routes
+        (/equipe/pacientes, /equipe/estoque, /equipe/pedidos,
+        /equipe/fulfillment, /equipe/suporte) still render their own
+        topbar/side-nav. Phases 4-7 own migrating their routes onto
+        the shell via the passthrough app/equipe/layout.jsx seam.
+- Now: [→] **Phase 5 — Fulfillment kanban (dnd-kit)**
 - Next:
-  - [ ] Phase 5 — Fulfillment kanban (dnd-kit)
   - [ ] Phase 6 — Estoque & cultivo (single ledger + lot detail)
   - [ ] Phase 7 — Support workbench
   - [ ] Phase 8 — Command palette ⌘K
