@@ -103,6 +103,17 @@ const appRoutes = new Set([
   "/api/team/users/status",
   "/api/team/users/password",
   "/api/team/stock",
+  "/api/team/cultivation-batches",
+  "/api/team/cultivation-batches/advance",
+  "/api/team/cultivation-batches/harvest",
+  "/api/team/cultivation-batches/dry",
+  "/api/team/cultivation-batches/stock",
+  "/api/team/patients",
+  "/api/team/patient-access",
+  "/api/team/patient-invite-reset",
+  "/api/team/member-cards",
+  "/api/team/products",
+  "/api/team/products/update",
   // Phase 7 bridge: support workbench Route Handlers proxy back into
   // server.mjs's raw system calls (/api/team/support-replies/_raw,
   // /api/team/support-thread/_raw) which are NOT allow-listed and stay
@@ -172,74 +183,6 @@ const server = createServer(async (request, response) => {
         ),
       });
     }
-    if (url.pathname === "/api/team/cultivation-batches" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(response, 201, {
-        batch: system.createCultivationBatch(
-          readCookie(request, "av_session"),
-          await body(request),
-        ),
-      });
-    }
-    if (url.pathname === "/api/team/cultivation-batches/advance" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(response, 200, {
-        batch: system.advanceCultivationBatch(
-          readCookie(request, "av_session"),
-          await body(request),
-        ),
-      });
-    }
-    if (url.pathname === "/api/team/cultivation-batches/harvest" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(response, 200, {
-        batch: system.recordHarvest(readCookie(request, "av_session"), await body(request)),
-      });
-    }
-    if (url.pathname === "/api/team/cultivation-batches/dry" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(response, 200, {
-        batch: system.recordDryWeight(readCookie(request, "av_session"), await body(request)),
-      });
-    }
-    if (url.pathname === "/api/team/cultivation-batches/stock" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(
-        response,
-        200,
-        system.moveBatchToStock(readCookie(request, "av_session"), await body(request)),
-      );
-    }
-    if (url.pathname === "/api/team/patients" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(response, 201, {
-        patient: system.createPatient(readCookie(request, "av_session"), await body(request)),
-      });
-    }
-    if (url.pathname === "/api/team/patient-access" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(
-        response,
-        200,
-        system.updatePatientAccess(readCookie(request, "av_session"), await body(request)),
-      );
-    }
-    if (url.pathname === "/api/team/patient-invite-reset" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(
-        response,
-        200,
-        system.resetPatientInvite(readCookie(request, "av_session"), await body(request)),
-      );
-    }
-    if (url.pathname === "/api/team/member-cards" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(
-        response,
-        201,
-        system.issueMemberCard(readCookie(request, "av_session"), await body(request)),
-      );
-    }
     if (url.pathname === "/api/team/prescription-documents" && request.method === "POST") {
       assertSameOrigin(request);
       const payload = await body(request);
@@ -261,18 +204,6 @@ const server = createServer(async (request, response) => {
         prescriptionDownloadMatch[1],
       );
       return servePrivateDocument(response, documentRecord);
-    }
-    if (url.pathname === "/api/team/products" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(response, 201, {
-        product: system.createProduct(readCookie(request, "av_session"), await body(request)),
-      });
-    }
-    if (url.pathname === "/api/team/products/update" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(response, 200, {
-        product: system.updateProduct(readCookie(request, "av_session"), await body(request)),
-      });
     }
     if (url.pathname === "/api/team/fulfillment" && request.method === "POST") {
       assertSameOrigin(request);
