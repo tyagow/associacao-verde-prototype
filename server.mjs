@@ -89,6 +89,9 @@ const appRoutes = new Set([
   "/api/patient/login",
   "/api/team/login",
   "/api/team/me/password",
+  "/api/catalog",
+  "/api/my-orders",
+  "/api/checkout",
   // Phase 7 bridge: support workbench Route Handlers proxy back into
   // server.mjs's raw system calls (/api/team/support-replies/_raw,
   // /api/team/support-thread/_raw) which are NOT allow-listed and stay
@@ -142,11 +145,6 @@ const server = createServer(async (request, response) => {
         ticket: system.createAccessRecoveryRequest(await body(request)),
       });
     }
-    if (url.pathname === "/api/catalog" && request.method === "GET") {
-      return json(response, 200, {
-        products: system.listCatalog(readCookie(request, "av_session")),
-      });
-    }
     if (url.pathname === "/api/patient/consent" && request.method === "POST") {
       assertSameOrigin(request);
       return json(response, 200, {
@@ -154,19 +152,6 @@ const server = createServer(async (request, response) => {
           readCookie(request, "av_session"),
           await body(request),
         ),
-      });
-    }
-    if (url.pathname === "/api/checkout" && request.method === "POST") {
-      assertSameOrigin(request);
-      return json(
-        response,
-        201,
-        await system.createCheckout(readCookie(request, "av_session"), await body(request)),
-      );
-    }
-    if (url.pathname === "/api/my-orders" && request.method === "GET") {
-      return json(response, 200, {
-        orders: system.listMyOrders(readCookie(request, "av_session")),
       });
     }
     if (url.pathname === "/api/support-requests" && request.method === "POST") {
