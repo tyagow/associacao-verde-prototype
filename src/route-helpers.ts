@@ -136,7 +136,7 @@ export function clearLoginAttempts(key) {
 }
 
 // Generic per-IP rate-limit, separate from login-throttle.
-// Used by checkout, support-requests, access-recovery, webhook.
+// Used by checkout, support-requests, access-recovery, webhook, patient-login.
 const RATE_KEY = "__avRateLimits";
 function rateBucket() {
   const g = globalThis;

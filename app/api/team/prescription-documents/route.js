@@ -48,6 +48,12 @@ async function storePrescriptionPayload(payload, documentStorageDir) {
     err.status = 413;
     throw err;
   }
+  const detectedMime = detectAllowedMime(content);
+  if (!detectedMime) {
+    const err = new Error("Tipo de arquivo nao suportado. Aceite: PDF, JPEG, PNG.");
+    err.status = 415;
+    throw err;
+  }
   const sha = createHash("sha256").update(content).digest("hex");
   const storedName = `${Date.now()}-${sha.slice(0, 16)}-${fileName}`;
   const filePath = join(documentStorageDir, storedName);
@@ -58,7 +64,22 @@ async function storePrescriptionPayload(payload, documentStorageDir) {
     storageKey: `private-documents://${storedName}`,
     privateFilePath: filePath,
     sha256: sha,
+    mimeType: detectedMime,
   };
+}
+
+export function detectAllowedMime(buffer) {
+  if (!buffer || buffer.length < 4) return null;
+  if (
+    buffer[0] === 0x25 && buffer[1] === 0x50 && buffer[2] === 0x44 && buffer[3] === 0x46
+  ) return "application/pdf";
+  if (buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF) return "image/jpeg";
+  if (
+    buffer.length >= 8 &&
+    buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47 &&
+    buffer[4] === 0x0D && buffer[5] === 0x0A && buffer[6] === 0x1A && buffer[7] === 0x0A
+  ) return "image/png";
+  return null;
 }
 
 export function sanitizeFileName(fileName) {
