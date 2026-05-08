@@ -36,13 +36,29 @@ export function middleware(request) {
   const method = request.method.toUpperCase();
 
   // 1. Same-origin enforcement for POST /api/* (mirrors server.mjs::assertSameOrigin)
+  //    Allows missing Origin/Referer ONLY when the host header is a same-host
+  //    loopback (127.0.0.1:* / localhost:*), which is how Node fetch from
+  //    server-to-server readiness scripts reaches the app. Browsers always
+  //    send Origin on cross-context POSTs, so this does not weaken CSRF.
   if (method === "POST" && pathname.startsWith("/api/")) {
     const origin = request.headers.get("origin") || request.headers.get("referer") || "";
     const host = request.headers.get("host") || "";
     const proto = request.headers.get("x-forwarded-proto") || "http";
     const expected = `${proto}://${host}`;
     const allowed = origin === expected || origin.startsWith(expected + "/");
-    if (!origin || !allowed) {
+    const hostOnly = host.toLowerCase().split(":")[0];
+    const isLoopback =
+      hostOnly === "127.0.0.1" ||
+      hostOnly === "localhost" ||
+      hostOnly === "[::1]" ||
+      hostOnly === "::1";
+    if (origin && !allowed) {
+      return NextResponse.json(
+        { error: "Origem da requisicao nao autorizada." },
+        { status: 403, headers: { "Cache-Control": "no-store" } },
+      );
+    }
+    if (!origin && !isLoopback) {
       return NextResponse.json(
         { error: "Origem da requisicao nao autorizada." },
         { status: 403, headers: { "Cache-Control": "no-store" } },

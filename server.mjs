@@ -692,14 +692,26 @@ function verifyCookie(signed) {
 
 function assertSameOrigin(request) {
   const origin = request.headers.origin || request.headers.referer;
-  if (!origin) throw httpError(403, "Origem da requisicao nao autorizada.");
-  const expectedHost = request.headers.host;
+  const expectedHost = request.headers.host || "";
   const proto = request.headers["x-forwarded-proto"] || "http";
   const expected = `${proto}://${expectedHost}`;
-  // accept exact origin match OR referer beginning with expected origin
-  if (origin === expected) return;
-  if (origin.startsWith(expected + "/")) return;
+  // Accept exact origin match OR referer beginning with expected origin.
+  if (origin && (origin === expected || origin.startsWith(expected + "/"))) return;
+  // Same-host loopback bypass: server-to-server scripts (webhook-drill,
+  // session-security, deployment-check, ...) hit internal endpoints via
+  // Node fetch, which does NOT set Origin on POSTs to non-CORS targets and
+  // does NOT set Referer on programmatic calls. Browsers ALWAYS send Origin
+  // on cross-context POSTs, so allowing missing-Origin from loopback hosts
+  // does not weaken CSRF protection for the browser-facing surface.
+  if (!origin && isLoopbackHost(expectedHost)) return;
   throw httpError(403, "Origem da requisicao nao autorizada.");
+}
+
+function isLoopbackHost(hostHeader) {
+  const host = String(hostHeader || "")
+    .toLowerCase()
+    .split(":")[0];
+  return host === "127.0.0.1" || host === "localhost" || host === "[::1]" || host === "::1";
 }
 
 function readinessReport() {
