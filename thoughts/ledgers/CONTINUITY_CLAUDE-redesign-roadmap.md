@@ -710,15 +710,17 @@ required (E2E covers existing reconciliation path).
   npm run check
   npm test
   SMOKE_BASE_URL=http://127.0.0.1:4184 npm run smoke
-  # full reset + e2e:
+  # full reset + e2e (npm run e2e now self-bootstraps a production-mode
+  # server: it pre-builds with `next build` if .next/BUILD_ID is missing,
+  # then spawns server.mjs with NEXT_DEV=false on a free port. Production
+  # mode is required because React must hydrate for click handlers to
+  # attach; HMR mode fails under Playwright. No separate tmux dev server
+  # is needed for E2E.):
   lsof -tiTCP:4184 -sTCP:LISTEN | xargs -r kill 2>/dev/null
-  tmux kill-session -t associacao-verde-dev 2>/dev/null
   rm -f /tmp/associacao-verde-dev.sqlite
   rm -rf /tmp/associacao-verde-dev-docs
   DB_FILE=/tmp/associacao-verde-dev.sqlite DOCUMENT_STORAGE_DIR=/tmp/associacao-verde-dev-docs npm run dev:reset
-  tmux new-session -d -s associacao-verde-dev "PORT=4184 DB_FILE=/tmp/associacao-verde-dev.sqlite DOCUMENT_STORAGE_DIR=/tmp/associacao-verde-dev-docs NEXT_DEV=true node server.mjs"
-  sleep 6
-  E2E_BASE_URL=http://127.0.0.1:4184 npm run e2e
+  npm run e2e
   ```
 - **Mock contract**: `.superpowers/brainstorm/70960-1778242539/content/all-pages.html`
 - **Phase screenshots**: `artifacts/visual-e2e/redesign/`
