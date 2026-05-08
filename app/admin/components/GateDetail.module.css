@@ -1,0 +1,119 @@
+.detail {
+  display: grid;
+  gap: 16px;
+  padding: 22px 24px;
+  background: #fff;
+  border: 1px solid var(--line, #e3ebe6);
+  border-left-width: 4px;
+  border-radius: var(--r-md, 14px);
+}
+
+.good {
+  border-left-color: var(--good, #1d8c52);
+}
+.warn {
+  border-left-color: var(--warn, #d6a91a);
+}
+.danger {
+  border-left-color: var(--danger, #b03a2e);
+}
+.pending {
+  border-left-color: var(--muted-2, #92a098);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.overline {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted, #687970);
+}
+
+.title {
+  font-family: var(--font-display, inherit);
+  font-size: 20px;
+  font-weight: 600;
+  margin: 4px 0 6px;
+  color: var(--ink, #0d1f17);
+}
+
+.summary {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-soft, #1f3329);
+  line-height: 1.5;
+}
+
+.close {
+  appearance: none;
+  background: var(--paper-warm, #f7f9f6);
+  border: 1px solid var(--line, #e3ebe6);
+  color: var(--muted, #687970);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.close:hover {
+  color: var(--ink, #0d1f17);
+  border-color: var(--line-strong, #c7d3cc);
+}
+
+.metrics,
+.evidence {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px 18px;
+  margin: 0;
+  padding: 12px 14px;
+  background: var(--paper-cool, #f3f7f4);
+  border-radius: 10px;
+}
+
+.metrics > div,
+.evidence > div {
+  display: grid;
+  gap: 2px;
+}
+
+.metrics dt,
+.evidence dt {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted, #687970);
+  margin: 0;
+}
+
+.metrics dd,
+.evidence dd {
+  font-size: 13px;
+  color: var(--ink, #0d1f17);
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+  word-break: break-word;
+}
+
+.run {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--paper-warm, #f7f9f6);
+  border: 1px dashed var(--line-strong, #c7d3cc);
+  font-size: 12.5px;
+  color: var(--ink-soft, #1f3329);
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+}
+
+.formArea {
+  display: grid;
+  gap: 12px;
+}

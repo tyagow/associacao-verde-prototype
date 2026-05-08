@@ -1,0 +1,96 @@
+.bar {
+  display: grid;
+  gap: 14px;
+  padding: 24px 26px;
+  background: var(--ink);
+  color: #fff;
+  border-radius: var(--r-md, 14px);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 18px;
+}
+
+.overline {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.headline {
+  font-family: var(--font-display, inherit);
+  font-size: 30px;
+  font-weight: 600;
+  margin: 4px 0 2px;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.subline {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.muted {
+  margin: 6px 0 0;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11.5px;
+}
+
+.percentBlock {
+  text-align: right;
+}
+
+.percent {
+  display: block;
+  font-size: 30px;
+  font-variant-numeric: tabular-nums;
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.percentBlock .overline {
+  display: block;
+  margin-top: 2px;
+}
+
+.progress {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--green), #3aa970);
+  border-radius: 999px;
+  transition: width 240ms ease-out;
+}
+
+.ok .progress > span {
+  background: linear-gradient(90deg, var(--green), var(--gold));
+}
+
+@media (max-width: 720px) {
+  .bar {
+    padding: 20px;
+  }
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .percentBlock {
+    text-align: left;
+  }
+  .headline {
+    font-size: 24px;
+  }
+}
