@@ -29,7 +29,7 @@ try {
       health.payload?.ok === true &&
       catalogDenied.status === 401 &&
       [302, 307, 308].includes(protectedRoute.status) &&
-      protectedRoute.headers.location === "/equipe" &&
+      protectedRoute.headers.location === "/" &&
       Boolean(securityHeaders.xContentTypeOptions),
     checkedAt: new Date().toISOString(),
     baseUrl,

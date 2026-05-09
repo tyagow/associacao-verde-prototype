@@ -21,6 +21,7 @@
 import { NextResponse } from "next/server";
 
 const PROTECTED_PAGE_PATHS = new Set([
+  "/equipe",
   "/equipe/pacientes",
   "/equipe/estoque",
   "/equipe/pedidos",
@@ -82,7 +83,7 @@ export function middleware(request) {
       process.env.AV_REQUIRE_LIVE_PROVIDER === "true" ? "__Host-av_session" : "av_session";
     const sessionCookie = request.cookies.get(cookieName);
     if (!sessionCookie || !sessionCookie.value) {
-      const redirectUrl = new URL("/equipe", request.url);
+      const redirectUrl = new URL("/", request.url);
       return NextResponse.redirect(redirectUrl, 308);
     }
   }

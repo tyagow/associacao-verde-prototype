@@ -111,12 +111,9 @@ def patient_happy_path(browser, base_url, results):
     expect(page.locator("#toast")).to_contain_text("Solicitacao enviada", timeout=10000)
     expect(page.locator("#catalog")).to_contain_text("Oleo CBD 10%")
     expect(page.locator("#catalog-tools")).to_contain_text("Buscar produto autorizado")
-    # Phase 1a/1b: switch back to the "pedido" tab where the "Abrir catalogo"
-    # button lives, then open the catalog drawer. Drawer keeps children mounted
-    # (so #catalog/#catalog-tools queries resolve from any tab), but interactive
-    # clicks on filter buttons / [data-add] need the drawer on-screen.
+    # Catalog is inline in the pedido tab; filtering and adding should be
+    # interactive without opening a separate drawer.
     page.locator("[data-patient-tab='pedido']").click()
-    page.get_by_role("button", name="Abrir catalogo autorizado").first.click()
     page.locator("[data-catalog-query]").fill("Flor")
     expect(page.locator("#catalog")).to_contain_text("Flor 24k")
     expect(page.locator("#catalog")).not_to_contain_text("Oleo CBD 10%", timeout=10000)
@@ -129,9 +126,6 @@ def patient_happy_path(browser, base_url, results):
     expect(page.locator("#catalog")).to_contain_text("Oleo CBD 10%")
 
     page.locator("[data-add='oleo-cbd-10']").click()
-    # Close catalog drawer so the cart-summary / checkout in the main shell
-    # are interactive (drawer backdrop intercepts clicks otherwise).
-    page.keyboard.press("Escape")
     expect(page.locator("#cart-summary")).to_contain_text("Resumo antes do Pix")
     page.locator("#checkout button[type='submit']").click()
     expect(page.locator(".patient-current-order")).to_contain_text("Proxima acao: pagar Pix", timeout=10000)
@@ -325,11 +319,12 @@ def responsive_overflow_check(browser, base_url, results):
 
 
 def login_team(page, base_url):
+    page.goto(f"{base_url}/", wait_until="networkidle")
+    if page.locator("#login").is_visible():
+        page.locator("#login input[name='identifier']").fill(TEAM_EMAIL)
+        page.locator("#login input[name='password']").fill(TEAM_PASSWORD)
+        page.locator("#login button[type='submit']").click()
     page.goto(f"{base_url}/equipe", wait_until="networkidle")
-    if page.locator("#team-login").is_visible():
-        page.locator("#team-login input[name='email']").fill(TEAM_EMAIL)
-        page.locator("#team-login input[name='password']").fill(TEAM_PASSWORD)
-        page.locator("#team-login button[type='submit']").click()
     expect(page.locator("#team-status")).to_contain_text("equipe autenticada", timeout=10000)
 
 

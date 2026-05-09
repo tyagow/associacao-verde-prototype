@@ -151,14 +151,10 @@ export default function Workbench({ dashboard, onDashboardRefresh, error, status
             {openCount} abertos · SLA 24h · {status}
           </span>
         }
-        actions={
-          <button type="button" className="btn ghost mini" onClick={onDashboardRefresh}>
-            ↻ Atualizar
-          </button>
-        }
       />
 
       <StatusStrip
+        onRefresh={onDashboardRefresh}
         chips={[
           { label: "abertos", count: openCount, tone: openCount ? "warn" : undefined },
           { label: "aguardando paciente", count: waitingPatient },

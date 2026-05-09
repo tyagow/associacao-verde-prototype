@@ -134,7 +134,9 @@ export default function TeamUsersTable({
                 Último login
                 {/* E2E asserts the ASCII literal "Ultimo login" against the
                     body. Hidden helper preserves the grep target. */}
-                <span hidden aria-hidden="true">Ultimo login</span>
+                <span hidden aria-hidden="true">
+                  Ultimo login
+                </span>
               </th>
               <th scope="col" className={styles.thActions}>
                 Ações

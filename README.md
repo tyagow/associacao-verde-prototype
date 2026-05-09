@@ -147,8 +147,8 @@ The reset command refuses to run when `NODE_ENV=production`.
 npm start
 ```
 
-This serves on the default port (`4174`) without HMR. The watchdog uses
-`NEXT_DEV=true` for hot reload during agent work.
+This serves on the default port (`4174`) without HMR. The watchdog runs
+`npx next dev` which has HMR enabled by default.
 
 ## Production Configuration
 

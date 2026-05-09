@@ -18,7 +18,6 @@ const env = {
   TEAM_PASSWORD: process.env.TEAM_PASSWORD || "apoio-equipe-dev",
   PIX_WEBHOOK_SECRET: process.env.PIX_WEBHOOK_SECRET || "dev-webhook-secret",
   SESSION_SECRET: process.env.SESSION_SECRET || "dev-session-secret-change-me",
-  NEXT_DEV: "false",
 };
 
 let serverOutput = "";

@@ -4,6 +4,139 @@
    voice. No internal-feature jargon. Mission/values lead.
    ===================================================================== */
 
+.lxLoginRoot {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 24px;
+  color: var(--ink);
+  background:
+    radial-gradient(760px 460px at 86% -10%, rgba(29, 140, 82, 0.08), transparent 62%),
+    radial-gradient(680px 420px at -10% 108%, rgba(214, 181, 106, 0.1), transparent 62%),
+    linear-gradient(180deg, var(--paper), var(--paper-warm));
+}
+
+.lxLoginStage {
+  display: grid;
+  width: min(100%, 430px);
+  gap: 22px;
+}
+
+.lxLoginBrand {
+  display: flex;
+  justify-content: center;
+}
+
+.lxLoginSurface {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: clamp(22px, 6vw, 32px);
+  border: 1px solid rgba(199, 211, 204, 0.9);
+  border-radius: var(--r-xl);
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: var(--shadow-3);
+}
+
+.lxLoginHeader {
+  text-align: center;
+}
+
+.lxLoginKicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+  color: var(--green-deep);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.lxLoginKicker::before,
+.lxLoginKicker::after {
+  content: "";
+  width: 22px;
+  height: 1px;
+  background: currentColor;
+}
+
+.lxLoginHeader h1 {
+  margin: 0 0 10px;
+  font-size: clamp(30px, 9vw, 42px);
+  line-height: 1.06;
+  letter-spacing: 0;
+}
+
+.lxLoginHeader p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.lxLoginForm {
+  display: grid;
+  gap: 14px;
+}
+
+.lxLoginForm label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.lxLoginForm input {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  background: white;
+  padding: 10px 12px;
+  font-size: 15px;
+}
+
+.lxLoginForm button {
+  min-height: 50px;
+  margin-top: 4px;
+  border: 1px solid var(--ink);
+  border-radius: var(--r-md);
+  background: var(--ink);
+  color: var(--paper);
+  font-weight: 850;
+}
+
+.lxLoginForm button:disabled {
+  cursor: progress;
+  opacity: 0.72;
+}
+
+.lxLoginError {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--danger-line);
+  border-radius: var(--r-md);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+@media (max-width: 520px) {
+  .lxLoginRoot {
+    align-items: start;
+    padding: 18px;
+  }
+
+  .lxLoginStage {
+    padding-top: 28px;
+  }
+}
+
 .lxRoot {
   display: flex;
   flex-direction: column;

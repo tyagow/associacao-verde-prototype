@@ -185,14 +185,10 @@ export default function AdminPage() {
             </span>
           </>
         }
-        actions={
-          <button type="button" className="ghost mini" onClick={load}>
-            ↻ Atualizar
-          </button>
-        }
       />
 
       <StatusStrip
+        onRefresh={load}
         chips={[
           {
             label: "release gate",

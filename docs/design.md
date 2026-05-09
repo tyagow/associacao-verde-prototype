@@ -152,7 +152,7 @@ conversions from the rendered CSS tokens.
 - Text: near black (`#141414`).
 - Font: `Outfit`, 700, uppercase.
 - Border: none.
-- Radius: 6-8px (`rounded-md` / token radius `.5rem`).
+- Radius: 3-5px (`--r-sm` / `--r-md`) so controls feel precise, not pill-like.
 - Height: 44px for nav, 56px for hero/major CTAs.
 - Padding: 32-48px horizontal for major CTAs.
 - Shadow: soft `shadow-lg`.
@@ -164,7 +164,7 @@ conversions from the rendered CSS tokens.
 - Background: transparent.
 - Text: white.
 - Border: 2px solid white.
-- Radius: 6-8px.
+- Radius: 3-5px.
 - Hover: subtle white overlay (`rgba(255,255,255,.1)`).
 - Use beside the primary CTA in hero sections.
 
@@ -180,7 +180,7 @@ conversions from the rendered CSS tokens.
 
 - Background: usually white or white with light transparency.
 - Border: 1px solid `#E2E9E4` or green at 10-20% opacity.
-- Radius: 12px for cards; 8px for forms/accordion rows.
+- Radius: 7px for cards; 5px for forms/accordion rows.
 - Shadow: `shadow-md`, `shadow-lg`, or `shadow-xl`; soft but visible.
 - Padding: 24px standard; 32-40px for large people/testimonial cards.
 - Card content often centers icons, labels, titles, and descriptions.
@@ -224,13 +224,13 @@ conversions from the rendered CSS tokens.
 
 - Statistic number: 48-72px, Outfit bold, Apoiar Gold.
 - Description: 16px foreground or muted.
-- Surface: white, rounded 12px, visible shadow.
+- Surface: white, rounded 7px, visible shadow.
 - Use on dark green/image overlays for contrast.
 - Keep numbers factual and dated when needed; do not overstate public impact.
 
 ### People Cards
 
-- Portrait: 3:4 aspect ratio, rounded 12px, object-cover.
+- Portrait: 3:4 aspect ratio, rounded 7px, object-cover.
 - Role badge: green pill, uppercase 12px, white text.
 - Name: 18-20px/600 Outfit.
 - Role/credential: 14px, Apoiar Green.

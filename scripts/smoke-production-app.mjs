@@ -18,9 +18,8 @@ await step("health", async () => {
 
 await step("public app routes do not expose operations", async () => {
   const routeMarkers = new Map([
-    ["/", "Apoiar Brasil Operacao Privada"],
+    ["/", "Entrar no portal"],
     ["/paciente", "Acesso seguro ao tratamento autorizado"],
-    ["/equipe", "Acesso da equipe"],
   ]);
   for (const [route, marker] of routeMarkers) {
     const response = await rawRequest(route);
@@ -40,6 +39,7 @@ await step("public app routes do not expose operations", async () => {
     "public home must not expose patient-management route",
   );
   for (const route of [
+    "/equipe",
     "/equipe/pacientes",
     "/equipe/estoque",
     "/equipe/pedidos",
@@ -50,8 +50,8 @@ await step("public app routes do not expose operations", async () => {
     const response = await rawRequest(route, { redirect: "manual" });
     assert(response.status === 308, `${route} should redirect before auth, got ${response.status}`);
     assert(
-      response.location === "/equipe",
-      `${route} should redirect to team login, got ${response.location}`,
+      response.location === "/",
+      `${route} should redirect to unified login, got ${response.location}`,
     );
   }
 });
@@ -104,9 +104,9 @@ await step("login throttling blocks repeated failures", async () => {
 });
 
 await step("team login", async () => {
-  await team.request("/api/team/login", {
+  await team.request("/api/login", {
     method: "POST",
-    body: { email: teamEmail, password: teamPassword },
+    body: { identifier: teamEmail, password: teamPassword },
   });
 });
 

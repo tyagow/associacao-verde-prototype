@@ -21,8 +21,12 @@ export function isProduction() {
 // In production, use the `__Host-` cookie prefix. Browsers enforce that
 // `__Host-` cookies must be `Secure`, `Path=/`, and have no `Domain=` —
 // which is already true for our session cookie. This blocks subdomain
-// injection attacks. In dev (NEXT_DEV / non-production), we keep the
-// plain `av_session` name because `Secure` is not set over plain http.
+// injection attacks. In dev (non-production), we keep the plain
+// `av_session` name because `Secure` is not set over plain http.
+//
+// Edge middleware (middleware.ts) duplicates this gate by reading
+// AV_REQUIRE_LIVE_PROVIDER directly — it cannot call getSystem() in the
+// Edge runtime. Keep both sites in sync if the gate flag ever changes.
 export function sessionCookieName() {
   return isProduction() ? "__Host-av_session" : "av_session";
 }

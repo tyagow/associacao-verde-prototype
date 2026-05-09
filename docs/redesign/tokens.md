@@ -139,14 +139,14 @@ Sizes target a 14px base. Use the variable rather than the literal.
 
 ## Radii
 
-| Token      | Value   | Use                                             |
-| ---------- | ------- | ----------------------------------------------- |
-| `--r-xs`   | `4px`   | Tight inline tags                               |
-| `--r-sm`   | `8px`   | Small input / inline chip                       |
-| `--r-md`   | `12px`  | Inputs, buttons, panels (default)               |
-| `--r-lg`   | `16px`  | Cards, frames                                   |
-| `--r-xl`   | `22px`  | Hero panels, large modals                       |
-| `--r-pill` | `999px` | Pills, chips, segmented control, progress track |
+| Token      | Value | Use                                             |
+| ---------- | ----- | ----------------------------------------------- |
+| `--r-xs`   | `2px` | Tight inline tags                               |
+| `--r-sm`   | `3px` | Small input / inline chip                       |
+| `--r-md`   | `5px` | Inputs, buttons, panels (default)               |
+| `--r-lg`   | `7px` | Cards, frames                                   |
+| `--r-xl`   | `9px` | Hero panels, large modals                       |
+| `--r-pill` | `5px` | Pills, chips, segmented control, progress track |
 
 ## Shadow / depth
 
