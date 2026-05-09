@@ -225,7 +225,12 @@ export default function CultivoRoute() {
         )}
 
         <section className="management-drawers" aria-label="Ações de gestão de cultivo">
-          <details open>
+          {/*
+            Smart default: when there are no batches yet, open the create
+            drawer (the only useful action); when batches exist, open the
+            advance/harvest/dry/stock drawer (the routine action).
+          */}
+          <details open={batchOptions.length === 0}>
             <summary>Criar lote de cultivo</summary>
             <form
               id="cultivation-form"
@@ -287,7 +292,7 @@ export default function CultivoRoute() {
             </form>
           </details>
 
-          <details>
+          <details open={batchOptions.length > 0}>
             <summary>Avançar, colher, secar ou estocar</summary>
             <form
               id="cultivation-update-form"
