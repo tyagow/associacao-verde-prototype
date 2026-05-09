@@ -1,0 +1,11 @@
+.ordersGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: var(--sp-4);
+  align-items: start;
+}
+@media (max-width: 1080px) {
+  .ordersGrid {
+    grid-template-columns: 1fr;
+  }
+}

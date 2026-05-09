@@ -1,262 +1,169 @@
 "use client";
 
-/* Phase 4 — Order detail drawer (right slide-over).
+/* Phase 4 — Order detail drawer (in-flow right rail).
 
-   Mirrors the patient CatalogDrawer / ProfileDrawer pattern from Phase 1b:
-     - framer-motion spring transform on the panel
-     - useReducedMotion collapses to duration:0
-     - Esc key + close button
-     - Backdrop click closes
-     - The drawer is always present in the DOM; the open prop only drives
-       transform + pointer-events. (Keeps any future E2E hooks reachable.)
+   Replaces the previous framer-motion slide-over with a sticky panel that
+   sits in the orders grid (sibling of #orders-surface, NOT inside it — the
+   E2E test scopes its [data-pay] selector to #orders-surface).
 
-   Content: order detail (status, patient, items, frete, audit snippet,
-   Pix info if pending, dispatch fields if paid). Optional cancellation
-   form for orders that allow it (rendered only when `cancelable=true`).
+   Always rendered. Empty state when no subject is selected. Pix-pending
+   subjects show a primary "Confirmar Pix" button (also carries data-pay,
+   but lives outside #orders-surface so it does not collide with the row's
+   data-pay button that the E2E clicks first).
 */
 
-import { useEffect, useRef } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import styles from "./OrderDrawer.module.css";
 
+const moneyFmt = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+});
+
 export default function OrderDrawer({
-  open,
-  onClose,
   order,
-  payment, // when present, this is a "Pix pendente" surface (no order on the dashboard yet might still be possible)
+  payment,
   busyKey,
-  onCancelOrder, // (event, orderId) => void
-  onPaymentAction, // (paymentId, "pay" | "reconcile") => void
+  onClose,
+  onCancelOrder,
+  onPaymentAction,
 }) {
-  const closeRef = useRef(null);
-  const reduce = useReducedMotion();
-  const backdropTransition = reduce ? { duration: 0 } : { duration: 0.18 };
-  const panelTransition = reduce
-    ? { duration: 0 }
-    : { type: "spring", damping: 30, stiffness: 240 };
+  if (!order && !payment) {
+    return (
+      <aside className={`panel ${styles.drawer}`}>
+        <header className="ph">
+          <h3>Detalhes</h3>
+        </header>
+        <p className={styles.empty}>Selecione um pedido para ver os detalhes.</p>
+      </aside>
+    );
+  }
 
-  useEffect(() => {
-    if (!open) return undefined;
-    closeRef.current?.focus();
-    function onKey(event) {
-      if (event.key === "Escape") onClose?.();
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
-
-  const subject = order || (payment ? { id: payment.orderId } : null);
+  const subjectId = order?.id || payment?.orderId;
+  const items = order?.items || [];
+  const subtotalCents =
+    items.reduce((s, it) => s + (it.subtotalCents || 0), 0) || order?.totalCents || 0;
+  const totalCents = order?.totalCents || subtotalCents;
   const cancelable =
     order &&
     ["awaiting_payment", "paid_pending_fulfillment", "separating", "ready_to_ship"].includes(
       order.status,
     );
+  const payBusy = busyKey === `pay:${payment?.id}`;
 
   return (
-    <div className={`${styles.root} ${open ? styles.rootOpen : ""}`.trim()} aria-hidden={!open}>
-      <AnimatePresence>
-        {open ? (
-          <motion.button
-            type="button"
-            key="backdrop"
-            className={styles.backdrop}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={backdropTransition}
-            onClick={onClose}
-            aria-label="Fechar"
-            tabIndex={-1}
-          />
-        ) : null}
-      </AnimatePresence>
-
-      <motion.aside
-        className={`${styles.panel} ${open ? "" : styles.panelClosed}`.trim()}
-        role="dialog"
-        aria-modal={open ? "true" : "false"}
-        aria-label={`Detalhes do pedido ${subject?.id || ""}`}
-        initial={false}
-        animate={{ x: open ? 0 : "100%" }}
-        transition={panelTransition}
-      >
-        <header className={styles.header}>
-          <div>
-            <span className={styles.kicker}>Pedido</span>
-            <h2 className={styles.title}>{subject?.id || "—"}</h2>
-          </div>
-          <button
-            ref={closeRef}
-            type="button"
-            className={styles.close}
-            onClick={onClose}
-            aria-label="Fechar drawer"
-          >
-            ×
-          </button>
-        </header>
-
-        <div className={styles.body}>
-          {payment ? (
-            <PixPendingBlock
-              payment={payment}
-              busyKey={busyKey}
-              onPaymentAction={onPaymentAction}
-            />
-          ) : null}
-          {order ? <OrderDetailBlock order={order} /> : null}
-          {cancelable ? <CancellationForm order={order} onCancelOrder={onCancelOrder} /> : null}
-        </div>
-      </motion.aside>
-    </div>
-  );
-}
-
-function PixPendingBlock({ payment, busyKey, onPaymentAction }) {
-  return (
-    <section className={styles.section}>
-      <h3 className={styles.sectionTitle}>Pix pendente</h3>
-      <dl className={styles.factGrid}>
-        <Fact label="Valor" value={formatCents(payment.amountCents)} />
-        <Fact label="Provider" value={payment.provider || "—"} />
-        <Fact label="Provider ID" value={payment.providerPaymentId || "—"} mono />
-        <Fact label="Vence" value={formatDateTime(payment.expiresAt)} />
-      </dl>
-      <div className={styles.actionsRow}>
-        <button
-          type="button"
-          className={styles.btn}
-          disabled={busyKey === `reconcile:${payment.id}`}
-          onClick={() => onPaymentAction?.(payment.id, "reconcile")}
-        >
-          {busyKey === `reconcile:${payment.id}` ? "Conciliando…" : "Conciliar provider"}
+    <aside className={`panel ${styles.drawer}`}>
+      <header className="ph">
+        <h3>
+          {subjectId} {order?.patientName ? `· ${order.patientName}` : ""}
+        </h3>
+        <button type="button" className="iconbtn" aria-label="fechar" onClick={onClose}>
+          ×
         </button>
-        <button
-          type="button"
-          className={`${styles.btn} ${styles.btnPrimary}`}
-          disabled={busyKey === `pay:${payment.id}`}
-          onClick={() => onPaymentAction?.(payment.id, "pay")}
-        >
-          {busyKey === `pay:${payment.id}` ? "Simulando…" : "Simular webhook pago"}
-        </button>
+      </header>
+
+      <div className={styles.row}>
+        <span className={styles.lbl}>Status</span>
+        <span className={styles.val}>
+          <span className="pill warn">{order?.status || "aguardando pgto"}</span>
+        </span>
       </div>
-    </section>
-  );
-}
-
-function OrderDetailBlock({ order }) {
-  const items = order.items || [];
-  const exceptions = order.exceptions || [];
-  return (
-    <>
-      <section className={styles.section}>
-        <h3 className={styles.sectionTitle}>Resumo</h3>
-        <dl className={styles.factGrid}>
-          <Fact label="Paciente" value={order.patientName || "—"} />
-          <Fact label="Status" value={order.status} />
-          <Fact label="Total" value={formatCents(order.totalCents)} />
-          <Fact
-            label="Pagamento"
-            value={`${order.paymentProvider || "—"} · ${order.paymentStatus || "—"}`}
-          />
-        </dl>
-      </section>
-
-      <section className={styles.section}>
-        <h3 className={styles.sectionTitle}>Itens reservados</h3>
-        {items.length ? (
-          <ul className={styles.itemList}>
-            {items.map((item, index) => (
-              <li key={index} className={styles.item}>
-                <span className={styles.itemName}>
-                  {item.quantity}× {item.name}
-                </span>
-                <span className={styles.itemUnit}>{item.unit}</span>
-                {typeof item.subtotalCents === "number" ? (
-                  <span className={styles.itemMoney}>{formatCents(item.subtotalCents)}</span>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className={styles.muted}>Sem itens.</p>
-        )}
-      </section>
-
-      {order.shipment ? (
-        <section className={styles.section}>
-          <h3 className={styles.sectionTitle}>Envio</h3>
-          <dl className={styles.factGrid}>
-            <Fact label="Transportadora" value={order.shipment.carrier || "—"} />
-            <Fact label="Status" value={order.shipment.status || "—"} />
-            <Fact label="Rastreio" value={order.shipment.trackingCode || "sem rastreio"} mono />
-          </dl>
-        </section>
+      {payment ? (
+        <>
+          <div className={styles.row}>
+            <span className={styles.lbl}>Pix</span>
+            <span className={`${styles.val} mono`}>{payment.providerPaymentId || payment.id}</span>
+          </div>
+          <div className={styles.row}>
+            <span className={styles.lbl}>Vencimento</span>
+            <span className={styles.val}>{formatDateTime(payment.expiresAt)}</span>
+          </div>
+        </>
+      ) : null}
+      {order?.shipment ? (
+        <div className={styles.row}>
+          <span className={styles.lbl}>Entrega</span>
+          <span className={styles.val}>
+            {order.shipment.carrier || "—"}
+            {order.shipment.region ? ` · ${order.shipment.region}` : ""}
+          </span>
+        </div>
       ) : null}
 
-      {order.pix ? (
-        <section className={styles.section}>
-          <h3 className={styles.sectionTitle}>Pix</h3>
-          <p className={styles.muted}>Copia-e-cola</p>
-          <pre className={styles.pixCode}>{order.pix.copiaECola}</pre>
-        </section>
+      {items.length ? (
+        <div className={styles.lineitems}>
+          {items.map((item, idx) => {
+            const unit =
+              item.unitPriceCents ||
+              (item.quantity ? Math.round((item.subtotalCents || 0) / item.quantity) : 0);
+            return (
+              <div key={idx} className={styles.li}>
+                <div className={styles.thumb}>{monogram(item.name)}</div>
+                <div>
+                  <div style={{ fontWeight: 600 }}>{item.name}</div>
+                  <div style={{ color: "var(--muted)", fontSize: 11 }}>
+                    {item.quantity}× {moneyFmt.format(unit / 100)}
+                  </div>
+                </div>
+                <div className="num" style={{ fontWeight: 600 }}>
+                  {moneyFmt.format((item.subtotalCents || 0) / 100)}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       ) : null}
 
-      {exceptions.length ? (
-        <section className={styles.section}>
-          <h3 className={styles.sectionTitle}>Exceções</h3>
-          <ul className={styles.timeline}>
-            {exceptions.map((ex, index) => (
-              <li key={index} className={styles.timelineItem}>
-                <span className={styles.timelineDate}>{formatDateTime(ex.at)}</span>
-                <span className={styles.timelineNote}>{ex.note}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-    </>
+      <div className={styles.row}>
+        <span className={styles.lbl}>Subtotal</span>
+        <span className={`${styles.val} num`}>{moneyFmt.format(subtotalCents / 100)}</span>
+      </div>
+      <div className={styles.row}>
+        <span className={styles.lbl}>Frete</span>
+        <span className={styles.val}>incluso no Pix</span>
+      </div>
+      <div className={styles.row} style={{ borderBottom: 0 }}>
+        <span className={styles.lbl}>
+          <strong>Total</strong>
+        </span>
+        <span className={`${styles.val} num`} style={{ fontSize: 16 }}>
+          <strong>{moneyFmt.format(totalCents / 100)}</strong>
+        </span>
+      </div>
+
+      <div className={styles.actionsRow}>
+        {payment ? (
+          <button
+            type="button"
+            className="btn primary"
+            data-pay={payment.id}
+            disabled={payBusy}
+            style={{ flex: 1 }}
+            onClick={() => onPaymentAction?.(payment.id, "pay")}
+          >
+            {payBusy ? "Simulando…" : "Confirmar Pix"}
+          </button>
+        ) : null}
+        {cancelable ? (
+          <form
+            onSubmit={(event) => onCancelOrder?.(event, order.id)}
+            style={{ display: "inline" }}
+          >
+            <input type="hidden" name="reason" value="Cancelamento via drawer" />
+            <button type="submit" className="btn ghost">
+              Cancelar
+            </button>
+          </form>
+        ) : null}
+      </div>
+    </aside>
   );
 }
 
-function CancellationForm({ order, onCancelOrder }) {
-  const isAwaiting = order.status === "awaiting_payment";
-  return (
-    <section className={styles.section}>
-      <h3 className={styles.sectionTitle}>{isAwaiting ? "Cancelar pedido" : "Revisar exceção"}</h3>
-      <form className={styles.cancelForm} onSubmit={(event) => onCancelOrder?.(event, order.id)}>
-        <label className={styles.label}>
-          {isAwaiting ? "Motivo para liberar reserva" : "Motivo para revisar reembolso"}
-          <input
-            name="reason"
-            placeholder={
-              isAwaiting ? "Ex.: paciente desistiu da compra" : "Ex.: ajuste manual em fulfillment"
-            }
-            required
-            className={styles.input}
-          />
-        </label>
-        <button type="submit" className={`${styles.btn} ${styles.btnDanger}`}>
-          {isAwaiting ? "Cancelar e liberar" : "Revisar exceção"}
-        </button>
-      </form>
-    </section>
-  );
-}
-
-function Fact({ label, value, mono }) {
-  return (
-    <div className={styles.fact}>
-      <dt>{label}</dt>
-      <dd className={mono ? styles.factMono : ""}>{value}</dd>
-    </div>
-  );
-}
-
-const moneyFmt = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
-
-function formatCents(value) {
-  return moneyFmt.format((value || 0) / 100);
+function monogram(name) {
+  return (name || "?")
+    .replace(/[^A-Za-zÀ-ÿ]/g, "")
+    .slice(0, 2)
+    .toUpperCase();
 }
 
 function formatDateTime(value) {

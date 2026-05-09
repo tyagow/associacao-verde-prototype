@@ -1,88 +1,14 @@
-/* Phase 4 — Ledger container. .tx-* namespace via CSS Modules.
-   Mirrors the mock's `.panel` look (hairline border, soft shadow, paper bg)
-   but with explicit tokens so we don't depend on legacy global classes. */
-
-.ledger {
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow-soft);
-  overflow: hidden;
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
 }
-
-.head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-3);
-  padding: var(--sp-4) var(--sp-5);
-  border-bottom: 1px solid var(--line-soft);
-  background: var(--paper);
+.table tbody tr {
+  cursor: pointer;
 }
-
-.headLeading {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
-  min-width: 0;
+.table tbody tr:hover {
+  background: var(--paper-warm);
 }
-
-.title {
-  font-size: var(--fs-md);
-  font-weight: 600;
-  color: var(--ink);
-  letter-spacing: -0.005em;
-}
-
-.count {
-  display: inline-flex;
-  align-items: center;
-  height: 22px;
-  padding: 0 8px;
-  border-radius: var(--r-pill);
-  font-size: var(--fs-xs);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  background: var(--soft);
-  color: var(--ink-soft);
-  border: 1px solid var(--line);
-}
-
-.count_warn {
-  background: var(--warn-soft);
-  color: var(--warn-ink);
-  border-color: #f1e2a3;
-}
-
-.count_good {
+.selected {
   background: var(--green-tint);
-  color: var(--green-deep);
-  border-color: var(--green-soft);
-}
-
-.headMeta {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
-  color: var(--muted);
-  font-size: var(--fs-sm);
-}
-
-.body {
-  display: flex;
-  flex-direction: column;
-}
-
-.empty {
-  margin: 0;
-  padding: var(--sp-6) var(--sp-5);
-  color: var(--muted);
-  font-size: var(--fs-sm);
-}
-
-@media (max-width: 720px) {
-  .head {
-    padding: var(--sp-3) var(--sp-4);
-    flex-wrap: wrap;
-  }
 }
