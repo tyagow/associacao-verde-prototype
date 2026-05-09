@@ -14,16 +14,19 @@
   gap: 10px;
 }
 
+/* C6 fix: shrink the thumb so it doesn't dictate row height. Together with
+   table.adm tbody td padding (10-14px) the row settles at ~44px instead of
+   ~56px, matching the mockup. */
 .thumb {
   flex: 0 0 auto;
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   display: grid;
   place-items: center;
   border-radius: var(--r-sm);
   background: var(--paper-warm);
   color: var(--ink);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.04em;
 }

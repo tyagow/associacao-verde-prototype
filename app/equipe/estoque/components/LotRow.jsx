@@ -6,14 +6,17 @@
 import styles from "./LotRow.module.css";
 
 export default function LotRow({ lot }) {
-  const idLabel = String(lot.id || "")
-    .replace(/^lot_|^mvt_/, "")
-    .slice(0, 8)
-    .toUpperCase();
+  // A5 fix: don't synthesize a `LOT-XXXXXXXX` prefix from an internal id.
+  // Render the real id with an explicit "id:" hint so it doesn't masquerade
+  // as an SOP/printed lot code that operators can search elsewhere.
+  const rawId = String(lot.id || "");
+  const idLabel = rawId ? rawId.slice(0, 12) : "—";
   return (
     <tr>
       <td>
-        <span className="mono">LOT-{idLabel || "------"}</span>
+        <span className="mono" title={rawId || undefined}>
+          id: {idLabel}
+        </span>
       </td>
       <td className="right num">
         {lot.quantity} {lot.unit}
@@ -22,7 +25,13 @@ export default function LotRow({ lot }) {
       <td>{lot.origin || "—"}</td>
       <td className="right num">{lot.reserved ?? 0}</td>
       <td className={styles.actions}>
-        <button type="button" className="btn ghost mini" disabled aria-label="Editar lote">
+        <button
+          type="button"
+          className="btn ghost mini"
+          disabled
+          aria-label="Editar lote (em breve)"
+          title="Edicao inline de lote ainda nao disponivel — use o painel Entrada e cultivo abaixo"
+        >
           editar
         </button>
       </td>

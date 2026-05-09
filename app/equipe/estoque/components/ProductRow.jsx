@@ -43,8 +43,10 @@ export default function ProductRow({ product, expanded, onToggle, onMetaChange, 
     onMetaChange(product.id, { [field]: value });
   }
 
+  // C10 fix: emit sibling <tr>s (no per-product <tbody>) so the global
+  // `table.adm tbody tr:nth-child(even)` zebra alternates across products.
   return (
-    <tbody className={isLow ? styles.lowGroup : undefined}>
+    <>
       <tr
         role="button"
         tabIndex={0}
@@ -58,7 +60,7 @@ export default function ProductRow({ product, expanded, onToggle, onMetaChange, 
           }
         }}
         data-product-id={product.id}
-        className={styles.row}
+        className={[styles.row, isLow ? styles.lowGroup : null].filter(Boolean).join(" ")}
       >
         <td>
           <span className="mono">{skuLabel(product)}</span>
@@ -193,7 +195,7 @@ export default function ProductRow({ product, expanded, onToggle, onMetaChange, 
           </td>
         </tr>
       ) : null}
-    </tbody>
+    </>
   );
 }
 
@@ -207,10 +209,9 @@ function initialDraft(product) {
 }
 
 function thumbLabel(product) {
-  if (/cbd/i.test(product.name)) return "CBD";
-  if (/full/i.test(product.name)) return "FS";
-  if (/flor|24k/i.test(product.name)) return "FLR";
-  return product.name.slice(0, 3).toUpperCase();
+  // A4 fix: derive the badge from product.category, not a regex over name.
+  const map = { oil: "OLE", flower: "FLR", edible: "GOM", other: "OUT" };
+  return map[product.category] || (product.name || "").slice(0, 3).toUpperCase() || "—";
 }
 
 function categoryLabel(category) {
@@ -225,10 +226,11 @@ function categoryLabel(category) {
 }
 
 function skuLabel(product) {
-  // Best-effort short SKU from product.id (stable, monospace-friendly).
-  const tail = String(product.id || "")
-    .replace(/^(prod_|product_)/i, "")
-    .slice(-6)
-    .toUpperCase();
-  return `PRD-${tail || "0000"}`;
+  // A3 fix: do NOT invent a `PRD-XXXXXX` SKU from a UUID slice. There is no
+  // sku column on the inventory ledger payload — operators searching DB for
+  // the printed value would find nothing. If/when a real `sku` exists on the
+  // payload we surface it; otherwise show the real id with an explicit prefix.
+  if (product.sku) return product.sku;
+  const id = String(product.id || "");
+  return id ? `id: ${id.slice(0, 8)}` : "—";
 }

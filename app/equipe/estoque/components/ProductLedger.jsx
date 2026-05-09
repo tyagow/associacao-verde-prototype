@@ -13,7 +13,7 @@ export default function ProductLedger({ children }) {
   const rows = Array.isArray(children) ? children : children ? [children] : [];
   const isEmpty = rows.length === 0;
   return (
-    <section className="panel" aria-label="Produtos, estoque e lotes">
+    <section className={`panel ${styles.ledgerPanel}`} aria-label="Produtos, estoque e lotes">
       <header className="ph">
         <h3>Ledger de produtos</h3>
         <span className="meta">click no produto para abrir lotes</span>
@@ -24,7 +24,7 @@ export default function ProductLedger({ children }) {
         <table className="adm">
           <thead>
             <tr>
-              <th style={{ width: 100 }}>SKU</th>
+              <th style={{ width: 120 }}>Identificador</th>
               <th>Produto</th>
               <th style={{ width: 110 }}>Categoria</th>
               <th className="right" style={{ width: 80 }}>
@@ -40,7 +40,7 @@ export default function ProductLedger({ children }) {
               <th style={{ width: 110 }}>Status</th>
             </tr>
           </thead>
-          {children}
+          <tbody>{children}</tbody>
         </table>
       )}
     </section>

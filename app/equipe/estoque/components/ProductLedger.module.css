@@ -4,7 +4,20 @@
 
 .empty {
   color: var(--muted);
-  padding: 24px 16px;
+  padding: 32px 16px;
   text-align: center;
   font-size: 13px;
+}
+
+/* U1 fix: add breathing room to the dense estoque ledger.
+   Bumps row padding so 12-row ledgers don't feel crammed and aligns
+   with the mockup's calmness. Scoped via .ledgerPanel so other panels
+   keep their default rhythm. */
+.ledgerPanel :global(table.adm) tbody td,
+.ledgerPanel :global(table.adm) thead th {
+  padding-top: 13px;
+  padding-bottom: 13px;
+}
+.ledgerPanel :global(.ph) {
+  padding: 14px 18px 6px;
 }
