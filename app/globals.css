@@ -108,9 +108,151 @@
 
   /* ---- motion ---- */
   --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-out-quad:  cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-in-out:    cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast:  120ms;
+  --duration-base:  200ms;
+  --duration-slow:  320ms;
   --t-fast:   120ms;
   --t-base:   200ms;
   --t-slow:   320ms;
+
+  /* ---- functional surface roles ---- */
+  --surface-sunken:   var(--paper-warm);
+  --surface-base:     var(--paper);
+  --surface-elevated: #ffffff;
+
+  /* ---- functional border roles ---- */
+  --border-default:  var(--line);
+  --border-subtle:   var(--line-soft);
+  --border-emphasis: var(--line-strong);
+  --border-focus:    var(--ink);
+
+  /* ---- functional text roles ---- */
+  --text-primary:    var(--ink);
+  --text-secondary:  var(--ink-soft);
+  --text-tertiary:   var(--muted);
+  --text-quaternary: var(--muted-2);
+
+  /* ---- functional status roles ---- */
+  --status-success-bg:  var(--green-tint);
+  --status-success-text: var(--green-deep);
+  --status-success-dot:  var(--good);
+  --status-warn-bg:     var(--warn-soft);
+  --status-warn-text:   var(--warn-ink);
+  --status-warn-dot:    var(--warn);
+  --status-danger-bg:   var(--danger-soft);
+  --status-danger-text: var(--danger-ink);
+  --status-danger-dot:  var(--danger);
+  --status-neutral-bg:   var(--soft);
+  --status-neutral-text: var(--ink-soft);
+  --status-neutral-dot:  var(--muted-2);
+}
+
+/* ---------------------------------------------------------------------
+   Admin / Equipe utility layer
+   Semantic, low-specificity helpers. Use class names, not inline styles.
+   --------------------------------------------------------------------- */
+
+.adm-page {
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: var(--sp-7) var(--sp-6) var(--sp-9);
+}
+
+.adm-stack-1 { display: flex; flex-direction: column; gap: var(--sp-1); }
+.adm-stack-2 { display: flex; flex-direction: column; gap: var(--sp-2); }
+.adm-stack-3 { display: flex; flex-direction: column; gap: var(--sp-3); }
+.adm-stack-4 { display: flex; flex-direction: column; gap: var(--sp-4); }
+.adm-stack-5 { display: flex; flex-direction: column; gap: var(--sp-5); }
+.adm-stack-6 { display: flex; flex-direction: column; gap: var(--sp-6); }
+.adm-stack-7 { display: flex; flex-direction: column; gap: var(--sp-7); }
+
+.adm-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+
+.adm-grid-2col,
+.adm-grid-3col,
+.adm-grid-4col {
+  display: grid;
+  gap: var(--sp-4);
+}
+.adm-grid-2col { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.adm-grid-3col { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.adm-grid-4col { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 960px) {
+  .adm-grid-3col,
+  .adm-grid-4col { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .adm-grid-2col,
+  .adm-grid-3col,
+  .adm-grid-4col { grid-template-columns: 1fr; }
+}
+
+.adm-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  padding: var(--sp-8) var(--sp-6);
+  border: 1px dashed var(--border-default);
+  border-radius: var(--r-lg);
+  background: var(--surface-sunken);
+  color: var(--text-tertiary);
+  text-align: center;
+  min-height: 160px;
+}
+.adm-empty-state__title {
+  font-size: var(--fs-md);
+  color: var(--text-secondary);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+.adm-empty-state__hint {
+  font-size: var(--fs-sm);
+  color: var(--text-tertiary);
+  max-width: 36ch;
+}
+
+.adm-skeleton {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-sunken);
+  border-radius: var(--r-md);
+  min-height: var(--sp-4);
+}
+.adm-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: adm-shimmer 1.4s var(--ease-in-out) infinite;
+}
+.adm-skeleton--text { height: var(--sp-3); margin-block: var(--sp-1); }
+.adm-skeleton--row  { height: var(--sp-6); }
+.adm-skeleton--card { height: 96px; }
+
+@keyframes adm-shimmer {
+  100% { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adm-skeleton::after { animation: none; }
 }
 
 /* ---------------------------------------------------------------------
