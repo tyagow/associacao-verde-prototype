@@ -38,9 +38,12 @@ export default function StatusStrip({
         </div>
       ) : null}
 
-      {segments.length > 0 ? <Segmented segments={segments} /> : null}
-
+      {/* C2 fix: filters render BEFORE segments so the segmented control's
+          margin-left:auto pushes both segments + Atualizar to the right edge,
+          matching the mockup chips → filters → segments → Atualizar order. */}
       {filters ? <div className={styles.filters}>{filters}</div> : null}
+
+      {segments.length > 0 ? <Segmented segments={segments} /> : null}
 
       {onRefresh ? (
         <button type="button" className={styles.refresh} onClick={onRefresh} aria-label="Atualizar">

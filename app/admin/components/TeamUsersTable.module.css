@@ -109,9 +109,12 @@
   font-size: 12px;
 }
 
+/* C7 fix: unify compact-table padding to match the footer + invite drawer
+   so the panel reads as one rhythm (10px 14px) instead of tighter at the
+   top (cells) and looser at the bottom (footer + drawer). */
 .tableCompact th,
 .tableCompact td {
-  padding: 8px 12px;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--line-soft, #eef2ef);
   text-align: left;
 }

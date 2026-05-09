@@ -160,7 +160,13 @@ export default function AdminPage() {
   const passing = gates.filter((g) => g.status === "ok").length;
   const warning = gates.filter((g) => g.status === "pending" || g.status === "warn").length;
   const totalGates = gates.length;
-  const blockedReleases = releaseGate?.ok ? 0 : 1;
+  // D9 fix: blockedReleases = number of gates not in `ok`. The previous
+  // implementation collapsed to 0 or 1 based on releaseGate.ok which lied
+  // about the actual blocker count and disagreed with `totalGates - passing`
+  // used elsewhere in the same render.
+  const blockedReleases = totalGates - passing;
+  const teamUsers = dashboard?.teamUsers || [];
+  const teamRoleCount = new Set(teamUsers.map((u) => u.role).filter(Boolean)).size;
 
   return (
     <TeamShell session={session} dashboard={dashboard} currentRoute="/admin">
@@ -263,8 +269,8 @@ export default function AdminPage() {
                   command={detail.runHint || ""}
                   footerText={`${tag} · ${formatDateTime(gate.checkedAt || readiness?.checkedAt)}`}
                   footerCta={
-                    <span className="ghost mini" aria-hidden>
-                      {gate.status === "ok" ? "Re-rodar" : "Anexar"}
+                    <span className={adminStyles.footerHint} aria-hidden>
+                      {selectedGate === gate.label ? "Fechar" : "Abrir detalhe"}
                     </span>
                   }
                   selected={selectedGate === gate.label}
@@ -305,12 +311,15 @@ export default function AdminPage() {
               <header className="panel-heading">
                 <div>
                   <p className="kicker">Usuários da equipe</p>
-                  <h3>Acesso operacional</h3>
+                  <h3>
+                    {teamUsers.length} usuário{teamUsers.length === 1 ? "" : "s"} · {teamRoleCount}{" "}
+                    {teamRoleCount === 1 ? "papel" : "papéis"}
+                  </h3>
                 </div>
               </header>
               <TeamUsersTable
                 compact
-                users={dashboard?.teamUsers || []}
+                users={teamUsers}
                 onCreateUser={onCreateUser}
                 onStatusChange={onTeamUserStatus}
                 onPasswordReset={onTeamUserPassword}

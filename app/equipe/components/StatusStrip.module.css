@@ -5,9 +5,9 @@
 .statusStrip {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
-  padding: 8px 12px;
+  padding: 10px 14px;
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: var(--r-sm);

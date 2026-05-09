@@ -1,12 +1,15 @@
 .surface {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
   padding-bottom: 32px;
 }
 
+/* C5 fix: drop the top margin so `gap` does the spacing — previous
+   `margin: 6px 0 10px` stacked on top of the parent gap producing 22px
+   above the H2 instead of the mockup's 6px. */
 .h2Section {
-  margin: 6px 0 10px;
+  margin: 0 0 4px;
   font-family: var(--font-display, inherit);
   font-size: 16px;
   font-weight: 600;
@@ -17,6 +20,21 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
+  align-items: stretch;
+}
+
+/* C1 fix: lock minimum card height so a sibling without command/footer
+   doesn't collapse and produce a jagged row. */
+.gateGrid > * {
+  min-height: 132px;
+}
+
+.footerHint {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  color: var(--muted, #687970);
+  font-style: italic;
 }
 
 @media (max-width: 1100px) {

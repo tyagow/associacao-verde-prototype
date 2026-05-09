@@ -50,16 +50,16 @@ export default function TeamUsersTable({
         </div>
 
         <div className={styles.compactFooter}>
-          <button type="button" className="ghost mini" disabled aria-disabled="true">
-            Trocar papel
-          </button>
+          {/* B3: "Trocar papel" was a permanently disabled stub copied from
+              the mockup. Removed until a real /api/team/users/role endpoint
+              exists; per-user actions live inline in the row. */}
           <button
             type="button"
             className="primary mini"
             onClick={() => setInviteOpen((v) => !v)}
             aria-expanded={inviteOpen ? "true" : "false"}
           >
-            + Convidar
+            {inviteOpen ? "Fechar convite" : "+ Convidar"}
           </button>
         </div>
 
