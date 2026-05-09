@@ -1,12 +1,10 @@
 "use client";
 
 /* Cultivo — its own route.
-   Split out from /equipe/estoque per the U2 directive: cultivo gets its own
-   page so the estoque ledger stays focused on inventory and lots, while the
-   cultivation funnel (planting -> harvest -> drying -> stocked) lives here.
-   The legacy management forms (#cultivation-form / #cultivation-update-form)
-   continue to live inside StockRoute's <details> drawers so old E2E
-   selectors stay reachable. New entries should be added here. */
+   Owns the full cultivation funnel: planting → advance week → harvest →
+   drying → stock. Hosts #cultivation-form, #cultivation-update-form, and
+   the [data-cultivation-action] buttons (E2E selectors). StockRoute now
+   only owns product + stock entry forms. */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -19,19 +17,23 @@ import { pluralize } from "../components/pluralize.js";
 export default function CultivoRoute() {
   const [session, setSession] = useState(null);
   const [dashboard, setDashboard] = useState(null);
-  const [busy, setBusy] = useState(false);
+  const [ledger, setLedger] = useState(null);
+  const [busy, setBusy] = useState("");
+  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   const isTeam = session?.role === "team";
 
   const loadAll = useCallback(async () => {
     setError("");
-    const [sessionPayload, dashboardPayload] = await Promise.all([
+    const [sessionPayload, dashboardPayload, ledgerPayload] = await Promise.all([
       api("/api/session"),
       api("/api/team/dashboard").catch(() => null),
+      api("/api/team/inventory-ledger").catch(() => null),
     ]);
     setSession(sessionPayload.session || null);
     setDashboard(dashboardPayload || null);
+    setLedger(ledgerPayload || null);
   }, []);
 
   useEffect(() => {
@@ -45,14 +47,82 @@ export default function CultivoRoute() {
   }, [loadAll]);
 
   async function logout() {
-    setBusy(true);
+    setBusy("logout");
     try {
       await api("/api/logout", { method: "POST" });
       setSession(null);
       setDashboard(null);
+      setLedger(null);
     } finally {
-      setBusy(false);
+      setBusy("");
     }
+  }
+
+  const products = useMemo(() => ledger?.products || [], [ledger]);
+  const productOptions = useMemo(
+    () =>
+      products.map((p) => ({
+        value: p.id,
+        label: `${p.name} (${p.availableStock} ${p.unit})`,
+      })),
+    [products],
+  );
+  const batchOptions = useMemo(
+    () =>
+      (dashboard?.cultivationBatches || []).map((batch) => ({
+        value: batch.id,
+        label: `${batch.strain} - semana ${batch.week} - ${batch.status}`,
+      })),
+    [dashboard],
+  );
+
+  async function run(action, success, callback) {
+    setBusy(action);
+    setError("");
+    setMessage("");
+    try {
+      await callback();
+      await loadAll();
+      setMessage(success);
+    } catch (nextError) {
+      setError(nextError.message);
+    } finally {
+      setBusy("");
+    }
+  }
+
+  async function submitCultivationCreate(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const payload = Object.fromEntries(new FormData(form));
+    payload.plants = Number(payload.plants);
+    payload.week = Number(payload.week);
+    await run("cultivation-create", "Lote de cultivo criado.", async () => {
+      await api("/api/team/cultivation-batches", { method: "POST", body: payload });
+      form.reset();
+    });
+  }
+
+  async function submitCultivationAction(action) {
+    const form = document.querySelector("#cultivation-update-form");
+    const data = Object.fromEntries(new FormData(form));
+    const requestBody = { batchId: data.batchId };
+    let path = "/api/team/cultivation-batches/advance";
+    if (action === "harvest") {
+      path = "/api/team/cultivation-batches/harvest";
+      requestBody.harvested = Number(data.amount);
+    }
+    if (action === "dry") {
+      path = "/api/team/cultivation-batches/dry";
+      requestBody.dried = Number(data.amount);
+    }
+    if (action === "stock") {
+      path = "/api/team/cultivation-batches/stock";
+      requestBody.productId = data.productId;
+    }
+    await run(`cultivation-${action}`, "Lote de cultivo atualizado.", async () => {
+      await api(path, { method: "POST", body: requestBody });
+    });
   }
 
   const batches = useMemo(() => dashboard?.cultivationBatches || [], [dashboard]);
@@ -128,6 +198,7 @@ export default function CultivoRoute() {
         onRefresh={() => loadAll().catch((nextError) => setError(nextError.message))}
       />
 
+      {message ? <p className="status">{message}</p> : null}
       {error ? <p className="pill danger">{error}</p> : null}
 
       <div className="stack">
@@ -141,9 +212,162 @@ export default function CultivoRoute() {
         ) : (
           <CultivoPanel batches={batches} />
         )}
+
+        <section className="management-drawers" aria-label="Ações de gestão de cultivo">
+          <details open>
+            <summary>Criar lote de cultivo</summary>
+            <form
+              id="cultivation-form"
+              className="inline-form compact-management-form"
+              onSubmit={submitCultivationCreate}
+            >
+              <label>
+                Cultivar
+                <input
+                  name="strain"
+                  placeholder="24k"
+                  required
+                  disabled={!isTeam || busy === "cultivation-create"}
+                />
+              </label>
+              <label>
+                Produto vinculado
+                <select
+                  name="productId"
+                  id="cultivation-product"
+                  disabled={!isTeam || !products.length || busy === "cultivation-create"}
+                >
+                  {productOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Plantas
+                <input
+                  name="plants"
+                  type="number"
+                  min="1"
+                  defaultValue="1"
+                  required
+                  disabled={!isTeam || busy === "cultivation-create"}
+                />
+              </label>
+              <label>
+                Semana
+                <input
+                  name="week"
+                  type="number"
+                  min="1"
+                  defaultValue="1"
+                  required
+                  disabled={!isTeam || busy === "cultivation-create"}
+                />
+              </label>
+              <button
+                className="primary"
+                type="submit"
+                disabled={!isTeam || busy === "cultivation-create"}
+              >
+                {busy === "cultivation-create" ? "Criando..." : "Criar lote"}
+              </button>
+            </form>
+          </details>
+
+          <details>
+            <summary>Avançar, colher, secar ou estocar</summary>
+            <form
+              id="cultivation-update-form"
+              className="inline-form compact-management-form action-form"
+            >
+              <label>
+                Lote
+                <select
+                  name="batchId"
+                  id="cultivation-batch"
+                  disabled={!isTeam || !batchOptions.length || busy.startsWith("cultivation-")}
+                >
+                  {batchOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Peso g
+                <input
+                  name="amount"
+                  type="number"
+                  min="1"
+                  defaultValue="1"
+                  disabled={!isTeam || busy.startsWith("cultivation-")}
+                />
+              </label>
+              <label>
+                Produto para estoque
+                <select
+                  name="productId"
+                  id="cultivation-stock-product"
+                  disabled={!isTeam || !products.length || busy.startsWith("cultivation-")}
+                >
+                  {productOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                className="primary"
+                type="button"
+                data-cultivation-action="advance"
+                disabled={!isTeam || !batchOptions.length || busy === "cultivation-advance"}
+                onClick={() => submitCultivationAction("advance")}
+              >
+                Avançar semana
+              </button>
+              <button
+                className="primary"
+                type="button"
+                data-cultivation-action="harvest"
+                disabled={!isTeam || !batchOptions.length || busy === "cultivation-harvest"}
+                onClick={() => submitCultivationAction("harvest")}
+              >
+                Colheita
+              </button>
+              <button
+                className="primary"
+                type="button"
+                data-cultivation-action="dry"
+                disabled={!isTeam || !batchOptions.length || busy === "cultivation-dry"}
+                onClick={() => submitCultivationAction("dry")}
+              >
+                Peso seco
+              </button>
+              <button
+                className="primary"
+                type="button"
+                data-cultivation-action="stock"
+                disabled={
+                  !isTeam ||
+                  !batchOptions.length ||
+                  !products.length ||
+                  busy === "cultivation-stock"
+                }
+                onClick={() => submitCultivationAction("stock")}
+              >
+                Mover para estoque
+              </button>
+            </form>
+          </details>
+        </section>
+
         <p className="muted cultivo-help">
-          Para criar lotes, avançar semana, registrar colheita, secagem ou mover para o estoque, use
-          o painel "Entrada e cultivo" em <a href="/equipe/estoque">/equipe/estoque</a>.
+          Para gerenciar produtos, lotes de estoque e limites de alerta, abra{" "}
+          <a href="/equipe/estoque">/equipe/estoque</a>.
         </p>
       </div>
     </TeamShell>

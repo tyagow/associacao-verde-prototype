@@ -3970,6 +3970,102 @@ textarea {
   backdrop-filter: blur(2px);
 }
 
+/* ---- admin panel chrome: <header class="ph"> + table.adm ----
+   Direction B (Stripe Workbench) primitives consumed widely across
+   /equipe/* and /admin (PatientsRegistry, ProductLedger, CultivoPanel,
+   FulfillmentKanban …). The mockup-spec rules at
+   docs/superpowers/specs/admin-revamp-mockups/_tokens.css and _shell.css
+   define them, but the revamp shipped without porting the rules into
+   globals — leaving consumers visually unstyled (default UA table,
+   no header chrome) and the surrounding .panel padding squeezing the
+   content. Restored here so headers + tables render as designed. */
+
+.panel:has(> header.ph) {
+  padding: 0;
+  background: var(--paper);
+  border-color: var(--line);
+  border-radius: var(--r-md);
+  /* `overflow: clip` keeps the rounded corners visually clipping the
+     header.ph and table.adm without establishing a scroll container —
+     so `position: sticky` on `table.adm thead th` still works (unlike
+     `overflow: hidden`, which would silently disable sticky). */
+  overflow: clip;
+}
+
+.panel > header.ph,
+header.ph {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--line-soft);
+  margin: 0;
+}
+header.ph > h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+header.ph .meta {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+table.adm {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-ui, 13px);
+  color: var(--ink);
+}
+table.adm thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--paper-warm);
+  text-align: left;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+table.adm tbody td {
+  padding: var(--sp-3);
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: middle;
+  line-height: var(--lh-snug, 1.35);
+}
+table.adm tbody tr:nth-child(even) td { background: var(--paper-warm); }
+table.adm tbody tr:hover td           { background: var(--soft, var(--surface-hover)); }
+table.adm tbody tr:last-child td      { border-bottom: 0; }
+table.adm td.num,
+table.adm th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+table.adm td.mono,
+table.adm th.mono {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--muted);
+}
+table.adm tbody tr.tgroup td {
+  background: var(--paper-warm);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-weight: 600;
+  padding: var(--sp-2) var(--sp-3);
+}
+
 /* ---- skel: shimmer skeleton ---- */
 .skel {
   background: var(--surface-sunken);

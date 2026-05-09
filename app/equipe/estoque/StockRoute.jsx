@@ -279,7 +279,6 @@ export default function StockRoute() {
         <LegacyManagementDrawers
           isTeam={isTeam}
           products={products}
-          batches={batches}
           busy={busy}
           setBusy={setBusy}
           setMessage={setMessage}
@@ -297,7 +296,6 @@ export default function StockRoute() {
 function LegacyManagementDrawers({
   isTeam,
   products,
-  batches,
   busy,
   setBusy,
   setMessage,
@@ -311,14 +309,6 @@ function LegacyManagementDrawers({
         label: `${product.name} (${product.availableStock} ${product.unit})`,
       })),
     [products],
-  );
-  const batchOptions = useMemo(
-    () =>
-      batches.map((batch) => ({
-        value: batch.id,
-        label: `${batch.strain} - semana ${batch.week} - ${batch.status}`,
-      })),
-    [batches],
   );
 
   async function run(action, success, callback) {
@@ -354,34 +344,7 @@ function LegacyManagementDrawers({
         payload.quantity = Number(payload.quantity);
         await api("/api/team/stock", { method: "POST", body: payload });
       }
-      if (action === "cultivation-create") {
-        payload.plants = Number(payload.plants);
-        payload.week = Number(payload.week);
-        await api("/api/team/cultivation-batches", { method: "POST", body: payload });
-      }
       form.reset();
-    });
-  }
-
-  async function submitCultivationAction(action) {
-    const form = document.querySelector("#cultivation-update-form");
-    const data = Object.fromEntries(new FormData(form));
-    const requestBody = { batchId: data.batchId };
-    let path = "/api/team/cultivation-batches/advance";
-    if (action === "harvest") {
-      path = "/api/team/cultivation-batches/harvest";
-      requestBody.harvested = Number(data.amount);
-    }
-    if (action === "dry") {
-      path = "/api/team/cultivation-batches/dry";
-      requestBody.dried = Number(data.amount);
-    }
-    if (action === "stock") {
-      path = "/api/team/cultivation-batches/stock";
-      requestBody.productId = data.productId;
-    }
-    await run(`cultivation-${action}`, "Lote de cultivo atualizado.", async () => {
-      await api(path, { method: "POST", body: requestBody });
     });
   }
 
@@ -524,7 +487,7 @@ function LegacyManagementDrawers({
       </details>
 
       <details>
-        <summary>Entrada e cultivo</summary>
+        <summary>Adicionar estoque</summary>
         <form
           id="stock-form"
           className="inline-form compact-management-form"
@@ -566,133 +529,12 @@ function LegacyManagementDrawers({
             {busy === "stock-add" ? "Adicionando..." : "Adicionar estoque"}
           </button>
         </form>
-
-        <form
-          id="cultivation-form"
-          className="inline-form compact-management-form"
-          onSubmit={(event) => submitForm(event, "cultivation-create", "Lote de cultivo criado.")}
-        >
-          <label>
-            Cultivar
-            <input
-              name="strain"
-              placeholder="24k"
-              required
-              disabled={!isTeam || busy === "cultivation-create"}
-            />
-          </label>
-          <label>
-            Produto vinculado
-            <SelectOptions
-              name="productId"
-              id="cultivation-product"
-              options={productOptions}
-              disabled={!isTeam || !products.length || busy === "cultivation-create"}
-            />
-          </label>
-          <label>
-            Plantas
-            <input
-              name="plants"
-              type="number"
-              min="1"
-              defaultValue="1"
-              required
-              disabled={!isTeam || busy === "cultivation-create"}
-            />
-          </label>
-          <label>
-            Semana
-            <input
-              name="week"
-              type="number"
-              min="1"
-              defaultValue="1"
-              required
-              disabled={!isTeam || busy === "cultivation-create"}
-            />
-          </label>
-          <button
-            className="primary"
-            type="submit"
-            disabled={!isTeam || busy === "cultivation-create"}
-          >
-            {busy === "cultivation-create" ? "Criando..." : "Criar lote"}
-          </button>
-        </form>
-
-        <form
-          id="cultivation-update-form"
-          className="inline-form compact-management-form action-form"
-        >
-          <label>
-            Lote
-            <SelectOptions
-              name="batchId"
-              id="cultivation-batch"
-              options={batchOptions}
-              disabled={!isTeam || !batches.length || busy.startsWith("cultivation-")}
-            />
-          </label>
-          <label>
-            Peso g
-            <input
-              name="amount"
-              type="number"
-              min="1"
-              defaultValue="1"
-              disabled={!isTeam || busy.startsWith("cultivation-")}
-            />
-          </label>
-          <label>
-            Produto para estoque
-            <SelectOptions
-              name="productId"
-              id="cultivation-stock-product"
-              options={productOptions}
-              disabled={!isTeam || !products.length || busy.startsWith("cultivation-")}
-            />
-          </label>
-          <button
-            className="primary"
-            type="button"
-            data-cultivation-action="advance"
-            disabled={!isTeam || !batches.length || busy === "cultivation-advance"}
-            onClick={() => submitCultivationAction("advance")}
-          >
-            Avancar semana
-          </button>
-          <button
-            className="primary"
-            type="button"
-            data-cultivation-action="harvest"
-            disabled={!isTeam || !batches.length || busy === "cultivation-harvest"}
-            onClick={() => submitCultivationAction("harvest")}
-          >
-            Colheita
-          </button>
-          <button
-            className="primary"
-            type="button"
-            data-cultivation-action="dry"
-            disabled={!isTeam || !batches.length || busy === "cultivation-dry"}
-            onClick={() => submitCultivationAction("dry")}
-          >
-            Peso seco
-          </button>
-          <button
-            className="primary"
-            type="button"
-            data-cultivation-action="stock"
-            disabled={
-              !isTeam || !batches.length || !products.length || busy === "cultivation-stock"
-            }
-            onClick={() => submitCultivationAction("stock")}
-          >
-            Mover para estoque
-          </button>
-        </form>
       </details>
+      {/*
+        Cultivation forms (#cultivation-form, #cultivation-update-form,
+        [data-cultivation-action]) moved to /equipe/cultivo. StockRoute
+        keeps only product + stock entry forms.
+      */}
     </section>
   );
 }
