@@ -99,6 +99,6 @@ async function api(path, options = {}) {
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
   const payload = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(payload?.error || "Erro na requisicao.");
+  if (!response.ok) throw new Error(payload?.error || "Erro na requisição.");
   return payload;
 }

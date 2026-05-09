@@ -395,7 +395,7 @@ async function api(path, options = {}) {
   });
   const payload = await response.json();
   if (!response.ok) {
-    throw new Error(payload.error || "Erro na requisicao.");
+    throw new Error(payload.error || "Erro na requisição.");
   }
   return payload;
 }
