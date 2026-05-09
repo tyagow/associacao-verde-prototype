@@ -24,7 +24,7 @@ const TABS = [
  */
 export default function PatientTabs({ current = "pedido", onChange }) {
   return (
-    <nav className={styles.bar} role="tablist" aria-label="Areas do portal do paciente">
+    <nav className={styles.bar} aria-label="Areas do portal do paciente">
       {TABS.map((tab) => {
         const isActive = current === tab.value;
         const classes = [
@@ -38,8 +38,6 @@ export default function PatientTabs({ current = "pedido", onChange }) {
           <button
             key={tab.value}
             type="button"
-            role="tab"
-            aria-selected={isActive}
             aria-current={isActive ? "page" : undefined}
             data-patient-tab={tab.value}
             className={classes}

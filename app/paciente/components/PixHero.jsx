@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "framer-motion";
 import { QRCodeSVG } from "qrcode.react";
 import OrderTimeline from "./OrderTimeline";
@@ -32,9 +32,11 @@ function monogram(name) {
   return (first + second).toUpperCase().slice(0, 2);
 }
 
-export default function PixHero({ order, onMarkPaid, onCopyPix }) {
+export default function PixHero({ order, onMarkPaid, onCopyPix, onCancel }) {
   const expiresAt = order?.paymentExpiresAt;
   const [secondsLeft, setSecondsLeft] = useState(() => computeSecondsLeft(expiresAt));
+  const [announcement, setAnnouncement] = useState("");
+  const prevSecondsRef = useRef(null);
   const reduce = useReducedMotion();
 
   useEffect(() => {
@@ -45,6 +47,24 @@ export default function PixHero({ order, onMarkPaid, onCopyPix }) {
     }, 1000);
     return () => window.clearInterval(id);
   }, [expiresAt]);
+
+  // Threshold-crossing announcer: only updates aria-live text when the
+  // countdown passes a meaningful boundary (10min, 5min, 1min, 30s, 0).
+  // The visible countdown still ticks every second, but it is aria-hidden
+  // so screen readers do not narrate it on every tick.
+  useEffect(() => {
+    const prev = prevSecondsRef.current;
+    prevSecondsRef.current = secondsLeft;
+    if (secondsLeft == null || prev == null) return;
+    const crossed = (boundary) => prev > boundary && secondsLeft <= boundary;
+    let next = "";
+    if (crossed(0)) next = "Tempo expirado";
+    else if (crossed(30)) next = "30 segundos restantes para o pagamento";
+    else if (crossed(60)) next = "1 minuto restante para o pagamento";
+    else if (crossed(300)) next = "5 minutos restantes para o pagamento";
+    else if (crossed(600)) next = "10 minutos restantes para o pagamento";
+    if (next) setAnnouncement(next);
+  }, [secondsLeft]);
 
   const expired = secondsLeft != null && secondsLeft <= 0;
   const copia = order?.pix?.copiaECola || "";
@@ -104,10 +124,13 @@ export default function PixHero({ order, onMarkPaid, onCopyPix }) {
                 <sup>BRL</sup>
               </p>
             </div>
-            <div className={styles["px-hero__countdown"]} aria-live="polite">
+            <div className={styles["px-hero__countdown"]} aria-hidden="true">
               <span>{expired ? "Vencido" : "Vence em"}</span>
               <strong>{formatCountdown(secondsLeft)}</strong>
             </div>
+            <span role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+              {announcement}
+            </span>
           </div>
 
           <div className={styles["px-hero__meta-row"]}>
@@ -174,9 +197,16 @@ export default function PixHero({ order, onMarkPaid, onCopyPix }) {
                 >
                   {expired ? "Solicitar novo Pix" : "Já paguei, atualizar"}
                 </button>
-                <button type="button" className={styles["px-hero__btn-ghost"]}>
-                  Cancelar pedido
-                </button>
+                {onCancel ? (
+                  <button
+                    type="button"
+                    className={styles["px-hero__btn-ghost"]}
+                    onClick={onCancel}
+                    aria-label="Cancelar pedido em andamento e abrir suporte"
+                  >
+                    Cancelar pedido
+                  </button>
+                ) : null}
               </div>
             </div>
           </div>

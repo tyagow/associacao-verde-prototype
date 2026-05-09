@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./SupportThread.module.css";
 
 const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
@@ -40,14 +40,69 @@ const FAQ_LINKS = [
  *   #support-request-form, input[name=subject], textarea[name=message],
  *   select[name=priority], hidden input[name=relatedOrderId], button[type=submit].
  */
-export default function SupportThread({ busy, hasPrivacyConsent, latestOrder, onSubmit }) {
+export default function SupportThread({
+  busy,
+  hasPrivacyConsent,
+  latestOrder,
+  onSubmit,
+  relatedOrderHint,
+}) {
   const [subject, setSubject] = useState("");
   const [priority, setPriority] = useState("normal");
   const [message, setMessage] = useState("");
+  const [linkedOrderId, setLinkedOrderId] = useState("");
+  // "Pristine" = user has not typed anything yet. We only auto-prefill while
+  // pristine to avoid clobbering in-progress input when the parent re-emits a
+  // hint (e.g. after navigating away and back).
+  const pristineRef = useRef(true);
+
+  // Normalize hint into { subject, message, orderId, reason }. Strings are
+  // treated as a bare orderId (the current PatientPortal shape — see
+  // `setSupportPrefill(orderId || "")`).
+  const hint =
+    typeof relatedOrderHint === "string"
+      ? relatedOrderHint
+        ? { orderId: relatedOrderHint }
+        : null
+      : relatedOrderHint && typeof relatedOrderHint === "object"
+        ? relatedOrderHint
+        : null;
+
+  useEffect(() => {
+    if (!hint) {
+      setLinkedOrderId("");
+      return;
+    }
+    if (hint.orderId) {
+      setLinkedOrderId(hint.orderId);
+    }
+    if (!pristineRef.current) return;
+    if (hint.subject) setSubject(hint.subject);
+    if (hint.orderId) {
+      const tag = `Pedido #${hint.orderId}`;
+      setMessage((prev) => {
+        const base = hint.message || prev || "";
+        if (base.includes(tag)) return base;
+        return base ? `${base}\n\n${tag}` : tag;
+      });
+    } else if (hint.message) {
+      setMessage(hint.message);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [relatedOrderHint]);
+
+  function markDirty() {
+    pristineRef.current = false;
+  }
 
   function applyReason(reason) {
     setSubject(reason.subject);
     setPriority(reason.priority);
+    markDirty();
+  }
+
+  function unlinkOrder() {
+    setLinkedOrderId("");
   }
 
   function handleSubmit(event) {
@@ -59,6 +114,8 @@ export default function SupportThread({ busy, hasPrivacyConsent, latestOrder, on
     setSubject("");
     setPriority("normal");
     setMessage("");
+    setLinkedOrderId("");
+    pristineRef.current = true;
   }
 
   return (
@@ -81,6 +138,20 @@ export default function SupportThread({ busy, hasPrivacyConsent, latestOrder, on
           <h2 className={styles.formTitle}>Solicitar atendimento</h2>
           <p className={styles.formSub}>Escolha um motivo comum ou descreva o problema:</p>
 
+          {linkedOrderId ? (
+            <div className={styles.linkedOrder}>
+              <span>Vinculado ao pedido #{linkedOrderId}</span>
+              <button
+                type="button"
+                className={styles.linkedOrderClose}
+                aria-label="Desvincular pedido"
+                onClick={unlinkOrder}
+              >
+                ×
+              </button>
+            </div>
+          ) : null}
+
           <div className={styles.quick} role="group" aria-label="Motivos comuns">
             {QUICK_REASONS.map((reason) => (
               <button
@@ -100,7 +171,10 @@ export default function SupportThread({ busy, hasPrivacyConsent, latestOrder, on
               <input
                 name="subject"
                 value={subject}
-                onChange={(event) => setSubject(event.target.value)}
+                onChange={(event) => {
+                  markDirty();
+                  setSubject(event.target.value);
+                }}
                 placeholder="Renovar receita, duvida sobre Pix..."
                 required
               />
@@ -125,7 +199,10 @@ export default function SupportThread({ busy, hasPrivacyConsent, latestOrder, on
               name="message"
               rows={5}
               value={message}
-              onChange={(event) => setMessage(event.target.value)}
+              onChange={(event) => {
+                markDirty();
+                setMessage(event.target.value);
+              }}
               placeholder="Descreva o que precisa ser revisado pela equipe."
               required
             />
@@ -134,8 +211,12 @@ export default function SupportThread({ busy, hasPrivacyConsent, latestOrder, on
             </span>
           </label>
 
-          {latestOrder ? (
-            <input type="hidden" name="relatedOrderId" value={latestOrder.id} />
+          {linkedOrderId || latestOrder ? (
+            <input
+              type="hidden"
+              name="relatedOrderId"
+              value={linkedOrderId || latestOrder?.id || ""}
+            />
           ) : null}
 
           <div className={styles.submitRow}>

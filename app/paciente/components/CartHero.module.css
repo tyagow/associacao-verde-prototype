@@ -13,8 +13,8 @@
 
 .sticky {
   position: sticky;
-  top: 110px;
-  height: calc(100vh - 110px);
+  top: var(--patient-sticky-top);
+  height: calc(100vh - var(--patient-sticky-top));
 }
 
 .kicker {
@@ -476,7 +476,7 @@
   min-height: 18px;
   margin: 4px 0 6px;
   font-size: 12px;
-  color: #b03a2e;
+  color: var(--danger);
   font-weight: 500;
   line-height: 1.3;
 }
@@ -520,11 +520,18 @@
   color: var(--gold-on);
   border: 0;
   border-radius: var(--r-sm, 3px);
-  font-weight: 700;
+  font-weight: 600;
   font-size: var(--fs-base, 14px);
-  letter-spacing: 0.04em;
   cursor: not-allowed;
   opacity: 0.85;
+}
+
+.cartHint {
+  font-size: var(--fs-ui, 13px);
+  color: var(--text-secondary, var(--muted));
+  margin: var(--sp-2, 8px) 0 0;
+  line-height: var(--lh-snug, 1.4);
+  text-align: center;
 }
 
 .reassure {

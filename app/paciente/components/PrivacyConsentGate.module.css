@@ -323,28 +323,23 @@
 }
 
 .visuallyHidden {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 4px;
-  height: 4px;
+  position: absolute;
+  width: 1px;
+  height: 1px;
   padding: 0;
-  margin: 0;
+  margin: -1px;
   overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
-  z-index: 2147483647;
-  pointer-events: auto;
-  opacity: 0;
+  pointer-events: none;
 }
 
 .visuallyHidden button {
-  pointer-events: auto;
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 4px;
-  height: 4px;
+  pointer-events: none;
+  width: 1px;
+  height: 1px;
   padding: 0;
   margin: 0;
   border: 0;

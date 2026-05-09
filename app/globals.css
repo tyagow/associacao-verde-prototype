@@ -90,6 +90,14 @@
   --sp-9:  56px;
   --sp-10: 72px;
 
+  /* ---- sticky-layer offsets (paciente storefront) ----
+     Topbar height = 14px padding × 2 + ~28px content (≈ 56px).
+     Tabbar height = 8px padding × 2 + ~38px content (≈ 54px).
+     Combined offset rebases CartHero/PixHero sticky panels below both. */
+  --topbar-height: 56px;
+  --tabbar-height: 54px;
+  --patient-sticky-top: calc(var(--topbar-height) + var(--tabbar-height));
+
   /* ---- radii ---- */
   --r-xs:   2px;
   --r-sm:   3px;

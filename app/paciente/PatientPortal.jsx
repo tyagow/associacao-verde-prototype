@@ -460,7 +460,15 @@ export default function PatientPortal() {
                 >
                   Proxima acao: pagar Pix
                 </span>
-                <PixHero order={latestOrder} onMarkPaid={loadOrders} onCopyPix={copyPix} />
+                <PixHero
+                  order={latestOrder}
+                  onMarkPaid={loadOrders}
+                  onCopyPix={copyPix}
+                  onCancel={() => {
+                    setSupportPrefill(latestOrder?.id || "");
+                    setCurrentTab("suporte");
+                  }}
+                />
               </>
             ) : hasPrivacyConsent && latestOrder && PAID_STATUSES.has(latestOrder.status) ? (
               <OrderPaidHero order={latestOrder} events={paidEvents} />

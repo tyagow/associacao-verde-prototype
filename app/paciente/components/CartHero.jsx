@@ -373,9 +373,18 @@ export default function CartHero({
             <span>Total</span>
             <strong>{money.format(0)}</strong>
           </div>
-          <button type="button" className={styles.ctaDisabled} disabled aria-disabled="true">
-            SELECIONE PRODUTOS
+          <button
+            type="button"
+            className={styles.ctaDisabled}
+            disabled
+            aria-disabled="true"
+            aria-describedby="cart-hint"
+          >
+            Selecione produtos no catálogo
           </button>
+          <p id="cart-hint" className={styles.cartHint}>
+            Adicione itens no catálogo.
+          </p>
         </>
       ) : (
         <>
