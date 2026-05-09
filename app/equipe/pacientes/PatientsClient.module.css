@@ -229,8 +229,33 @@
   user-select: none;
 }
 
+/* C3 fix (audit cycle 3): hide the OS-default disclosure triangle and
+   render a custom chevron via ::after so the legacy admin block reads
+   the same as the rest of the chassis (which has no triangles). */
+.adminDetails > summary {
+  list-style: none;
+  position: relative;
+  padding-right: var(--sp-5);
+}
+.adminDetails > summary::-webkit-details-marker,
 .adminDetails > summary::marker {
-  color: var(--muted);
+  display: none;
+  content: "";
+}
+.adminDetails > summary::after {
+  content: "";
+  position: absolute;
+  right: var(--sp-3);
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid var(--muted);
+  border-bottom: 1.5px solid var(--muted);
+  transform: translateY(-65%) rotate(45deg);
+  transition: transform 0.16s ease;
+}
+.adminDetails[open] > summary::after {
+  transform: translateY(-35%) rotate(-135deg);
 }
 
 .adminGrid {

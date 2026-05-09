@@ -43,11 +43,32 @@
 }
 
 @media (max-width: 1024px) {
+  /* B11 fix (audit cycle 3): 2-col responsive layout has 5 cells in
+     three rows of (2,2,1). The previous rule only zeroed the very last
+     cell, leaving cells 3 and 4 with a stray bottom border that drew
+     a visible "T" against cell 5. Use :nth-child to also remove the
+     right-side cell of every odd column (the rightmost cell per row) and
+     the second-to-last/third-to-last cells in the 5-cell layout. */
   .cell {
     border-right: 0;
     border-bottom: 1px solid var(--line-soft);
   }
-  .cell:last-child {
+  /* every cell in even position is the right column — its right neighbour
+     is the next row, so it can keep the bottom rule for the inter-row
+     separator. */
+  .cell:nth-last-child(-n + 1),
+  /* second-to-last + third-to-last cover the bottom row in the 2-col
+     layout when the last cell spans alone. */
+  .cell:nth-last-child(2),
+  .cell:nth-last-child(3) {
     border-bottom: 0;
+  }
+}
+@media (max-width: 540px) {
+  /* 1-col layout — single column means every cell needs only the
+     bottom separator except the literal last. */
+  .cell:nth-last-child(2),
+  .cell:nth-last-child(3) {
+    border-bottom: 1px solid var(--line-soft);
   }
 }
