@@ -86,7 +86,7 @@ export default function TeamUsersTable({
                 <option value="support">Suporte</option>
               </select>
             </label>
-            <button className={styles.formSubmit} type="submit">
+            <button className="btn btn--primary" type="submit">
               Criar usuario
             </button>
           </form>
@@ -118,7 +118,7 @@ export default function TeamUsersTable({
             <option value="support">Suporte</option>
           </select>
         </label>
-        <button className={styles.formSubmit} type="submit">
+        <button className="btn btn--primary" type="submit">
           Criar usuario
         </button>
       </form>

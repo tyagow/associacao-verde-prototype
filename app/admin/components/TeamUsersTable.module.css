@@ -30,23 +30,6 @@
   background: #fff;
 }
 
-.formSubmit {
-  appearance: none;
-  font: inherit;
-  font-size: 13px;
-  padding: var(--sp-3) var(--sp-4);
-  border-radius: var(--r-sm);
-  background: var(--green, #1d8c52);
-  color: #fff;
-  border: 1px solid var(--green-deep, #135b35);
-  cursor: pointer;
-  height: fit-content;
-}
-
-.formSubmit:hover {
-  background: var(--green-deep, #135b35);
-}
-
 .tableWrap {
   border: 1px solid var(--line, #e3ebe6);
   border-radius: var(--r-md);
