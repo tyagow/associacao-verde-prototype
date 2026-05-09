@@ -1,72 +1,98 @@
-/* Phase 5 — Fulfillment kanban column (.tx-* namespace). */
+/* Phase 5 (revamp) — Fulfillment kanban column.
+ * Mirrors .kcol / .kcol > header / .klist from b-fulfillment.html. */
 
-.txColumn {
+.kcol {
+  background: var(--paper-warm);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
   display: flex;
   flex-direction: column;
-  gap: var(--sp-3);
-  min-width: 260px;
-  flex: 1 1 260px;
-  background: var(--paper-soft, #f7f7f5);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg, 14px);
-  padding: var(--sp-3);
-  min-height: 400px;
+  min-height: 600px;
   transition:
     border-color 0.15s ease,
-    background 0.15s ease;
+    box-shadow 0.15s ease;
+}
+.kcolOver {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 1px var(--ink) inset;
 }
 
-.txColumnOver {
-  border-color: var(--brand);
-  background: var(--brand-soft, rgba(2, 114, 65, 0.06));
-}
-
-.txColumnHeader {
+.kcolHeader {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--sp-2);
-  padding: 0 var(--sp-2);
+  gap: 6px;
+  background: var(--paper);
+  border-top-left-radius: var(--r-sm);
+  border-top-right-radius: var(--r-sm);
 }
-
-.txColumnHeader h3 {
+.kcolTitle {
   margin: 0;
-  font-size: var(--font-sm, 0.85rem);
+  font-size: 13px;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-}
-
-.txColumnCount {
+  color: var(--ink);
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-width: 22px;
-  height: 22px;
-  padding: 0 6px;
+  gap: 6px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted-2, var(--muted));
+}
+.tone_warn.dot,
+.dot.tone_warn {
+  background: var(--warn);
+}
+.tone_ok.dot,
+.dot.tone_ok {
+  background: var(--green);
+}
+.tone_muted.dot,
+.dot.tone_muted {
+  background: var(--muted-2, var(--muted));
+}
+
+.pillN {
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  padding: 1px 7px;
   border-radius: var(--r-pill);
   background: var(--ink);
   color: var(--paper);
-  font-size: var(--font-xs, 0.7rem);
   font-weight: 600;
-  font-variant-numeric: tabular-nums;
+}
+.pillN.tone_warn {
+  background: var(--warn);
+  color: #1a1408;
+}
+.pillN.tone_ok {
+  background: var(--green);
+  color: var(--paper);
+}
+.pillN.tone_muted {
+  background: var(--ink);
+  color: var(--paper);
 }
 
-.txColumnBody {
+.klist {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-2);
+  gap: 8px;
+  padding: 10px;
   flex: 1;
 }
-
-.txColumnEmpty {
+.kcolEmpty {
   margin: 0;
   padding: var(--sp-4) var(--sp-2);
-  font-size: var(--font-xs, 0.75rem);
+  font-size: 11px;
   color: var(--muted);
   text-align: center;
   border: 1px dashed var(--line);
-  border-radius: var(--radius-md, 10px);
+  border-radius: var(--r-sm);
   background: transparent;
 }

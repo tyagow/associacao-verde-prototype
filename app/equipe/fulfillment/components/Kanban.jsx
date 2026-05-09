@@ -16,10 +16,10 @@ import OrderCard from "./OrderCard.jsx";
 import styles from "./Kanban.module.css";
 
 const COLUMNS = [
-  { status: "paid_pending_fulfillment", label: "Pago aguardando" },
-  { status: "separating", label: "Em separacao" },
-  { status: "ready_to_ship", label: "Pronto despachar" },
-  { status: "sent", label: "Enviado" },
+  { status: "paid_pending_fulfillment", label: "Aguardando separar", tone: "warn" },
+  { status: "separating", label: "Em separacao", tone: "warn" },
+  { status: "ready_to_ship", label: "Pronto p/ envio", tone: "ok" },
+  { status: "sent", label: "Enviados hoje", tone: "muted" },
 ];
 
 const COLUMN_STATUSES = new Set(COLUMNS.map((c) => c.status));
@@ -35,7 +35,14 @@ const COLUMN_STATUSES = new Set(COLUMNS.map((c) => c.status));
  * server response back into the column. On error we revert the override
  * and surface the message via onMessage.
  */
-export default function Kanban({ orders, onPersistMove, onPrintLabel, query, statusFilter }) {
+export default function Kanban({
+  orders,
+  onPersistMove,
+  onPrintLabel,
+  query,
+  statusFilter,
+  slaFilter = "all",
+}) {
   const [overrides, setOverrides] = useState({});
   const [activeId, setActiveId] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -85,8 +92,20 @@ export default function Kanban({ orders, onPersistMove, onPrintLabel, query, sta
               ...order.items.map((item) => item.name),
             ].join(" "),
           ).includes(q),
-      );
-  }, [orders, overrides, query, statusFilter]);
+      )
+      .filter((order) => {
+        if (slaFilter === "all") return true;
+        const today = new Date().toISOString().slice(0, 10);
+        if (slaFilter === "today") {
+          if (!order.paidAt) return false;
+          return new Date(order.paidAt).toISOString().slice(0, 10) === today;
+        }
+        if (slaFilter === "late") {
+          return order.status === "paid_pending_fulfillment" && minutesSince(order.paidAt) > 240;
+        }
+        return true;
+      });
+  }, [orders, overrides, query, statusFilter, slaFilter]);
 
   const byColumn = useMemo(() => {
     const buckets = Object.fromEntries(COLUMNS.map((c) => [c.status, []]));
@@ -189,6 +208,7 @@ export default function Kanban({ orders, onPersistMove, onPrintLabel, query, sta
               key={column.status}
               status={column.status}
               label={column.label}
+              tone={column.tone}
               orders={byColumn[column.status]}
               onPrintLabel={onPrintLabel}
             />
@@ -207,4 +227,11 @@ function normalize(value) {
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "")
     .toLowerCase();
+}
+
+function minutesSince(value) {
+  if (!value) return Infinity;
+  const t = new Date(value).getTime();
+  if (Number.isNaN(t)) return Infinity;
+  return (Date.now() - t) / 60000;
 }

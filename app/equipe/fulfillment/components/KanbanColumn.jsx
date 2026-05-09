@@ -6,39 +6,42 @@ import OrderCard from "./OrderCard.jsx";
 import styles from "./KanbanColumn.module.css";
 
 /**
- * Phase 5 — single kanban column. Droppable target keyed by status, with
- * a SortableContext wrapper so dnd-kit knows the in-column order. The
- * column header surfaces the human label + count badge; the body lists
- * OrderCard children. Empty columns show a neutral placeholder so the
- * drop zone stays obviously droppable.
+ * Phase 5 (revamp) — single kanban column, b-fulfillment.html visual.
+ * Paper-warm body, paper header bar with status dot + ink count pill.
+ * dnd-kit useDroppable / SortableContext wiring unchanged.
  */
-export default function KanbanColumn({ status, label, orders, onPrintLabel }) {
+export default function KanbanColumn({ status, label, tone = "muted", orders, onPrintLabel }) {
   const { setNodeRef, isOver } = useDroppable({
     id: status,
     data: { kind: "column", status },
   });
 
+  const toneClass = styles[`tone_${tone}`] || "";
+
   return (
     <section
       ref={setNodeRef}
-      className={`${styles.txColumn} ${isOver ? styles.txColumnOver : ""}`.trim()}
+      className={`${styles.kcol} ${isOver ? styles.kcolOver : ""}`.trim()}
       data-column={status}
       aria-label={label}
     >
-      <header className={styles.txColumnHeader}>
-        <h3>{label}</h3>
-        <span className={styles.txColumnCount} aria-label={`${orders.length} pedido(s)`}>
+      <header className={styles.kcolHeader}>
+        <h3 className={styles.kcolTitle}>
+          <span className={`${styles.dot} ${toneClass}`} aria-hidden />
+          {label}
+        </h3>
+        <span className={`${styles.pillN} ${toneClass}`} aria-label={`${orders.length} pedido(s)`}>
           {orders.length}
         </span>
       </header>
       <SortableContext items={orders.map((o) => o.id)} strategy={verticalListSortingStrategy}>
-        <div className={styles.txColumnBody}>
+        <div className={styles.klist}>
           {orders.length ? (
             orders.map((order) => (
               <OrderCard key={order.id} order={order} onPrintLabel={onPrintLabel} />
             ))
           ) : (
-            <p className={styles.txColumnEmpty}>Nenhum pedido nesta etapa.</p>
+            <p className={styles.kcolEmpty}>Nenhum pedido nesta etapa.</p>
           )}
         </div>
       </SortableContext>

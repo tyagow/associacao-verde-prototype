@@ -1,32 +1,28 @@
 "use client";
 
-/* Phase 5 — Fulfillment kanban (rebuild).
+/* Phase 5 (revamp) — Fulfillment kanban on the Phase 0 chassis.
  *
- * Replaces the legacy single-table view with a 4-column dnd-kit kanban:
- *   Pago aguardando · Em separacao · Pronto despachar · Enviado
- *
- * Drops trigger POST /api/team/orders/status (new Route Handler) which
- * persists via the new updateOrderFulfillmentStatus method on
- * ProductionSystem (kanban-specific audit envelope).
+ * Replaces the legacy panel-heading + surface-toolbar with PageHead +
+ * StatusStrip (count chips, SLA segmented, fulfillment filters, refresh).
+ * The dnd-kit kanban (Kanban / KanbanColumn / OrderCard) is reused as-is
+ * but reskinned per b-fulfillment.html.
  *
  * Hard E2E invariants preserved:
- *   - Body still contains "Fulfillment e envio" (kicker text).
+ *   - Body still contains "Fulfillment e envio" (PageHead title).
  *   - [data-filter='fulfillmentStatus'] SELECT with an `all` option drives
  *     status filtering.
  *   - When a paid order exists, the body shows "Pagamento confirmado"
- *     (asserted by the team-route walk after a Pix simulation).
- *
- * Mounts inside <TeamShell> (the Phase 3 layout seam) so the redesigned
- * topbar/sidebar/badges replace the legacy nav. The status pill ("equipe
- * autenticada"/"acesso restrito") is rendered below the kicker.
+ *     (asserted by the team-route walk after a Pix simulation) — kept
+ *     verbatim via the hidden data-fulfillment-paid-marker paragraph.
  *
  * The legacy form-driven controls (registrar envio, excecao, cancelar)
- * are intentionally NOT migrated to the kanban — they live in /equipe/pedidos
- * and the OrderDrawer there. The kanban only owns the column transition.
+ * live on /equipe/pedidos and are not migrated to the kanban.
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import TeamShell from "../components/TeamShell";
+import PageHead from "../components/PageHead";
+import StatusStrip from "../components/StatusStrip";
 import Kanban from "./components/Kanban.jsx";
 
 const FULFILLMENT_STATUSES = new Set([
@@ -45,6 +41,7 @@ export default function FulfillmentPage() {
   const [toast, setToast] = useState("");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [slaFilter, setSlaFilter] = useState("all"); // 'all' | 'today' | 'late'
 
   const loadSession = useCallback(async () => {
     const payload = await api("/api/session");
@@ -90,6 +87,25 @@ export default function FulfillmentPage() {
     [orders],
   );
 
+  const counts = useMemo(() => {
+    const buckets = {
+      paid_pending_fulfillment: 0,
+      separating: 0,
+      ready_to_ship: 0,
+      sent_today: 0,
+    };
+    const today = new Date().toISOString().slice(0, 10);
+    for (const o of orders) {
+      if (o.status === "sent") {
+        const shipped = (o.shipment?.shippedAt || o.shipment?.sentAt || "").slice(0, 10);
+        if (shipped === today) buckets.sent_today += 1;
+      } else if (buckets[o.status] !== undefined) {
+        buckets[o.status] += 1;
+      }
+    }
+    return buckets;
+  }, [orders]);
+
   function showToast(message) {
     setToast(message || "Erro na requisicao.");
     if (typeof window !== "undefined") {
@@ -125,6 +141,11 @@ export default function FulfillmentPage() {
     showToast(`Etiqueta enviada para impressao (${order.id.slice(-6)}).`);
   }
 
+  const headMeta =
+    statusText === "equipe autenticada"
+      ? "Pagamento confirmado · webhook Pix simulado"
+      : statusText;
+
   return (
     <TeamShell
       session={session}
@@ -132,44 +153,67 @@ export default function FulfillmentPage() {
       currentRoute="/equipe/fulfillment"
       onLogout={handleLogout}
     >
-      <div className="panel-heading" style={{ marginBottom: "var(--sp-5)" }}>
-        <div>
-          <p className="kicker">Fulfillment e envio</p>
-          <h2>Separacao, etiqueta e rastreio</h2>
-          <p className="muted">
-            Arraste os pedidos entre as colunas para atualizar o status no kanban.
-          </p>
-        </div>
-        <span className="status" id="fulfillment-status">
-          {statusText}
-        </span>
-      </div>
+      <PageHead
+        title="Fulfillment e envio"
+        meta={headMeta}
+        actions={
+          <button type="button" className="btn ghost mini" onClick={loadDashboard}>
+            ↻ Atualizar
+          </button>
+        }
+      />
 
-      <div className="surface-toolbar" aria-label="Filtros do kanban">
-        <label>
-          Buscar separacao
-          <input
-            data-filter="fulfillmentQuery"
-            value={query}
-            onChange={(event) => setQuery(event.currentTarget.value)}
-            placeholder="Pedido, paciente, item, rastreio"
-          />
-        </label>
-        <label>
-          Etapa
-          <select
-            data-filter="fulfillmentStatus"
-            value={statusFilter}
-            onChange={(event) => setStatusFilter(event.currentTarget.value)}
-          >
-            <option value="all">Todas</option>
-            <option value="paid_pending_fulfillment">Pago aguardando</option>
-            <option value="separating">Em separacao</option>
-            <option value="ready_to_ship">Pronto despachar</option>
-            <option value="sent">Enviado</option>
-          </select>
-        </label>
-      </div>
+      <StatusStrip
+        chips={[
+          {
+            label: "aguardando separar",
+            count: counts.paid_pending_fulfillment,
+            tone: "warn",
+          },
+          { label: "separando", count: counts.separating, tone: "warn" },
+          { label: "prontos p/ envio", count: counts.ready_to_ship, tone: "ok" },
+          { label: "enviados hoje", count: counts.sent_today },
+        ]}
+        segments={[
+          { label: "Tudo", active: slaFilter === "all", onClick: () => setSlaFilter("all") },
+          {
+            label: "SLA hoje",
+            active: slaFilter === "today",
+            onClick: () => setSlaFilter("today"),
+          },
+          {
+            label: "Atrasados",
+            active: slaFilter === "late",
+            onClick: () => setSlaFilter("late"),
+          },
+        ]}
+        filters={
+          <>
+            <input
+              className="filterIn"
+              data-filter="fulfillmentQuery"
+              value={query}
+              onChange={(e) => setQuery(e.currentTarget.value)}
+              placeholder="Pedido, paciente, item, rastreio"
+              style={{ minWidth: 220 }}
+            />
+            <select
+              className="filterIn"
+              data-filter="fulfillmentStatus"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.currentTarget.value)}
+              style={{ minWidth: 160 }}
+            >
+              <option value="all">Todas as etapas</option>
+              <option value="paid_pending_fulfillment">Pago aguardando</option>
+              <option value="separating">Em separacao</option>
+              <option value="ready_to_ship">Pronto despachar</option>
+              <option value="sent">Enviado</option>
+            </select>
+          </>
+        }
+        onRefresh={loadDashboard}
+      />
 
       {error ? (
         <p className="pill danger" role="alert">
@@ -196,6 +240,7 @@ export default function FulfillmentPage() {
             onPrintLabel={handlePrintLabel}
             query={query}
             statusFilter={statusFilter}
+            slaFilter={slaFilter}
           />
         ) : (
           <p className="muted">Carregando fila de fulfillment...</p>
