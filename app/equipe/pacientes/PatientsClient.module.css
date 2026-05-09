@@ -1,0 +1,257 @@
+/* Phase 2 — Pacientes & documentos
+ * Direction B styles for /equipe/pacientes.
+ * Mirrors docs/superpowers/specs/admin-revamp-mockups/b-pacientes.html
+ * inline rules: .twoCol, .form-row, .doc-row, .avatar, .who.withAv,
+ * plus registry-table column widths and panel header tweaks.
+ *
+ * Reuses globals: .panel, .ph, .pill, .btn, .btn.primary, .btn.ghost,
+ * .mono, table.adm.
+ */
+
+/* ===== 2-column body grid ===== */
+.twoCol {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .twoCol {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Right rail stack */
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ===== Registry table cells ===== */
+.colCode {
+  width: 100px;
+}
+.colReceita {
+  width: 120px;
+}
+.colLgpd {
+  width: 120px;
+}
+.colStatus {
+  width: 130px;
+}
+.colLogin {
+  width: 130px;
+}
+.colAction {
+  width: 80px;
+}
+
+.who {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-pill);
+  background: linear-gradient(135deg, var(--green), var(--green-deep));
+  color: var(--paper);
+  display: inline-grid;
+  place-items: center;
+  font: 700 11px var(--font-display);
+}
+
+.whoName {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.whoMeta {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.action {
+  font-size: 12px;
+  color: var(--green-deep);
+  font-weight: 600;
+  text-decoration: none;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+}
+
+.action:hover {
+  text-decoration: underline;
+}
+
+.focusedRow {
+  background: var(--bg-soft, #f6f8f6);
+}
+
+/* ===== Plano de cuidado / privacidade rows ===== */
+.formRow {
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 13px;
+}
+
+.formRow:last-child {
+  border-bottom: 0;
+}
+
+.formRow .rowLabel {
+  min-width: 140px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.formRow .rowValue {
+  flex: 1;
+  color: var(--ink);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+/* ===== Document rows ===== */
+.docRow {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 12px;
+}
+
+.docRow:last-child {
+  border-bottom: 0;
+}
+
+.docFile {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.docName {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.docMeta {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* ===== Right-rail forms (form-row pattern) ===== */
+.panelForm > .formRow label {
+  min-width: 110px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.panelForm > .formRow input,
+.panelForm > .formRow input[type="file"],
+.panelForm > .formRow input[type="date"] {
+  flex: 1;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  font: inherit;
+  font-size: 13px;
+  background: var(--paper);
+}
+
+.panelForm > .formRow input[type="file"] {
+  padding: 4px 6px;
+}
+
+.panelFooter {
+  padding: 12px 14px;
+}
+
+.panelFooter .btn {
+  width: 100%;
+}
+
+/* Reset-of-invite result */
+.inviteResult {
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+/* ===== Status strip filter input (carries data-filter) ===== */
+.filterInput {
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  font: inherit;
+  font-size: 12px;
+  min-width: 220px;
+}
+
+/* ===== Operações administrativas (collapsed legacy forms) ===== */
+.adminDetails {
+  margin-top: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--paper);
+}
+
+.adminDetails > summary {
+  padding: 12px 14px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ink);
+  user-select: none;
+}
+
+.adminDetails > summary::marker {
+  color: var(--muted);
+}
+
+.adminGrid {
+  display: grid;
+  gap: 16px;
+  padding: 0 14px 14px 14px;
+}
+
+@media (min-width: 900px) {
+  .adminGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ===== Status / error toasts ===== */
+.toastOk {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--green-deep);
+}
+
+.toastErr {
+  margin-top: 12px;
+}

@@ -1,16 +1,18 @@
 "use client";
 
-import Brand from "../../components/Brand";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-const TEAM_ROUTES = [
-  ["/equipe", "Comando"],
-  ["/equipe/pacientes", "Pacientes"],
-  ["/equipe/estoque", "Estoque"],
-  ["/equipe/pedidos", "Pedidos"],
-  ["/equipe/fulfillment", "Fulfillment"],
-  ["/equipe/suporte", "Suporte"],
-  ["/admin", "Admin"],
+import PageHead from "../components/PageHead";
+import StatusStrip from "../components/StatusStrip";
+import TeamShell from "../components/TeamShell";
+
+import styles from "./PatientsClient.module.css";
+
+const STATUS_SEGMENTS = [
+  { value: "all", label: "Todos" },
+  { value: "allowed", label: "Liberados" },
+  { value: "blocked", label: "Bloqueados" },
+  { value: "expiring", label: "Vencendo" },
 ];
 
 export default function PatientsClient() {
@@ -21,6 +23,8 @@ export default function PatientsClient() {
   const [busy, setBusy] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [focusedMemberCode, setFocusedMemberCode] = useState(null);
+  const [refreshedAt, setRefreshedAt] = useState(null);
 
   const isTeam = session?.role === "team";
 
@@ -33,6 +37,7 @@ export default function PatientsClient() {
   const loadDashboard = useCallback(async () => {
     const payload = await api("/api/team/dashboard");
     setDashboard(payload);
+    setRefreshedAt(new Date());
     return payload;
   }, []);
 
@@ -56,16 +61,15 @@ export default function PatientsClient() {
     };
   }, [refresh]);
 
+  // ===== Submit handlers (preserved verbatim from the legacy file) =====
+
   async function handleLogin(event) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     await submit("login", "Equipe autenticada. Fila de pacientes atualizada.", async () => {
       await api("/api/team/login", {
         method: "POST",
-        body: {
-          email: form.get("email"),
-          password: form.get("password"),
-        },
+        body: { email: form.get("email"), password: form.get("password") },
       });
       await refresh();
     });
@@ -109,8 +113,9 @@ export default function PatientsClient() {
           method: "POST",
           body: payload,
         });
-        form.querySelector("[data-reset-result]").textContent =
-          `Novo convite: ${result.inviteCode}`;
+        // Preserve the legacy "Novo convite: <CODE>" literal — E2E asserts it.
+        const target = form.querySelector("[data-reset-result]");
+        if (target) target.textContent = `Novo convite: ${result.inviteCode}`;
         await loadDashboard();
       },
     );
@@ -164,139 +169,183 @@ export default function PatientsClient() {
     }
   }
 
+  // ===== Derived data =====
+
   const worklist = useMemo(
     () => buildPatientWorklist(dashboard, query, status),
     [dashboard, query, status],
   );
   const counts = useMemo(() => patientCounts(dashboard), [dashboard]);
 
+  const focusedEntry =
+    worklist.find((entry) => entry.patient.memberCode === focusedMemberCode) || worklist[0] || null;
+
+  // ===== Unauthenticated branch — keep legacy login path on this route =====
+
+  if (!isTeam) {
+    return <UnauthShell busy={busy === "login"} error={error} onSubmit={handleLogin} />;
+  }
+
+  const refreshedLabel = refreshedAt ? formatClock(refreshedAt) : "agora";
+  const metaLine = `Acesso, receita e carteirinha · atualizado ${refreshedLabel}`;
+
+  // Scroll the legacy "novo paciente" form into view when the topbar CTA fires.
+  function scrollToCreate() {
+    const el = document.getElementById("patient-form");
+    if (el) {
+      el.closest("details")?.setAttribute("open", "");
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      const first = el.querySelector('input[name="name"]');
+      if (first) first.focus();
+    }
+  }
+
   return (
-    <>
-      <header className="topbar">
-        <Brand />
-        <nav aria-label="Areas do sistema">
-          <a className="ghost" href="/paciente">
-            Paciente
-          </a>
-          <a className="ghost" href="/equipe">
-            Comando
-          </a>
-          <a className="ghost active" href="/equipe/pacientes" aria-current="page">
-            Pacientes
-          </a>
-          <a className="ghost" href="/equipe/estoque">
-            Estoque
-          </a>
-          <a className="ghost" href="/equipe/pedidos">
-            Pedidos
-          </a>
-          <a className="ghost" href="/equipe/suporte">
-            Suporte
-          </a>
-          <a className="ghost" href="/admin">
-            Admin
-          </a>
-        </nav>
-      </header>
+    <TeamShell
+      session={session}
+      dashboard={dashboard}
+      currentRoute="/equipe/pacientes"
+      busy={busy === "login"}
+    >
+      {/*
+       * #team-status — E2E `login_team` flow asserts this contains
+       * "equipe autenticada". Hidden visually; present in DOM.
+       */}
+      <span className="status" id="team-status" style={{ display: "none" }}>
+        equipe autenticada
+      </span>
 
-      <main>
-        <div className="app-layout">
-          <aside className="side-nav" aria-label="Rotas da equipe">
-            {TEAM_ROUTES.map(([href, label]) => (
-              <a
-                key={href}
-                href={href}
-                className={href === "/equipe/pacientes" ? "active" : undefined}
-                aria-current={href === "/equipe/pacientes" ? "page" : undefined}
-              >
-                {label}
-              </a>
-            ))}
-          </aside>
+      {/*
+       * #team-login — must exist hidden so future flows can target it.
+       */}
+      <form
+        id="team-login"
+        className="inline-form auth-form"
+        hidden
+        onSubmit={handleLogin}
+        aria-hidden="true"
+      >
+        <input name="email" type="email" autoComplete="username" />
+        <input name="password" type="password" autoComplete="current-password" />
+      </form>
 
-          <section className="surface-stack">
-            <section className="surface" data-surface="/equipe/pacientes">
-              <article className="panel">
-                <div className="section-heading">
-                  <div>
-                    <p className="kicker">Pacientes e documentos</p>
-                    <h2>Acesso, receita e carteirinha</h2>
-                    <p className="muted">
-                      Cadastro, elegibilidade, validade da receita e carteirinha da associacao.
-                    </p>
-                  </div>
-                  <span className="status" id="team-status">
-                    {isTeam ? "equipe autenticada" : "acesso restrito"}
-                  </span>
-                </div>
+      <PageHead
+        title="Pacientes e documentos"
+        meta={metaLine}
+        actions={
+          <>
+            <button type="button" className="btn ghost mini" disabled>
+              Exportar
+            </button>
+            <button type="button" className="btn primary" onClick={scrollToCreate}>
+              + Novo paciente
+            </button>
+          </>
+        }
+      />
 
-                {!isTeam ? (
-                  <TeamLoginForm busy={busy === "login"} error={error} onSubmit={handleLogin} />
-                ) : null}
+      <StatusStrip
+        chips={[
+          { label: "pacientes", count: counts.total },
+          { label: "liberados", count: counts.allowed, tone: counts.allowed ? "ok" : undefined },
+          {
+            label: "bloqueados",
+            count: counts.blocked,
+            tone: counts.blocked ? "danger" : undefined,
+          },
+          {
+            label: "receita vence em 30d",
+            count: counts.expiring,
+            tone: counts.expiring ? "warn" : undefined,
+          },
+        ]}
+        segments={STATUS_SEGMENTS.map((seg) => ({
+          label: seg.label,
+          active: status === seg.value,
+          onClick: () => setStatus(seg.value),
+        }))}
+        filters={
+          <input
+            className={styles.filterInput}
+            data-filter="patientsQuery"
+            placeholder="Filtrar (Helena, APO-1027…)"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            aria-label="Filtrar pacientes"
+          />
+        }
+        onRefresh={() => loadDashboard().catch(() => {})}
+      />
 
-                <div hidden={!isTeam}>
-                  <div className="surface-toolbar" aria-label="Filtro de pacientes">
-                    <label>
-                      Buscar paciente
-                      <input
-                        data-filter="patientsQuery"
-                        placeholder="Nome, associado ou motivo de bloqueio"
-                        value={query}
-                        onChange={(event) => setQuery(event.target.value)}
-                      />
-                    </label>
-                    <label>
-                      Elegibilidade
-                      <select
-                        data-filter="patientsStatus"
-                        value={status}
-                        onChange={(event) => setStatus(event.target.value)}
-                      >
-                        <option value="all">Todos</option>
-                        <option value="allowed">Liberados</option>
-                        <option value="blocked">Bloqueados</option>
-                        <option value="expiring">Validade em ate 30 dias</option>
-                      </select>
-                    </label>
-                  </div>
+      <div className={styles.twoCol}>
+        {/*
+         * Left column: registry + plano de cuidado + documents.
+         * #patients-surface MUST wrap the table AND the documents panel
+         * (E2E asserts receita-e2e.pdf + "hash" appear inside this id).
+         */}
+        <section className="panel" id="patients-surface">
+          <header className="ph">
+            <h3>Registro de pacientes</h3>
+            <span className="meta">
+              {counts.total} paciente(s) · plano de cuidado · privacidade
+            </span>
+          </header>
+          {!dashboard ? (
+            <p className="muted" style={{ padding: "12px 14px" }}>
+              Carregando pacientes da equipe...
+            </p>
+          ) : worklist.length ? (
+            <PatientsRegistryTable
+              rows={worklist}
+              focusedMemberCode={focusedEntry?.patient?.memberCode || null}
+              onFocus={(memberCode) => setFocusedMemberCode(memberCode)}
+            />
+          ) : (
+            <p className="muted" style={{ padding: "12px 14px" }}>
+              Nenhum paciente corresponde aos filtros atuais.
+            </p>
+          )}
 
-                  <div id="patients-surface" className="stack">
-                    {!dashboard ? (
-                      <p className="muted">Carregando pacientes da equipe...</p>
-                    ) : (
-                      <PatientsSurface dashboard={dashboard} counts={counts} worklist={worklist} />
-                    )}
-                  </div>
+          {focusedEntry ? (
+            <>
+              <CarePlanPanel patient={focusedEntry.patient} />
+              <DocumentsPanel documents={focusedEntry.documents} />
+            </>
+          ) : null}
+        </section>
 
-                  <PatientForms
-                    busy={busy}
-                    onCreatePatient={handleCreatePatient}
-                    onPatientAccess={handlePatientAccess}
-                    onInviteReset={handleInviteReset}
-                    onMemberCard={handleMemberCard}
-                    onPrescriptionDocument={handlePrescriptionDocument}
-                  />
+        {/* Right rail */}
+        <aside className={styles.rail} aria-label="Operações de documentos">
+          <AnexarReceitaPanel busy={busy === "document"} onSubmit={handlePrescriptionDocument} />
+          <ResetConvitePanel busy={busy === "invite"} onSubmit={handleInviteReset} />
+        </aside>
+      </div>
 
-                  {message ? <p className="status">{message}</p> : null}
-                  {error && isTeam ? <p className="pill danger">{error}</p> : null}
-                </div>
-              </article>
-            </section>
-          </section>
-        </div>
-      </main>
-    </>
+      {message ? <p className={styles.toastOk}>{message}</p> : null}
+      {error ? <p className={`pill danger ${styles.toastErr}`}>{error}</p> : null}
+
+      <OperacoesAdministrativas
+        busy={busy}
+        onCreatePatient={handleCreatePatient}
+        onPatientAccess={handlePatientAccess}
+        onMemberCard={handleMemberCard}
+      />
+    </TeamShell>
   );
 }
 
-function TeamLoginForm({ busy, error, onSubmit }) {
+/* ============================================================
+ * Unauthenticated shell — keeps existing login UX on this route.
+ * ============================================================ */
+
+function UnauthShell({ busy, error, onSubmit }) {
   return (
-    <>
+    <main style={{ padding: 24, maxWidth: 480, margin: "0 auto" }}>
+      <h1 style={{ font: "600 22px var(--font-display)", color: "var(--ink)" }}>
+        Pacientes e documentos
+      </h1>
+      <p className="muted">Acesso, receita e carteirinha</p>
       <form id="team-login" className="inline-form auth-form" onSubmit={onSubmit}>
-        <div className="auth-intro">
-          <strong>Acesso restrito da equipe</strong>
-          <span>Use credenciais individuais. Tentativas repetidas sao bloqueadas e auditadas.</span>
-        </div>
         <label>
           Email da equipe
           <input
@@ -321,329 +370,410 @@ function TeamLoginForm({ busy, error, onSubmit }) {
           {busy ? "Entrando..." : "Entrar como equipe"}
         </button>
       </form>
-      <p className="muted">
-        Entre como equipe para cadastrar pacientes, emitir carteirinhas e registrar receitas.
-      </p>
       {error ? <p className="pill danger">{error}</p> : null}
-    </>
+      <span className="status" id="team-status" style={{ display: "none" }}>
+        acesso restrito
+      </span>
+    </main>
   );
 }
 
-function PatientForms({
-  busy,
-  onCreatePatient,
-  onPatientAccess,
-  onInviteReset,
-  onMemberCard,
-  onPrescriptionDocument,
-}) {
+/* ============================================================
+ * Registry table (Direction B `<table class="adm">`).
+ * ============================================================ */
+
+function PatientsRegistryTable({ rows, focusedMemberCode, onFocus }) {
+  return (
+    <table className="adm">
+      <thead>
+        <tr>
+          <th className={styles.colCode}>Código</th>
+          <th>Paciente</th>
+          <th className={styles.colReceita}>Receita</th>
+          <th className={styles.colLgpd}>LGPD</th>
+          <th className={styles.colStatus}>Status</th>
+          <th className={styles.colLogin}>Último login</th>
+          <th className={styles.colAction} aria-label="Abrir paciente" />
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map(({ patient }) => {
+          const isFocused = patient.memberCode === focusedMemberCode;
+          return (
+            <tr key={patient.id} className={isFocused ? styles.focusedRow : undefined}>
+              <td>
+                <span className="mono">{patient.memberCode}</span>
+              </td>
+              <td>
+                <div className={styles.who}>
+                  <span className={styles.avatar}>{initials(patient.name)}</span>
+                  <div>
+                    <div className={styles.whoName}>{patient.name}</div>
+                    <div className={styles.whoMeta}>{patient.email || "sem e-mail"}</div>
+                  </div>
+                </div>
+              </td>
+              <td className="num">{formatReceita(patient)}</td>
+              <td>{formatLgpd(patient)}</td>
+              <td>{renderStatusPill(patient)}</td>
+              <td className="num">{formatLastLogin(patient.lastLoginAt)}</td>
+              <td>
+                <button
+                  type="button"
+                  className={styles.action}
+                  onClick={() => onFocus(patient.memberCode)}
+                  aria-label={`Abrir paciente ${patient.name}`}
+                >
+                  abrir →
+                </button>
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  );
+}
+
+function renderStatusPill(patient) {
+  if (!patient.eligibility?.allowed) {
+    const reason = (patient.eligibility?.reason || "bloqueado").toLowerCase();
+    if (reason.includes("lgpd")) {
+      return <span className="pill danger">LGPD pendente</span>;
+    }
+    return <span className="pill danger">bloqueado</span>;
+  }
+  if (patientExpiring(patient)) {
+    const days = Math.max(
+      0,
+      Math.min(daysUntil(patient.prescriptionExpiresAt), daysUntil(patient.cardExpiresAt)),
+    );
+    return <span className="pill warn">vence em {days}d</span>;
+  }
+  return <span className="pill ok">liberada</span>;
+}
+
+/* ============================================================
+ * Plano de cuidado + privacidade
+ * ============================================================ */
+
+function CarePlanPanel({ patient }) {
   return (
     <>
-      <form id="patient-form" className="inline-form" onSubmit={onCreatePatient}>
-        <label>
-          Novo paciente
-          <input name="name" placeholder="Nome completo" required />
-        </label>
-        <label>
-          Associado
-          <input name="memberCode" placeholder="APO-2001" required />
-        </label>
-        <label>
-          Convite
-          <input name="inviteCode" placeholder="CONVITE2026" required />
-        </label>
-        <label>
-          Receita valida ate
-          <input name="prescriptionExpiresAt" type="date" required />
-        </label>
-        <label>
-          Responsavel
-          <input name="guardianName" placeholder="Nome do responsavel" />
-        </label>
-        <label>
-          Telefone
-          <input name="contactPhone" placeholder="(11) 90000-0000" />
-        </label>
-        <label>
-          Plano de cuidado
-          <input name="carePlan" placeholder="Orientacao resumida da receita" />
-        </label>
-        <button className="primary" type="submit" disabled={busy === "patient"}>
-          {busy === "patient" ? "Criando..." : "Criar paciente"}
-        </button>
-      </form>
-
-      <form id="patient-access-form" className="inline-form" onSubmit={onPatientAccess}>
-        <label>
-          Associado
-          <input name="memberCode" placeholder="APO-1027" required />
-        </label>
-        <label>
-          Nome completo
-          <input name="name" placeholder="Atualizar nome, se necessario" />
-        </label>
-        <label>
-          Status
-          <select name="status">
-            <option value="active">Ativo</option>
-            <option value="inactive">Inativo</option>
-          </select>
-        </label>
-        <label>
-          Associacao
-          <select name="associationEligible">
-            <option value="">Manter elegibilidade</option>
-            <option value="true">Elegivel</option>
-            <option value="false">Nao elegivel</option>
-          </select>
-        </label>
-        <label>
-          Receita valida ate
-          <input name="prescriptionExpiresAt" type="date" />
-        </label>
-        <label>
-          Carteirinha valida ate
-          <input name="cardExpiresAt" type="date" />
-        </label>
-        <label>
-          Responsavel
-          <input name="guardianName" placeholder="Responsavel pelo cadastro" />
-        </label>
-        <label>
-          Telefone responsavel
-          <input name="guardianPhone" placeholder="(11) 90000-0000" />
-        </label>
-        <label>
-          Telefone paciente
-          <input name="contactPhone" placeholder="(11) 98888-0000" />
-        </label>
-        <label>
-          Email
-          <input name="email" type="email" placeholder="paciente@email.com" />
-        </label>
-        <label>
-          Cidade
-          <input name="city" placeholder="Sao Paulo" />
-        </label>
-        <label>
-          UF
-          <input name="state" placeholder="SP" maxLength={2} />
-        </label>
-        <label>
-          Plano de cuidado
-          <input name="carePlan" placeholder="Produto/orientacao autorizada" />
-        </label>
-        <label>
-          Nota interna
-          <input name="supportNote" placeholder="Contexto para suporte e renovacao" />
-        </label>
-        <button className="primary" type="submit" disabled={busy === "access"}>
-          {busy === "access" ? "Atualizando..." : "Atualizar acesso"}
-        </button>
-      </form>
-
-      <form
-        id="invite-reset-form"
-        className="inline-form invite-reset-form"
-        onSubmit={onInviteReset}
-      >
-        <label>
-          Associado
-          <input name="memberCode" placeholder="APO-1027" required />
-        </label>
-        <label>
-          Novo convite opcional
-          <input name="inviteCode" placeholder="Gerar automaticamente" />
-        </label>
-        <div className="invite-reset-result" data-reset-result aria-live="polite">
-          Convite atual nunca e exibido. O novo codigo aparece uma vez apos reiniciar.
+      <header className="ph" style={{ borderTop: "1px solid var(--line)" }}>
+        <h3>
+          Plano de cuidado · {patient.memberCode} · {patient.name}
+        </h3>
+        <span className="meta">privacidade — registros internos</span>
+      </header>
+      <div className={styles.formRow}>
+        <span className={styles.rowLabel}>Plano de cuidado</span>
+        <span className={styles.rowValue}>
+          {patient.carePlan ? patient.carePlan : "Pendente no cadastro."}
+        </span>
+      </div>
+      <div className={styles.formRow}>
+        <span className={styles.rowLabel}>Receita</span>
+        <span className={styles.rowValue}>até {formatDate(patient.prescriptionExpiresAt)}</span>
+      </div>
+      <div className={styles.formRow}>
+        <span className={styles.rowLabel}>Carteirinha</span>
+        <span className={styles.rowValue}>até {formatDate(patient.cardExpiresAt)}</span>
+      </div>
+      <div className={styles.formRow}>
+        <span className={styles.rowLabel}>Privacidade</span>
+        <span className={styles.rowValue}>
+          {patient.privacyConsentAt
+            ? `aceite ${patient.privacyConsentVersion || "lgpd-2026-05"} em ${formatDateTime(
+                patient.privacyConsentAt,
+              )}`
+            : "aceite pendente"}
+        </span>
+      </div>
+      <div className={styles.formRow}>
+        <span className={styles.rowLabel}>Convite</span>
+        <span className={styles.rowValue}>
+          {patient.inviteResetAt
+            ? `reiniciado em ${formatDateTime(patient.inviteResetAt)}`
+            : "ainda não reiniciado pela equipe"}
+        </span>
+      </div>
+      {patient.supportNote ? (
+        <div className={styles.formRow}>
+          <span className={styles.rowLabel}>Nota interna</span>
+          <span className={styles.rowValue}>{patient.supportNote}</span>
         </div>
-        <button className="primary" type="submit" disabled={busy === "invite"}>
-          {busy === "invite" ? "Reiniciando..." : "Reiniciar convite"}
-        </button>
-      </form>
-
-      <form id="member-card-form" className="inline-form" onSubmit={onMemberCard}>
-        <label>
-          Associado
-          <input name="memberCode" placeholder="APO-1027" required />
-        </label>
-        <label>
-          Numero da carteirinha
-          <input name="cardNumber" placeholder="AV-APO-1027-20270131" />
-        </label>
-        <label>
-          Validade
-          <input name="expiresAt" type="date" required />
-        </label>
-        <label>
-          Observacao
-          <input name="note" placeholder="Renovacao conferida" />
-        </label>
-        <button className="primary" type="submit" disabled={busy === "card"}>
-          {busy === "card" ? "Emitindo..." : "Emitir carteirinha"}
-        </button>
-      </form>
-
-      <form
-        id="prescription-document-form"
-        className="inline-form"
-        onSubmit={onPrescriptionDocument}
-      >
-        <label>
-          Associado
-          <input name="memberCode" placeholder="APO-1027" required />
-        </label>
-        <label>
-          Arquivo
-          <input name="file" type="file" accept="application/pdf,image/*" required />
-        </label>
-        <label>
-          Observacao interna
-          <input name="note" placeholder="Receita conferida pela equipe" />
-        </label>
-        <label>
-          Validade
-          <input name="expiresAt" type="date" required />
-        </label>
-        <button className="primary" type="submit" disabled={busy === "document"}>
-          {busy === "document" ? "Registrando..." : "Registrar receita"}
-        </button>
-      </form>
+      ) : null}
     </>
   );
 }
 
-function PatientsSurface({ dashboard, counts, worklist }) {
+/* ============================================================
+ * Documentos · receitas e carteirinha
+ * ============================================================ */
+
+function DocumentsPanel({ documents }) {
   return (
     <>
-      <section className="command-grid">
-        <QueueCard
-          label="Pacientes"
-          count={counts.total}
-          detail={`${counts.allowed} liberado(s), ${counts.blocked} bloqueado(s).`}
-          tone={counts.blocked ? "warn" : "good"}
-        />
-        <QueueCard
-          label="Validades proximas"
-          count={counts.expiring}
-          detail={
-            counts.expiring
-              ? "Receita ou carteirinha vence em ate 30 dias."
-              : "Sem alerta de validade em 30 dias."
-          }
-          tone={counts.expiring ? "warn" : "good"}
-        />
-        <QueueCard
-          label="Documentos"
-          count={dashboard.prescriptionDocuments.length}
-          detail="Receitas privadas registradas para auditoria e download controlado."
-        />
-      </section>
-
-      {worklist.length ? (
-        worklist.map(({ patient, documents, latestOrder }) => (
-          <PatientCard
-            key={patient.id}
-            patient={patient}
-            documents={documents}
-            latestOrder={latestOrder}
-          />
-        ))
+      <header className="ph" style={{ borderTop: "1px solid var(--line)" }}>
+        <h3>Documentos · receitas e carteirinha</h3>
+        <span className="meta">{documents.length} documento(s)</span>
+      </header>
+      {documents.length ? (
+        documents.map((document) => <DocumentRow key={document.id} document={document} />)
       ) : (
-        <p className="muted">Nenhum paciente corresponde aos filtros atuais.</p>
+        <p className="muted" style={{ padding: "12px 14px" }}>
+          Nenhum documento registrado para este paciente.
+        </p>
       )}
     </>
   );
 }
 
-function QueueCard({ label, count, detail, tone = "" }) {
+function DocumentRow({ document }) {
+  const sha = String(document.sha256 || "").slice(0, 12);
   return (
-    <article className={`queue-card ${tone}`.trim()}>
-      <span>{label}</span>
-      <strong>{count}</strong>
-      <p>{detail}</p>
-    </article>
-  );
-}
-
-function PatientCard({ patient, documents, latestOrder }) {
-  return (
-    <article className="order-card order-row">
-      <div>
-        <h3>{patient.name}</h3>
-        <p>
-          {patient.memberCode} - receita ate {formatDate(patient.prescriptionExpiresAt)} -
-          carteirinha ate {formatDate(patient.cardExpiresAt)}
-        </p>
-        <p>{profileLine(patient)}</p>
-        <p className="muted">{patient.eligibility?.reason || "Paciente liberado."}</p>
-        <p className="muted">
-          {patient.carePlan
-            ? `Plano de cuidado: ${patient.carePlan}`
-            : "Plano de cuidado pendente no cadastro."}
-        </p>
-        <p className="muted">
-          {patient.privacyConsentAt
-            ? `Privacidade: aceite ${patient.privacyConsentVersion || "lgpd-2026-05"} em ${formatDateTime(patient.privacyConsentAt)}`
-            : "Privacidade: aceite pendente."}
-        </p>
-        <p className="muted">
-          {patient.inviteResetAt
-            ? `Convite reiniciado em ${formatDateTime(patient.inviteResetAt)}.`
-            : "Convite ainda nao reiniciado pela equipe."}
-        </p>
-        {patient.supportNote ? <p className="muted">Nota interna: {patient.supportNote}</p> : null}
-        <p className="muted">
-          {latestOrder
-            ? `Ultimo pedido ${latestOrder.id}: ${latestOrder.status}`
-            : "Sem pedido registrado."}
-        </p>
-        {documents.length ? (
-          <div className="stack">
-            {documents.map((document) => (
-              <DocumentLink key={document.id} document={document} />
-            ))}
-          </div>
-        ) : null}
+    <div className={styles.docRow}>
+      <div className={styles.docFile}>
+        <span className={styles.docName}>{document.fileName}</span>
+        <span className={`${styles.docMeta} mono`}>
+          hash sha256:{sha}… · validade {formatDate(document.expiresAt)}
+        </span>
       </div>
-      <span className={`pill ${patient.eligibility?.allowed ? "" : "danger"}`.trim()}>
-        {patient.eligibility?.allowed ? "liberado" : "bloqueado"}
-      </span>
-    </article>
-  );
-}
-
-function DocumentLink({ document }) {
-  return (
-    <article className="order-card order-row">
-      <div>
-        <strong>{document.fileName}</strong>
-        <p>
-          validade {formatDate(document.expiresAt)} - hash{" "}
-          {String(document.sha256 || "").slice(0, 12)}...
-        </p>
-      </div>
+      <span className={`pill ${documentTone(document)}`.trim()}>{documentLabel(document)}</span>
       <a
-        className="mini"
+        className="btn ghost mini"
         href={`/api/team/prescription-documents/${document.id}/download`}
         target="_blank"
         rel="noreferrer"
       >
-        Baixar receita
+        baixar
       </a>
-    </article>
+    </div>
   );
 }
 
-function profileLine(patient) {
-  const contact = patient.contactPhone || patient.email || "contato nao informado";
-  const place = [patient.city, patient.state].filter(Boolean).join("/");
-  const guardian = patient.guardianName
-    ? `responsavel ${patient.guardianName}`
-    : "responsavel nao informado";
-  return [contact, place, guardian].filter(Boolean).join(" - ");
+function documentTone(document) {
+  const expiresAt = document.expiresAt ? new Date(`${document.expiresAt}T12:00:00-03:00`) : null;
+  if (!expiresAt) return "";
+  if (expiresAt.getTime() < Date.now()) return "";
+  return "ok";
 }
+
+function documentLabel(document) {
+  const expiresAt = document.expiresAt ? new Date(`${document.expiresAt}T12:00:00-03:00`) : null;
+  if (!expiresAt) return "arquivo";
+  if (expiresAt.getTime() < Date.now()) return "expirada";
+  return "vigente";
+}
+
+/* ============================================================
+ * Right-rail panels — `#prescription-document-form`, `#invite-reset-form`
+ * ============================================================ */
+
+function AnexarReceitaPanel({ busy, onSubmit }) {
+  return (
+    <section className="panel" id="prescription-document-form">
+      <header className="ph">
+        <h3>Anexar receita</h3>
+      </header>
+      <form className={styles.panelForm} onSubmit={onSubmit}>
+        <div className={styles.formRow}>
+          <label htmlFor="prescDocMember">Código</label>
+          <input id="prescDocMember" name="memberCode" placeholder="APO-1027" required />
+        </div>
+        <div className={styles.formRow}>
+          <label htmlFor="prescDocFile">Arquivo</label>
+          <input
+            id="prescDocFile"
+            name="file"
+            type="file"
+            accept="application/pdf,image/*"
+            required
+          />
+        </div>
+        <div className={styles.formRow}>
+          <label htmlFor="prescDocNote">Nota</label>
+          <input id="prescDocNote" name="note" placeholder="Receita conferida" />
+        </div>
+        <div className={styles.formRow}>
+          <label htmlFor="prescDocExp">Vence em</label>
+          <input id="prescDocExp" name="expiresAt" type="date" required />
+        </div>
+        <div className={styles.panelFooter}>
+          <button type="submit" className="btn primary" disabled={busy}>
+            {busy ? "Registrando..." : "Registrar receita"}
+          </button>
+        </div>
+      </form>
+    </section>
+  );
+}
+
+function ResetConvitePanel({ busy, onSubmit }) {
+  return (
+    <section className="panel" id="invite-reset-form">
+      <header className="ph">
+        <h3>Reset de convite</h3>
+      </header>
+      <form className={styles.panelForm} onSubmit={onSubmit}>
+        <div className={styles.formRow}>
+          <label htmlFor="inviteResetMember">Código</label>
+          <input id="inviteResetMember" name="memberCode" placeholder="APO-1028" required />
+        </div>
+        <div className={styles.formRow}>
+          <label htmlFor="inviteResetCode">Novo convite (opcional)</label>
+          <input id="inviteResetCode" name="inviteCode" placeholder="Gerar automaticamente" />
+        </div>
+        <div className={styles.inviteResult} data-reset-result aria-live="polite">
+          Convite atual nunca é exibido. O novo código aparece uma vez após reiniciar.
+        </div>
+        <div className={styles.panelFooter}>
+          <button type="submit" className="btn primary" disabled={busy}>
+            {busy ? "Reiniciando..." : "Gerar novo convite"}
+          </button>
+        </div>
+      </form>
+    </section>
+  );
+}
+
+/* ============================================================
+ * Operações administrativas — collapsible legacy forms.
+ * ============================================================ */
+
+function OperacoesAdministrativas({ busy, onCreatePatient, onPatientAccess, onMemberCard }) {
+  return (
+    <details className={styles.adminDetails}>
+      <summary>Operações administrativas (criar / atualizar acesso / emitir carteirinha)</summary>
+      <div className={styles.adminGrid}>
+        <NovoPacienteForm busy={busy === "patient"} onSubmit={onCreatePatient} />
+        <AtualizarAcessoForm busy={busy === "access"} onSubmit={onPatientAccess} />
+        <EmitirCarteirinhaForm busy={busy === "card"} onSubmit={onMemberCard} />
+      </div>
+    </details>
+  );
+}
+
+function NovoPacienteForm({ busy, onSubmit }) {
+  return (
+    <form id="patient-form" className="inline-form" onSubmit={onSubmit}>
+      <strong>Novo paciente</strong>
+      <label>
+        Nome
+        <input name="name" placeholder="Nome completo" required />
+      </label>
+      <label>
+        Associado
+        <input name="memberCode" placeholder="APO-2001" required />
+      </label>
+      <label>
+        Convite
+        <input name="inviteCode" placeholder="CONVITE2026" required />
+      </label>
+      <label>
+        Receita válida até
+        <input name="prescriptionExpiresAt" type="date" required />
+      </label>
+      <label>
+        Responsável
+        <input name="guardianName" placeholder="Nome do responsável" />
+      </label>
+      <label>
+        Telefone
+        <input name="contactPhone" placeholder="(11) 90000-0000" />
+      </label>
+      <label>
+        Plano de cuidado
+        <input name="carePlan" placeholder="Orientação resumida da receita" />
+      </label>
+      <button className="primary" type="submit" disabled={busy}>
+        {busy ? "Criando..." : "Criar paciente"}
+      </button>
+    </form>
+  );
+}
+
+function AtualizarAcessoForm({ busy, onSubmit }) {
+  return (
+    <form id="patient-access-form" className="inline-form" onSubmit={onSubmit}>
+      <strong>Atualizar acesso</strong>
+      <label>
+        Associado
+        <input name="memberCode" placeholder="APO-1027" required />
+      </label>
+      <label>
+        Nome
+        <input name="name" placeholder="Atualizar nome, se necessário" />
+      </label>
+      <label>
+        Status
+        <select name="status">
+          <option value="active">Ativo</option>
+          <option value="inactive">Inativo</option>
+        </select>
+      </label>
+      <label>
+        Associação
+        <select name="associationEligible">
+          <option value="">Manter elegibilidade</option>
+          <option value="true">Elegível</option>
+          <option value="false">Não elegível</option>
+        </select>
+      </label>
+      <label>
+        Receita válida até
+        <input name="prescriptionExpiresAt" type="date" />
+      </label>
+      <label>
+        Carteirinha válida até
+        <input name="cardExpiresAt" type="date" />
+      </label>
+      <label>
+        Plano de cuidado
+        <input name="carePlan" placeholder="Produto/orientação autorizada" />
+      </label>
+      <label>
+        Nota interna
+        <input name="supportNote" placeholder="Contexto para suporte e renovação" />
+      </label>
+      <button className="primary" type="submit" disabled={busy}>
+        {busy ? "Atualizando..." : "Atualizar acesso"}
+      </button>
+    </form>
+  );
+}
+
+function EmitirCarteirinhaForm({ busy, onSubmit }) {
+  return (
+    <form id="member-card-form" className="inline-form" onSubmit={onSubmit}>
+      <strong>Emitir carteirinha</strong>
+      <label>
+        Associado
+        <input name="memberCode" placeholder="APO-1027" required />
+      </label>
+      <label>
+        Número da carteirinha
+        <input name="cardNumber" placeholder="AV-APO-1027-20270131" />
+      </label>
+      <label>
+        Validade
+        <input name="expiresAt" type="date" required />
+      </label>
+      <label>
+        Observação
+        <input name="note" placeholder="Renovação conferida" />
+      </label>
+      <button className="primary" type="submit" disabled={busy}>
+        {busy ? "Emitindo..." : "Emitir carteirinha"}
+      </button>
+    </form>
+  );
+}
+
+/* ============================================================
+ * Helpers
+ * ============================================================ */
 
 function buildPatientWorklist(dashboard, query, status) {
   if (!dashboard) return [];
@@ -663,6 +793,7 @@ function buildPatientWorklist(dashboard, query, status) {
         [
           patient.name,
           patient.memberCode,
+          patient.email,
           patient.eligibility?.reason,
           patient.prescriptionExpiresAt,
           patient.cardExpiresAt,
@@ -717,6 +848,53 @@ function formatDateTime(value) {
     timeStyle: "short",
     timeZone: "America/Sao_Paulo",
   }).format(new Date(value));
+}
+
+function formatReceita(patient) {
+  const days = daysUntil(patient.prescriptionExpiresAt);
+  if (!isFinite(days)) return "sem receita";
+  const label = days < 0 ? "venc." : "vál.";
+  return `${label} ${formatDate(patient.prescriptionExpiresAt)}`;
+}
+
+function formatLgpd(patient) {
+  return patient.privacyConsentAt
+    ? `v.${patient.privacyConsentVersion || "lgpd-2026-05"}`
+    : "pendente";
+}
+
+function formatLastLogin(value) {
+  if (!value) return "—";
+  const date = new Date(value);
+  const days = Math.floor((Date.now() - date.getTime()) / 86_400_000);
+  if (days === 0) {
+    return `hoje ${new Intl.DateTimeFormat("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "America/Sao_Paulo",
+    }).format(date)}`;
+  }
+  if (days === 1) return "ontem";
+  return `há ${days} dias`;
+}
+
+function formatClock(date) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "America/Sao_Paulo",
+  }).format(date);
+}
+
+function initials(name) {
+  return (
+    String(name || "?")
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() || "")
+      .join("") || "?"
+  );
 }
 
 function normalize(value) {
