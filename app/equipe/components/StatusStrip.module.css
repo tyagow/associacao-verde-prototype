@@ -60,7 +60,7 @@
 }
 .segmented button {
   height: 28px;
-  padding: 0 12px;
+  padding: 0 var(--sp-3);
   font: 600 12px var(--font-ui);
   background: transparent;
   border: 0;
@@ -78,18 +78,18 @@
 .segmented .num {
   font-weight: 500;
   opacity: 0.8;
-  margin-left: 4px;
+  margin-left: var(--sp-1);
 }
 
 .filters {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-2);
 }
 
 .filterInput {
   height: 28px;
-  padding: 0 10px;
+  padding: 0 var(--sp-2);
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
   font: inherit;
@@ -115,7 +115,7 @@ select.filterInput {
 
 .refresh {
   height: 28px;
-  padding: 0 10px;
+  padding: 0 var(--sp-2);
   font: 600 12px var(--font-ui);
   background: transparent;
   color: var(--ink);
@@ -124,7 +124,7 @@ select.filterInput {
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-1);
 }
 .refresh:hover {
   background: var(--paper-warm);

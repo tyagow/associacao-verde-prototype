@@ -277,7 +277,9 @@ export default function TeamCommand() {
         {/* E2E asserts the ASCII literal "Fila de acao agora" against
             #team-dashboard. Visible heading carries diacritics; hidden
             helper keeps the ASCII reachable for the grep selector. */}
-        <span hidden aria-hidden="true">Fila de acao agora</span>
+        <span hidden aria-hidden="true">
+          Fila de acao agora
+        </span>
         <PageHead
           title="Fila de ação agora"
           meta={dashboard ? `Atualizado ${nowLabel()} · próximo refresh em 30s` : null}
@@ -392,7 +394,9 @@ function CommandSurface({
         {/* E2E asserts the ASCII literal "Separacao/envio" against
             #team-dashboard. Visible KpiSpark label uses diacritics; the
             hidden helper carries the ASCII grep target. */}
-        <span hidden aria-hidden="true">Separacao/envio</span>
+        <span hidden aria-hidden="true">
+          Separacao/envio
+        </span>
         <KpiSpark label="Pix pendentes" value={counts.pendingPayments} delta={deltas.pix} />
         <KpiSpark
           label="Separação/envio"
@@ -457,7 +461,7 @@ function TeamAccountPanel({ session, busy, onPasswordChange, onLogout, onClose }
         <span className="kicker">Escopo de acesso</span>
         <div className="permission-chip-row">
           {(permissions.includes("*")
-            ? ["todas as areas"]
+            ? ["todas as áreas"]
             : permissions.map((p) => PERMISSION_LABELS[p] || p)
           ).map((permission) => (
             <span className="pill" key={permission}>

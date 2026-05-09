@@ -180,7 +180,7 @@ export default function AdminPage() {
           <>
             Readiness do ambiente · {blockedReleases} release
             {blockedReleases === 1 ? "" : "s"} bloqueado
-            <span id="admin-status" style={{ marginLeft: 8 }}>
+            <span id="admin-status" className={adminStyles.metaStatus}>
               · {status}
             </span>
           </>

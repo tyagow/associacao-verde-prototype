@@ -23,7 +23,7 @@
 }
 
 .section h4 {
-  margin: 0 0 8px;
+  margin: 0 0 var(--sp-2);
   font-size: 11px;
   text-transform: uppercase;
   color: var(--muted);
@@ -34,7 +34,7 @@
   display: flex;
   justify-content: space-between;
   font-size: 12px;
-  padding: 4px 0;
+  padding: var(--sp-1) 0;
   gap: var(--sp-2);
 }
 

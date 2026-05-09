@@ -258,11 +258,10 @@ export default function OrdersClient() {
         filters={
           <>
             <select
-              className="filterIn"
+              className="filterIn filterIn--w-md"
               data-filter="ordersStatus"
               value={ordersStatus}
               onChange={(event) => setOrdersStatus(event.target.value)}
-              style={{ minWidth: 160 }}
             >
               <option value="all">Todos os status</option>
               <option value="awaiting_payment">Aguardando pagamento</option>

@@ -16,6 +16,12 @@
   color: var(--ink, #0d1f17);
 }
 
+/* Cycle 4 (B10): replaces inline style={{ marginLeft: 8 }} on the
+   #admin-status span sitting in the PageHead meta line. */
+.metaStatus {
+  margin-left: var(--sp-2);
+}
+
 .gateGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

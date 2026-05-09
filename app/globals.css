@@ -413,6 +413,14 @@ p:last-child { margin-bottom: 0; }
    replaces an inline style={{ fontSize: 12 }} on the .muted paragraph. */
 .cultivo-help { font-size: var(--fs-xs); }
 
+/* Cycle 4 (B5): width modifiers for the .filterIn input/select used in
+   StatusStrip filter slots. Replaces inline style={{ minWidth: N }}
+   declarations across fulfillment/pedidos/suporte routes so DevTools
+   can inspect/override the layout cleanly. */
+.filterIn--w-md { min-width: 160px; }
+.filterIn--w-lg { min-width: 220px; }
+.filterIn--w-xl { min-width: 260px; }
+
 /* The kicker is the editorial signature: a thin uppercased eyebrow.
    It always sits above a serif title. */
 .kicker {

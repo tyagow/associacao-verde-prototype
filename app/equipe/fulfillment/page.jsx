@@ -189,19 +189,17 @@ export default function FulfillmentPage() {
         filters={
           <>
             <input
-              className="filterIn"
+              className="filterIn filterIn--w-lg"
               data-filter="fulfillmentQuery"
               value={query}
               onChange={(e) => setQuery(e.currentTarget.value)}
               placeholder="Pedido, paciente, item, rastreio"
-              style={{ minWidth: 220 }}
             />
             <select
-              className="filterIn"
+              className="filterIn filterIn--w-md"
               data-filter="fulfillmentStatus"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.currentTarget.value)}
-              style={{ minWidth: 160 }}
             >
               <option value="all">Todas as etapas</option>
               <option value="paid_pending_fulfillment">Pago aguardando</option>

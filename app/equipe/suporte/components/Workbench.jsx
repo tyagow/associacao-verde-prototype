@@ -178,11 +178,11 @@ export default function Workbench({ dashboard, onDashboardRefresh, error, status
           <>
             <input
               data-filter="supportQuery"
+              className="filterIn filterIn--w-xl"
               value={filters.supportQuery}
               onChange={onFilterChange}
               placeholder="Buscar paciente, pedido, rastreio…"
               aria-label="Buscar atendimento"
-              style={{ minWidth: 180, maxWidth: 260 }}
             />
             <select
               data-filter="supportStatus"
