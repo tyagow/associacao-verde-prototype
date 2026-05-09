@@ -239,7 +239,7 @@
 .adminDetails {
   margin-top: 16px;
   border: 1px solid var(--line);
-  border-radius: var(--r-md);
+  border-radius: var(--r-sm);
   background: var(--paper);
 }
 

@@ -1,11 +1,9 @@
 "use client";
 
-/* Phase 3 — Direction B Cultivo panel.
-
-   Sibling of the product ledger; renders active cultivation batches as a
-   single <table class="adm"> with stage pills. Read-only — the legacy
-   create / advance / harvest / dry / move-to-stock actions live in the
-   <details> drawer in StockRoute.jsx. */
+/* Direction B Cultivo panel.
+   Renders active cultivation batches as a <table class="adm"> with stage
+   pills. Read-only — the create / advance / harvest / dry / move-to-stock
+   actions live in CultivoRoute.jsx (under /equipe/cultivo). */
 
 import { pluralize } from "../../components/pluralize.js";
 import styles from "./CultivoPanel.module.css";
@@ -42,13 +40,13 @@ export default function CultivoPanel({ batches }) {
           </colgroup>
           <thead>
             <tr>
-              <th>Batch</th>
-              <th>Strain</th>
-              <th>Plantio</th>
-              <th>Estimativa</th>
+              <th>Lote</th>
+              <th>Cultivar</th>
+              <th>Semana</th>
+              <th>Colheita prevista</th>
               <th className="right">Plantas</th>
               <th className="right">Estim. (g)</th>
-              <th>Stage</th>
+              <th>Estágio</th>
             </tr>
           </thead>
           <tbody>
@@ -87,10 +85,10 @@ function batchLabel(batch) {
 function statusLabel(status) {
   return (
     {
-      growing: "growing",
-      harvested: "harvested",
-      dried: "dried",
-      stocked: "stocked",
+      growing: "vegetativo",
+      harvested: "colhido",
+      dried: "seco",
+      stocked: "estocado",
     }[status] || status
   );
 }

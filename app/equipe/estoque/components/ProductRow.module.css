@@ -97,7 +97,7 @@
 .lotsWrap {
   background: var(--paper);
   border: 1px solid var(--line-soft);
-  border-radius: var(--r-md);
+  border-radius: var(--r-sm);
   padding: var(--sp-2) var(--sp-3) var(--sp-3);
 }
 .lotsHead {

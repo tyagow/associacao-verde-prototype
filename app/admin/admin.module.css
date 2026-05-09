@@ -74,7 +74,7 @@
   gap: var(--sp-4);
   padding: var(--sp-4);
   border: 1px solid var(--border-default, #e3ebe6);
-  border-radius: var(--r-md);
+  border-radius: var(--r-sm);
   background: var(--surface-elevated, #fff);
 }
 

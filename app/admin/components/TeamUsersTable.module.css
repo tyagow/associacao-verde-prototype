@@ -10,7 +10,7 @@
   padding: var(--sp-4);
   background: var(--surface-sunken, #f7f9f6);
   border: 1px solid var(--border-default, #e3ebe6);
-  border-radius: var(--r-md);
+  border-radius: var(--r-sm);
   align-items: end;
 }
 
@@ -32,7 +32,7 @@
 
 .tableWrap {
   border: 1px solid var(--line, #e3ebe6);
-  border-radius: var(--r-md);
+  border-radius: var(--r-sm);
   overflow: auto;
   background: #fff;
 }
