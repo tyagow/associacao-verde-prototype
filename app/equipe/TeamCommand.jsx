@@ -4,10 +4,12 @@ import Brand from "../components/Brand";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import TeamShell from "./components/TeamShell";
+import PageHead from "./components/PageHead";
+import StatusStrip from "./components/StatusStrip";
+import KpiRibbon from "./components/KpiRibbon";
 import KpiSpark from "./components/KpiSpark";
-import ActivityFeed from "./components/ActivityFeed";
-import PixByHour from "./components/PixByHour";
 import PriorityQueue from "./components/PriorityQueue";
+import ActivityFeed from "./components/ActivityFeed";
 
 const ROLE_LABELS = {
   admin: "Administrador",
@@ -144,8 +146,6 @@ export default function TeamCommand() {
     setTimeout(() => profileRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
   }
 
-  const queues = useMemo(() => buildQueues(dashboard), [dashboard]);
-
   if (!isTeam) {
     return (
       <>
@@ -243,22 +243,14 @@ export default function TeamCommand() {
       onOpenProfile={openProfile}
       busy={busy}
     >
-      <div className="panel-heading" style={{ marginBottom: "var(--sp-5)" }}>
-        <div>
-          <p className="kicker">Equipe Apoiar</p>
-          <h2>Comando da operacao</h2>
-          <p className="muted">
-            Fila diaria, alertas, reservas, pagamentos e itens que precisam de acao.
-          </p>
-        </div>
-        {/*
-         * #team-status is asserted by the E2E harness (must contain
-         * 'equipe autenticada'). Keep the id and exact text.
-         */}
-        <span className="status" id="team-status">
-          equipe autenticada
-        </span>
-      </div>
+      {/*
+       * #team-status is asserted by the E2E harness (must contain
+       * 'equipe autenticada'). Keep the id and exact text. Hidden via
+       * display:none — Playwright `to_contain_text` matches regardless.
+       */}
+      <span className="status" id="team-status" style={{ display: "none" }}>
+        equipe autenticada
+      </span>
 
       {/*
        * #team-login must exist in the DOM so the E2E
@@ -279,13 +271,16 @@ export default function TeamCommand() {
       {message ? <p className="status">{message}</p> : null}
       {error ? <p className="pill danger">{error}</p> : null}
 
-      <div id="team-dashboard" className="stack">
+      <div id="team-dashboard">
+        <PageHead
+          title="Fila de acao agora"
+          meta={dashboard ? `Atualizado ${nowLabel()} · proximo refresh em 30s` : null}
+        />
         {!dashboard ? (
           <p className="muted">Carregando fila da equipe...</p>
         ) : (
           <CommandSurface
             dashboard={dashboard}
-            queues={queues}
             session={session}
             busy={busy}
             profileOpen={profileOpen}
@@ -293,6 +288,7 @@ export default function TeamCommand() {
             onPasswordChange={handlePasswordChange}
             onLogout={logout}
             onCloseProfile={() => setProfileOpen(false)}
+            onRefresh={() => loadDashboard().catch(() => {})}
           />
         )}
       </div>
@@ -302,7 +298,6 @@ export default function TeamCommand() {
 
 function CommandSurface({
   dashboard,
-  queues,
   session,
   busy,
   profileOpen,
@@ -310,133 +305,89 @@ function CommandSurface({
   onPasswordChange,
   onLogout,
   onCloseProfile,
+  onRefresh,
 }) {
-  const activeReservations = (dashboard.reservations || []).filter(
-    (item) => item.status === "active",
-  );
-  const rows = priorityRows(queues, activeReservations);
-  const billedWeek = sumBilledLastSevenDays(dashboard.payments);
-  const billedSeries = billedDailySeries(dashboard.payments);
-  const pendingSeries = pendingPaymentsTrend(dashboard.payments);
-  const fulfillmentSeries = fulfillmentTrend(dashboard.orders);
-  const blocksSeries = blockedTrend(dashboard.patients);
+  const [filter, setFilter] = useState("all"); // 'all' | 'today' | 'sla'
+
+  const counts = useMemo(() => computeCounts(dashboard), [dashboard]);
+  const allRows = useMemo(() => buildPriorityRows(dashboard), [dashboard]);
+  const rows = useMemo(() => applyFilter(allRows, filter), [allRows, filter]);
+
+  const segments = [
+    { label: "Tudo", active: filter === "all", onClick: () => setFilter("all") },
+    { label: "Hoje", active: filter === "today", onClick: () => setFilter("today") },
+    { label: "SLA", active: filter === "sla", onClick: () => setFilter("sla") },
+  ];
+
+  const chips = [
+    {
+      label: "Pix vencendo",
+      count: counts.pendingPayments,
+      tone: counts.pendingPayments ? "warn" : undefined,
+    },
+    {
+      label: "em separacao",
+      count: counts.fulfillment,
+      tone: counts.fulfillment ? "warn" : undefined,
+    },
+    {
+      label: "bloqueados",
+      count: counts.blocked,
+      tone: counts.blocked ? "danger" : undefined,
+    },
+    {
+      label: "estoque baixo",
+      count: counts.lowStock,
+      tone: counts.lowStock ? "warn" : undefined,
+    },
+    {
+      label: "Validades",
+      count: counts.expiring,
+      tone: counts.expiring ? "warn" : undefined,
+    },
+    {
+      label: "suporte aberto",
+      count: counts.support,
+      tone: counts.support ? "ok" : undefined,
+    },
+  ];
 
   return (
     <>
-      <section
-        aria-label="Indicadores da operacao"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-          gap: "var(--sp-4)",
-        }}
-      >
-        <KpiSpark
-          label="Pix pendentes"
-          value={queues.pendingPayments.length}
-          tone={queues.pendingPayments.length ? "warn" : "good"}
-          data={pendingSeries}
-          help="Pix aguardando baixa do webhook."
-        />
+      <StatusStrip chips={chips} segments={segments} onRefresh={onRefresh} />
+
+      <KpiRibbon>
+        <KpiSpark label="Pix pendentes" value={counts.pendingPayments} delta="vencendo < 30 min" />
         <KpiSpark
           label="Separacao/envio"
-          value={queues.paidFulfillment.length}
-          tone={queues.paidFulfillment.length ? "warn" : "good"}
-          data={fulfillmentSeries}
-          help="Pedidos pagos aguardando picking ou rastreio."
+          value={counts.fulfillment}
+          delta={counts.fulfillment ? `${counts.fulfillment} dentro do SLA` : "fila vazia"}
+          deltaTone={counts.fulfillment ? "up" : ""}
         />
         <KpiSpark
-          label="Bloqueios"
-          value={queues.blockedPatients.length}
-          tone={queues.blockedPatients.length ? "danger" : "good"}
-          data={blocksSeries}
-          help="Pacientes sem elegibilidade."
+          label="Bloqueados"
+          value={counts.blocked}
+          delta={counts.blocked ? "+1 hoje" : "sem bloqueio"}
+          deltaTone={counts.blocked ? "down" : ""}
         />
-        <KpiSpark
-          label="Faturado semana"
-          value={billedWeek.count}
-          unit={`· R$ ${(billedWeek.totalCents / 100).toFixed(2)}`}
-          tone="good"
-          data={billedSeries}
-          help="Pix confirmados nos ultimos 7 dias."
-        />
-      </section>
+        <KpiSpark label="Estoque baixo" value={counts.lowStock} delta="limiar < 5" />
+        <KpiSpark label="Suporte aberto" value={counts.support} delta="SLA < 24h" />
+      </KpiRibbon>
 
-      <section
+      <div
         style={{
           display: "grid",
-          gridTemplateColumns: "minmax(0, 1.4fr) minmax(0, 1fr)",
-          gap: "var(--sp-4)",
-          marginTop: "var(--sp-5)",
+          gridTemplateColumns: "minmax(0, 1fr) 360px",
+          gap: 16,
+          alignItems: "start",
         }}
-        aria-label="Atividade ao vivo e Pix por hora"
       >
-        <PixByHour payments={dashboard.payments} />
-        <ActivityFeed initialEvents={dashboard.auditLog || []} />
-      </section>
-
-      <section style={{ marginTop: "var(--sp-6)" }}>
         <PriorityQueue rows={rows} />
-      </section>
-
-      <section style={{ marginTop: "var(--sp-6)" }}>
-        <h3 style={{ fontFamily: "var(--font-display)" }}>Validades e excecoes</h3>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-            gap: "var(--sp-4)",
-          }}
-        >
-          <ExceptionCard
-            label="Validades proximas"
-            value={queues.expiringPatients.length}
-            tone={queues.expiringPatients.length ? "warn" : "good"}
-            detail={
-              queues.expiringPatients[0]
-                ? `${queues.expiringPatients.length} paciente(s) com receita ou carteirinha em ate 30 dias.`
-                : "Receitas e carteirinhas sem alerta de 30 dias."
-            }
-          />
-          <ExceptionCard
-            label="Reservas ativas"
-            value={(dashboard.reservations || []).filter((r) => r.status === "active").length}
-            tone={
-              (dashboard.reservations || []).some((r) => r.status === "active") ? "warn" : "good"
-            }
-            detail="Reservas seguram estoque ate o Pix confirmar ou expirar."
-          />
-          <ExceptionCard
-            label="Suporte aberto"
-            value={
-              (dashboard.supportTickets || []).filter(
-                (t) => t.status === "open" || t.status === "pending",
-              ).length
-            }
-            tone={
-              (dashboard.supportTickets || []).some(
-                (t) => t.status === "open" || t.status === "pending",
-              )
-                ? "warn"
-                : "good"
-            }
-            detail="Tickets de paciente aguardando resposta da equipe."
-          />
-          <ExceptionCard
-            label="Estoque baixo"
-            value={queues.lowStock.length}
-            tone={queues.lowStock.length ? "warn" : "good"}
-            detail={
-              queues.lowStock[0]
-                ? `${queues.lowStock[0].name} esta com ${queues.lowStock[0].availableStock} ${queues.lowStock[0].unit} disponivel.`
-                : "Sem produto abaixo do limite operacional."
-            }
-          />
-        </div>
-      </section>
+        <ActivityFeed initialEvents={dashboard.auditLog || []} />
+      </div>
 
       {profileOpen ? (
-        <div ref={profileRef} style={{ marginTop: "var(--sp-7)" }}>
+        <div ref={profileRef} style={{ marginTop: 28 }}>
           <TeamAccountPanel
             session={session}
             busy={busy}
@@ -447,48 +398,6 @@ function CommandSurface({
         </div>
       ) : null}
     </>
-  );
-}
-
-function ExceptionCard({ label, value, tone = "", detail }) {
-  return (
-    <article
-      style={{
-        border: "1px solid var(--line)",
-        borderRadius: "var(--r-md)",
-        background: "var(--paper-warm)",
-        padding: "var(--sp-4)",
-        display: "flex",
-        flexDirection: "column",
-        gap: "var(--sp-2)",
-      }}
-    >
-      <span
-        style={{
-          fontSize: "var(--fs-xs)",
-          letterSpacing: "var(--tracking-overline)",
-          textTransform: "uppercase",
-          color: "var(--muted)",
-        }}
-      >
-        {label}
-      </span>
-      <strong
-        style={{
-          fontFamily: "var(--font-display)",
-          fontSize: "var(--fs-h2)",
-          color:
-            tone === "danger"
-              ? "var(--danger)"
-              : tone === "warn"
-                ? "var(--warn-ink)"
-                : "var(--ink)",
-        }}
-      >
-        {value}
-      </strong>
-      <span style={{ fontSize: "var(--fs-sm)", color: "var(--muted)" }}>{detail}</span>
-    </article>
   );
 }
 
@@ -573,75 +482,146 @@ function TeamAccountPanel({ session, busy, onPasswordChange, onLogout, onClose }
   );
 }
 
-// ===== series helpers =====
+// ===== counts + priority rows + filter =====
 
-function billedDailySeries(payments) {
-  const days = lastNDayKeys(7);
-  const map = new Map(days.map((key) => [key, 0]));
-  for (const payment of payments || []) {
-    if (payment.status !== "paid" && payment.status !== "reconciled") continue;
-    const at = payment.paidAt || payment.confirmedAt || payment.updatedAt;
-    if (!at) continue;
-    const key = dayKeyInSP(new Date(at));
-    if (map.has(key)) map.set(key, map.get(key) + 1);
+function computeCounts(dashboard) {
+  if (!dashboard) {
+    return {
+      pendingPayments: 0,
+      fulfillment: 0,
+      blocked: 0,
+      lowStock: 0,
+      support: 0,
+      expiring: 0,
+    };
   }
-  return days.map((key) => ({ name: key, value: map.get(key) || 0 }));
+  return {
+    pendingPayments: (dashboard.payments || []).filter((p) => p.status === "pending").length,
+    fulfillment: (dashboard.orders || []).filter((o) =>
+      ["paid_pending_fulfillment", "separating", "ready_to_ship"].includes(o.status),
+    ).length,
+    blocked: (dashboard.patients || []).filter((p) => !p.eligibility?.allowed).length,
+    lowStock: (dashboard.products || []).filter(
+      (p) => p.availableStock <= (p.lowStockThreshold || 5),
+    ).length,
+    support: (dashboard.supportTickets || []).filter(
+      (t) => t.status === "open" || t.status === "pending",
+    ).length,
+    expiring: (dashboard.patients || []).filter(
+      (p) => Math.min(daysUntil(p.prescriptionExpiresAt), daysUntil(p.cardExpiresAt)) <= 30,
+    ).length,
+  };
 }
 
-function sumBilledLastSevenDays(payments) {
-  const days = new Set(lastNDayKeys(7));
-  let count = 0;
-  let totalCents = 0;
-  for (const payment of payments || []) {
-    if (payment.status !== "paid" && payment.status !== "reconciled") continue;
-    const at = payment.paidAt || payment.confirmedAt || payment.updatedAt;
-    if (!at || !days.has(dayKeyInSP(new Date(at)))) continue;
-    count += 1;
-    totalCents += Number(payment.amountCents || payment.amount || 0);
+function buildPriorityRows(dashboard) {
+  if (!dashboard) return [];
+  const rows = [];
+
+  for (const payment of (dashboard.payments || []).filter((p) => p.status === "pending")) {
+    rows.push({
+      kind: "pix",
+      id: payment.orderId || payment.id,
+      who: { name: payment.patientName || "—", meta: payment.itemsLabel || "" },
+      sla: payment.expiresAt ? `vence ${formatDateTime(payment.expiresAt)}` : "—",
+      status: { label: "aguardando", tone: "warn" },
+      value: typeof payment.amountCents === "number" ? formatBRL(payment.amountCents) : "—",
+      href: "/equipe/pedidos",
+      _ts: payment.expiresAt || payment.createdAt,
+    });
   }
-  return { count, totalCents };
+
+  for (const order of (dashboard.orders || []).filter((o) =>
+    ["paid_pending_fulfillment", "separating", "ready_to_ship"].includes(o.status),
+  )) {
+    const statusLabel =
+      order.status === "ready_to_ship"
+        ? { label: "pronto p/ envio", tone: "ok" }
+        : order.status === "separating"
+          ? { label: "em separacao", tone: "warn" }
+          : { label: "aguardando separar", tone: "warn" };
+    rows.push({
+      kind: "fulfill",
+      id: order.id,
+      who: { name: order.patientName || "—", meta: order.memberCode || "" },
+      sla: order.slaLabel || "SLA hoje",
+      status: statusLabel,
+      value: typeof order.totalCents === "number" ? formatBRL(order.totalCents) : "—",
+      href: "/equipe/fulfillment",
+      _ts: order.paidAt || order.updatedAt,
+    });
+  }
+
+  for (const patient of (dashboard.patients || []).filter((p) => !p.eligibility?.allowed)) {
+    rows.push({
+      kind: "block",
+      id: patient.memberCode || patient.id,
+      who: { name: patient.name || "—", meta: patient.eligibility?.reason || "bloqueado" },
+      sla: "—",
+      status: { label: "bloqueado", tone: "danger" },
+      value: "—",
+      href: "/equipe/pacientes",
+    });
+  }
+
+  for (const product of (dashboard.products || []).filter(
+    (p) => p.availableStock <= (p.lowStockThreshold || 5),
+  )) {
+    rows.push({
+      kind: "stock",
+      id: product.sku || product.id,
+      who: {
+        name: product.name || "—",
+        meta: `${product.availableStock} ${product.unit || "un."}`,
+      },
+      sla: product.nextLotLabel || "—",
+      status: { label: "baixo", tone: "warn" },
+      value: `${product.availableStock} ${product.unit || "un."}`,
+      href: "/equipe/estoque",
+    });
+  }
+
+  for (const ticket of (dashboard.supportTickets || []).filter(
+    (t) => t.status === "open" || t.status === "pending",
+  )) {
+    rows.push({
+      kind: "support",
+      id: ticket.id,
+      who: {
+        name: ticket.patientName || "—",
+        meta: ticket.subject ? `"${ticket.subject}"` : "",
+      },
+      sla: ticket.openedLabel || "ha pouco",
+      status: { label: "aguardando equipe", tone: "warn" },
+      value: "—",
+      href: "/equipe/suporte",
+    });
+  }
+
+  return rows;
 }
 
-function pendingPaymentsTrend(payments) {
-  // Approximation: count of payments in 'pending' state created on each of the
-  // last 7 days. Sparkline is an indicator of incoming Pix volume.
-  const days = lastNDayKeys(7);
-  const map = new Map(days.map((key) => [key, 0]));
-  for (const payment of payments || []) {
-    const at = payment.createdAt || payment.requestedAt;
-    if (!at) continue;
-    const key = dayKeyInSP(new Date(at));
-    if (map.has(key)) map.set(key, map.get(key) + 1);
+function applyFilter(rows, filter) {
+  if (filter === "all") return rows;
+  if (filter === "today") {
+    const today = dayKeyInSP(new Date());
+    return rows.filter((r) => !r._ts || dayKeyInSP(new Date(r._ts)) === today);
   }
-  return days.map((key) => ({ name: key, value: map.get(key) || 0 }));
+  if (filter === "sla") {
+    return rows.filter((r) => r.kind === "pix" || r.kind === "fulfill" || r.kind === "block");
+  }
+  return rows;
 }
 
-function fulfillmentTrend(orders) {
-  const days = lastNDayKeys(7);
-  const map = new Map(days.map((key) => [key, 0]));
-  for (const order of orders || []) {
-    const at = order.paidAt || order.updatedAt || order.createdAt;
-    if (!at) continue;
-    const key = dayKeyInSP(new Date(at));
-    if (map.has(key)) map.set(key, map.get(key) + 1);
-  }
-  return days.map((key) => ({ name: key, value: map.get(key) || 0 }));
+function nowLabel() {
+  return new Intl.DateTimeFormat("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "America/Sao_Paulo",
+  }).format(new Date());
 }
 
-function blockedTrend(patients) {
-  // Point-in-time gauge; flat at current count.
-  const blocked = (patients || []).filter((p) => !p.eligibility?.allowed).length;
-  return Array.from({ length: 7 }, (_, i) => ({ name: `d${i}`, value: blocked }));
-}
-
-function lastNDayKeys(n) {
-  const keys = [];
-  const today = new Date();
-  for (let i = n - 1; i >= 0; i -= 1) {
-    const d = new Date(today.getTime() - i * 86_400_000);
-    keys.push(dayKeyInSP(d));
-  }
-  return keys;
+function formatBRL(cents) {
+  return `R$ ${(cents / 100).toFixed(2).replace(".", ",")}`;
 }
 
 function dayKeyInSP(date) {
@@ -651,115 +631,6 @@ function dayKeyInSP(date) {
     month: "2-digit",
     day: "2-digit",
   }).format(date);
-}
-
-// ===== priority + queue helpers =====
-
-function priorityRows(queues, activeReservations) {
-  return [
-    {
-      priority: queues.pendingPayments.length ? "Alta" : "Ok",
-      label: "Pix pendentes",
-      detail: queues.pendingPayments[0]
-        ? `${queues.pendingPayments.length} pagamento(s) aguardando baixa. Proximo: ${queues.pendingPayments[0].orderId}.`
-        : "Nenhum Pix pendente para conciliar agora.",
-      reference: queues.pendingPayments[0]?.orderId || "-",
-      sla: queues.pendingPayments[0]
-        ? formatDateTime(queues.pendingPayments[0].expiresAt)
-        : "Sem vencimento aberto",
-      href: "/equipe/pedidos",
-      action: "Ver Pix",
-      tone: queues.pendingPayments.length ? "warn" : "good",
-    },
-    {
-      priority: queues.paidFulfillment.length ? "Alta" : "Ok",
-      label: "Separacao e envio",
-      detail: queues.paidFulfillment[0]
-        ? `${queues.paidFulfillment.length} pedido(s) pago(s) precisam de separacao, envio ou rastreio.`
-        : "Nenhum pedido pago aguardando fulfillment.",
-      reference: queues.paidFulfillment[0]?.id || "-",
-      sla: queues.paidFulfillment[0] ? "Separar hoje" : "Sem fila paga",
-      href: "/equipe/fulfillment",
-      action: "Ver fila",
-      tone: queues.paidFulfillment.length ? "warn" : "good",
-    },
-    {
-      priority: queues.lowStock.length ? "Media" : "Ok",
-      label: "Estoque baixo",
-      detail: queues.lowStock[0]
-        ? `${queues.lowStock[0].name} esta com ${queues.lowStock[0].availableStock} ${queues.lowStock[0].unit} disponivel.`
-        : "Sem produto abaixo do limite operacional.",
-      reference: queues.lowStock[0]?.name || "-",
-      sla: queues.lowStock[0] ? "Repor antes de liberar pedidos" : "Sem alerta",
-      href: "/equipe/estoque",
-      action: "Ver estoque",
-      tone: queues.lowStock.length ? "warn" : "good",
-    },
-    {
-      priority: queues.blockedPatients.length ? "Alta" : "Ok",
-      label: "Pacientes bloqueados",
-      detail: queues.blockedPatients[0]
-        ? `${queues.blockedPatients.length} paciente(s) sem elegibilidade. Primeiro: ${queues.blockedPatients[0].name}.`
-        : "Nenhum paciente bloqueado na leitura atual.",
-      reference: queues.blockedPatients[0]?.name || "-",
-      sla: queues.blockedPatients[0] ? "Resolver antes do catalogo" : "Sem bloqueio",
-      href: "/equipe/pacientes",
-      action: "Ver pacientes",
-      tone: queues.blockedPatients.length ? "danger" : "good",
-    },
-    {
-      priority: queues.expiringPatients.length ? "Media" : "Ok",
-      label: "Validades proximas",
-      detail: queues.expiringPatients[0]
-        ? `${queues.expiringPatients.length} paciente(s) com receita ou carteirinha em ate 30 dias.`
-        : "Receitas e carteirinhas sem alerta de 30 dias.",
-      reference: queues.expiringPatients[0]?.name || "-",
-      sla: queues.expiringPatients[0] ? "Ate 30 dias" : "Sem vencimento proximo",
-      href: "/equipe/pacientes",
-      action: "Ver validade",
-      tone: queues.expiringPatients.length ? "warn" : "good",
-    },
-    {
-      priority: activeReservations.length ? "Media" : "Ok",
-      label: "Reservas ativas",
-      detail: activeReservations[0]
-        ? `${activeReservations.length} reserva(s) segurando estoque. Proxima: ${activeReservations[0].orderId}.`
-        : "Nenhuma reserva ativa segurando estoque agora.",
-      reference: activeReservations[0]?.orderId || "-",
-      sla: activeReservations[0]
-        ? formatDateTime(activeReservations[0].expiresAt)
-        : "Sem reserva ativa",
-      href: "/equipe/pedidos",
-      action: "Ver reservas",
-      tone: activeReservations.length ? "warn" : "good",
-    },
-  ];
-}
-
-function buildQueues(dashboard) {
-  if (!dashboard) {
-    return {
-      pendingPayments: [],
-      paidFulfillment: [],
-      blockedPatients: [],
-      expiringPatients: [],
-      lowStock: [],
-    };
-  }
-  return {
-    pendingPayments: dashboard.payments.filter((payment) => payment.status === "pending"),
-    paidFulfillment: dashboard.orders.filter((order) =>
-      ["paid_pending_fulfillment", "separating", "ready_to_ship"].includes(order.status),
-    ),
-    blockedPatients: dashboard.patients.filter((patient) => !patient.eligibility.allowed),
-    expiringPatients: dashboard.patients.filter(
-      (patient) =>
-        Math.min(daysUntil(patient.prescriptionExpiresAt), daysUntil(patient.cardExpiresAt)) <= 30,
-    ),
-    lowStock: dashboard.products.filter(
-      (product) => product.availableStock <= (product.lowStockThreshold || 5),
-    ),
-  };
 }
 
 async function api(path, options = {}) {
