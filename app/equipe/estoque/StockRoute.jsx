@@ -33,7 +33,6 @@ import PageHead from "../components/PageHead";
 import StatusStrip from "../components/StatusStrip";
 import ProductLedger from "./components/ProductLedger.jsx";
 import ProductRow from "./components/ProductRow.jsx";
-import CultivoPanel from "./components/CultivoPanel.jsx";
 
 export default function StockRoute() {
   const [session, setSession] = useState(null);
@@ -175,22 +174,14 @@ export default function StockRoute() {
             <button
               type="button"
               className="btn ghost mini"
-              onClick={() =>
-                document
-                  .querySelector("#cultivation-form")
-                  ?.scrollIntoView({ behavior: "smooth", block: "center" })
-              }
+              onClick={() => openDrawerToForm("#stock-form")}
             >
               + Lote
             </button>
             <button
               type="button"
               className="btn primary"
-              onClick={() =>
-                document
-                  .querySelector("#product-form")
-                  ?.scrollIntoView({ behavior: "smooth", block: "center" })
-              }
+              onClick={() => openDrawerToForm("#product-form")}
             >
               + Produto
             </button>
@@ -260,7 +251,6 @@ export default function StockRoute() {
               <option value="low">Baixo</option>
               <option value="ok">OK</option>
               <option value="inactive">Inativos</option>
-              <option value="cultivation">Cultivo ativo</option>
             </select>
           </>
         }
@@ -283,8 +273,6 @@ export default function StockRoute() {
             />
           ))}
         </ProductLedger>
-
-        <CultivoPanel batches={batches} />
 
         <LegacyManagementDrawers
           isTeam={isTeam}
@@ -739,6 +727,24 @@ function ControlSelect({ ...props }) {
   );
 }
 
+/* B1 fix: openDrawerToForm opens the parent <details> before scrolling.
+   The legacy stock/cultivation/product forms live inside collapsed
+   <details> drawers; without `open=""` the form stays hidden after the
+   scrollIntoView fires and operators see "the button does nothing". */
+function openDrawerToForm(selector) {
+  if (typeof document === "undefined") return;
+  const target = document.querySelector(selector);
+  if (!target) return;
+  const drawer = target.closest("details");
+  if (drawer) drawer.open = true;
+  // Defer to allow the disclosure to expand before scrolling.
+  requestAnimationFrame(() => {
+    target.scrollIntoView({ behavior: "smooth", block: "center" });
+    const firstInput = target.querySelector("input, select, textarea");
+    if (firstInput && typeof firstInput.focus === "function") firstInput.focus();
+  });
+}
+
 function filterProducts(products, filters) {
   const query = String(filters.stockQuery || "")
     .trim()
@@ -770,8 +776,7 @@ function filterProducts(products, filters) {
       status === "all" ||
       (status === "low" && product.status === "low") ||
       (status === "ok" && product.status !== "low" && product.status !== "inactive") ||
-      (status === "inactive" && product.status === "inactive") ||
-      (status === "cultivation" && true);
+      (status === "inactive" && product.status === "inactive");
     return matchesQuery && matchesStatus;
   });
 }

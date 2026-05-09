@@ -1,21 +1,65 @@
-/* Phase 1a — Tab strip. Composes with .app-tabs / .app-tabs__tab from globals. */
+/* Phase 3 — Tab strip beneath the topbar (storefront dialect).
+   Sticky white surface, 1px hairline bottom. Active tab is ink-colored with a
+   2px ink underline that sits on top of the topbar hairline via
+   margin-bottom: -1px. The 4th tab (Meu perfil) is right-aligned. */
 
 .bar {
-  /* Mirrors .app-tabs but stays self-contained so future variants can swap it. */
+  display: flex;
+  align-items: stretch;
+  gap: var(--sp-1);
+  padding: var(--sp-2) var(--sp-7);
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
   position: sticky;
-  top: 0;
-  z-index: 1;
+  top: 56px; /* Sits below the topbar (14px padding × 2 + content). */
+  z-index: 4;
 }
 
 .tabButton {
-  /* Reset native button styling so it matches the .app-tabs__tab visual. */
   background: transparent;
   border: 0;
   cursor: pointer;
   font: inherit;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  padding: 10px 16px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  text-decoration: none;
+  line-height: 1.4;
+  transition: color 120ms ease;
+}
+
+.tabButton:hover {
+  color: var(--ink-soft);
 }
 
 .tabButton:focus-visible {
   outline: none;
-  box-shadow: var(--ring);
+  box-shadow: var(--ring, 0 0 0 2px var(--green-soft));
+  border-radius: var(--r-sm);
+}
+
+.tabActive {
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}
+
+.tabEnd {
+  margin-left: auto;
+}
+
+@media (max-width: 768px) {
+  .bar {
+    padding: var(--sp-2) var(--sp-4);
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    top: 0; /* On mobile the topbar wraps and isn't a fixed height; just keep tabs sticky to viewport. */
+  }
+  .tabEnd {
+    margin-left: 0;
+  }
 }

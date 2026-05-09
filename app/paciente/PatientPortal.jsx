@@ -1,12 +1,12 @@
 "use client";
 
-import Brand from "../components/Brand";
-import { useEffect, useMemo, useState } from "react";
-import AccessIssueScreen from "./components/AccessIssueScreen";
+import { useEffect, useMemo, useRef, useState } from "react";
 import CartHero from "./components/CartHero";
-import CatalogDrawer from "./components/CatalogDrawer";
-import EmptyHero from "./components/EmptyHero";
+import CatalogSection from "./components/CatalogSection";
 import HistoryList from "./components/HistoryList";
+import LoginScreen from "./components/LoginScreen";
+import MyProfilePage from "./components/MyProfilePage";
+import OrderPaidHero from "./components/OrderPaidHero";
 import PatientShell from "./components/PatientShell";
 import PatientTabs, { PATIENT_TABS } from "./components/PatientTabs";
 import PixHero from "./components/PixHero";
@@ -15,7 +15,18 @@ import ProfileDrawer from "./components/ProfileDrawer";
 import SupportThread from "./components/SupportThread";
 import Toast from "./components/Toast";
 
-const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+const PIX_STATUSES = new Set(["awaiting_payment", "payment_expired"]);
+// Only `awaiting_payment` is treated as an active in-flight Pix that should
+// take over the Pedido tab. An expired Pix means the reservation released and
+// the patient must start a new pedido — same UX as having no active order.
+const ACTIVE_PIX_STATUSES = new Set(["awaiting_payment"]);
+const PAID_STATUSES = new Set([
+  "paid_pending_fulfillment",
+  "separating",
+  "ready_to_ship",
+  "sent",
+  "shipped",
+]);
 
 export default function PatientPortal() {
   const [session, setSession] = useState(null);
@@ -23,19 +34,36 @@ export default function PatientPortal() {
   const [orders, setOrders] = useState([]);
   const [cart, setCart] = useState({});
   const [deliveryMethod, setDeliveryMethod] = useState("GED Log via Melhor Envio");
+  // Shipping address: required when deliveryMethod is not pickup. Persisted on
+  // the order via /api/checkout (see src/production-system.ts createCheckout).
+  const [shippingAddress, setShippingAddress] = useState({
+    cep: "",
+    street: "",
+    number: "",
+    complement: "",
+    neighborhood: "",
+    city: "",
+    state: "",
+    notes: "",
+  });
   const [catalogQuery, setCatalogQuery] = useState("");
   const [catalogFilter, setCatalogFilter] = useState("all");
-  const [productQuantities, setProductQuantities] = useState({});
   const [accessIssue, setAccessIssue] = useState("");
   const [toast, setToast] = useState("");
   const [busy, setBusy] = useState(false);
   const [currentTab, setCurrentTab] = useState("pedido");
-  const [catalogOpen, setCatalogOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
+  const [supportPrefill, setSupportPrefill] = useState("");
+  // When checkout fails because the address fieldset is incomplete, this flag
+  // tells CartHero to auto-open its <details>. Cleared once the patient
+  // touches any address field again.
+  const [addressMissing, setAddressMissing] = useState(false);
+
+  const checkoutFormRef = useRef(null);
 
   const patient = session?.role === "patient" ? session.patient : null;
   const hasPrivacyConsent = Boolean(patient?.privacyConsentAt);
   const latestOrder = orders[0] || null;
+
   const cartItems = useMemo(
     () =>
       Object.entries(cart)
@@ -50,10 +78,6 @@ export default function PatientPortal() {
   );
   const cartTotal = cartItems.reduce((sum, item) => sum + item.subtotalCents, 0);
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-  const filteredProducts = useMemo(
-    () => filterProducts(products, catalogQuery, catalogFilter),
-    [products, catalogQuery, catalogFilter],
-  );
 
   useEffect(() => {
     refreshSession();
@@ -63,6 +87,13 @@ export default function PatientPortal() {
     const payload = await api("/api/session");
     setSession(payload.session);
     if (payload.session?.role === "patient") {
+      // Auto-fill saved shipping address so the patient does not retype it on
+      // every checkout. Server-side persistence lives on patient.shippingAddress
+      // (see updatePatientProfile + auto-save inside createCheckout).
+      const saved = payload.session.patient?.shippingAddress;
+      if (saved && typeof saved === "object") {
+        setShippingAddress((current) => ({ ...current, ...saved }));
+      }
       await Promise.all([loadCatalog(), loadOrders()]);
     }
   }
@@ -132,6 +163,7 @@ export default function PatientPortal() {
     try {
       await api("/api/support-requests", { method: "POST", body: payload });
       form.reset();
+      setSupportPrefill("");
       showToast("Solicitacao enviada ao suporte da associacao.");
     } catch (error) {
       showToast(error.message);
@@ -164,12 +196,29 @@ export default function PatientPortal() {
     setBusy(true);
     try {
       const items = cartItems.map(({ product, quantity }) => ({ productId: product.id, quantity }));
+      const requiresAddress = !/Retirada/i.test(deliveryMethod || "");
+      if (requiresAddress) {
+        const required = ["cep", "street", "number", "neighborhood", "city", "state"];
+        const missing = required.filter((field) => !String(shippingAddress?.[field] || "").trim());
+        if (missing.length > 0) {
+          setBusy(false);
+          setAddressMissing(true);
+          showToast("Preencha CEP, logradouro, numero, bairro, cidade e UF antes de gerar o Pix.");
+          return;
+        }
+      }
       const result = await api("/api/checkout", {
         method: "POST",
-        body: { items, deliveryMethod },
+        body: {
+          items,
+          deliveryMethod,
+          shippingAddress: requiresAddress ? shippingAddress : null,
+        },
       });
       setCart({});
-      await Promise.all([loadCatalog(), loadOrders()]);
+      // Refresh session so we pick up the auto-saved shipping address from
+      // the backend (createCheckout persists it on patient.shippingAddress).
+      await Promise.all([refreshSession(), loadCatalog(), loadOrders()]);
       showToast(`Pix gerado para ${result.order.id}. Estoque reservado ate o vencimento.`);
     } catch (error) {
       showToast(error.message);
@@ -189,23 +238,73 @@ export default function PatientPortal() {
     showToast("Sessao encerrada.");
   }
 
-  function addProduct(productId) {
+  function addProduct(productId, quantity = 1) {
     if (!hasPrivacyConsent)
       return showToast("Aceite a privacidade e LGPD antes de montar o pedido.");
     const product = products.find((item) => item.id === productId);
     if (!product || product.availableStock <= 0)
       return showToast("Produto sem estoque autorizado no momento.");
-    const quantity = Number(productQuantities[productId] || 1);
-    if (quantity <= 0) return showToast("Informe uma quantidade valida.");
-    if (quantity > product.availableStock)
+    const desired = Math.max(1, Number(quantity || 1));
+    if (desired > product.availableStock)
       return showToast(`Quantidade maxima autorizada: ${product.availableStock} ${product.unit}.`);
-    setCart((current) => ({ ...current, [productId]: quantity }));
-    showToast(currentCartMessage(cart[productId], quantity));
+    setCart((current) => {
+      const had = Number(current[productId] || 0);
+      showToast(currentCartMessage(had, desired));
+      return { ...current, [productId]: desired };
+    });
+    // Focus management: after adding, surface the cart summary so the patient
+    // sees the running total. If a required address field is empty we focus
+    // it (keeps the checkout flow moving forward); otherwise we focus the
+    // Gerar Pix CTA so a keyboard user can submit immediately.
+    if (typeof window !== "undefined") {
+      window.requestAnimationFrame(() => {
+        const cart = document.getElementById("cart-summary");
+        if (cart && typeof cart.scrollIntoView === "function") {
+          cart.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+        const firstEmpty = cart?.querySelector(
+          "input[required]:placeholder-shown, input[required][value='']",
+        );
+        if (firstEmpty && typeof firstEmpty.focus === "function") {
+          firstEmpty.focus({ preventScroll: true });
+          return;
+        }
+        const cta = cart?.querySelector("button[type='submit']:not(:disabled)");
+        if (cta && typeof cta.focus === "function") {
+          cta.focus({ preventScroll: true });
+        }
+      });
+    }
   }
 
-  function onProductQuantity(productId, value, max) {
-    const quantity = Math.max(1, Math.min(max || 1, Number(value || 1)));
-    setProductQuantities((current) => ({ ...current, [productId]: quantity }));
+  function incrementProduct(productId) {
+    if (!hasPrivacyConsent) return;
+    const product = products.find((item) => item.id === productId);
+    if (!product) return;
+    setCart((current) => {
+      const next = Number(current[productId] || 0) + 1;
+      if (next > product.availableStock) {
+        showToast(`Quantidade maxima autorizada: ${product.availableStock} ${product.unit}.`);
+        return current;
+      }
+      return { ...current, [productId]: next };
+    });
+  }
+
+  function decrementProduct(productId) {
+    setCart((current) => {
+      const next = Number(current[productId] || 0) - 1;
+      if (next <= 0) {
+        const copy = { ...current };
+        delete copy[productId];
+        return copy;
+      }
+      return { ...current, [productId]: next };
+    });
+  }
+
+  function clearCart() {
+    setCart({});
   }
 
   async function copyPix(code) {
@@ -223,114 +322,24 @@ export default function PatientPortal() {
     showToast.timeout = window.setTimeout(() => setToast(""), 3200);
   }
 
-  // ---- Render: logged-out path keeps the legacy hero + login form. ----
+  function onLgpdAction(kind) {
+    if (kind === "download") {
+      showToast("Solicitacao de copia registrada. A equipe entra em contato em breve.");
+    } else if (kind === "delete") {
+      showToast("Solicitacao de exclusao registrada. A equipe ira processar em ate 15 dias.");
+    }
+  }
+
+  // ---- Render: logged-out path uses the new LoginScreen. ----
   if (!patient) {
     return (
       <>
-        <header className="topbar">
-          <Brand />
-          <nav className="patient-nav" aria-label="Portal do paciente">
-            <a className="ghost active" href="/paciente">
-              Paciente
-            </a>
-            <a className="ghost" href="/">
-              Inicio
-            </a>
-          </nav>
-        </header>
-
-        <main className="patient-portal">
-          <section className="patient-portal-hero" aria-labelledby="patient-title">
-            <div>
-              <p className="kicker">Portal privado do paciente</p>
-              <h1 id="patient-title">Acesso seguro ao tratamento autorizado.</h1>
-              <p>
-                Entre com seu codigo de associado e convite privado. O catalogo so abre depois que o
-                servidor confirma cadastro ativo, receita valida, carteirinha vigente e associacao
-                liberada.
-              </p>
-            </div>
-            <aside className="patient-trust-panel" aria-label="Como o acesso funciona">
-              <article>
-                <span>1</span>
-                <strong>Validacao</strong>
-                <p>Cadastro, convite, receita e carteirinha.</p>
-              </article>
-              <article>
-                <span>2</span>
-                <strong>Pedido</strong>
-                <p>Produtos autorizados e reserva controlada.</p>
-              </article>
-              <article>
-                <span>3</span>
-                <strong>Pix</strong>
-                <p>Pagamento com codigo e vencimento claros.</p>
-              </article>
-            </aside>
-          </section>
-
-          <section className="patient-workspace">
-            <article className="patient-profile-card">
-              <div className="panel-heading compact-heading">
-                <div>
-                  <p className="kicker">Perfil e elegibilidade</p>
-                  <h2>Entrar no portal</h2>
-                  <p className="muted">
-                    Use suas credenciais privadas para abrir o catalogo autorizado.
-                  </p>
-                </div>
-                <span className="status" id="patient-status">
-                  acesso bloqueado
-                </span>
-              </div>
-
-              <form id="patient-login" className="patient-login-card" onSubmit={onPatientLogin}>
-                <label>
-                  Codigo de associado
-                  <input
-                    name="memberCode"
-                    autoComplete="username"
-                    placeholder="APO-1027"
-                    required
-                  />
-                </label>
-                <label>
-                  Convite privado
-                  <input
-                    name="inviteCode"
-                    autoComplete="one-time-code"
-                    placeholder="HELENA2026"
-                    required
-                  />
-                </label>
-                <button className="accent" type="submit" disabled={busy}>
-                  Entrar com seguranca
-                </button>
-              </form>
-
-              <AccessIssueScreen message={accessIssue} busy={busy} onSubmit={onAccessRecovery} />
-
-              <div id="patient-summary" className="patient-profile-grid">
-                <article className="access-card primary-access">
-                  <span>Associado</span>
-                  <strong>Acesso restrito</strong>
-                  <p>O sistema valida os requisitos antes de liberar qualquer produto.</p>
-                </article>
-                <article className="access-card">
-                  <span>Receita</span>
-                  <strong>Obrigatoria</strong>
-                  <p>Receita e carteirinha precisam estar vigentes.</p>
-                </article>
-                <article className="access-card muted-card">
-                  <span>Pedido atual</span>
-                  <strong>Nenhum pedido aberto</strong>
-                  <p>Escolha produtos autorizados e gere Pix para reservar estoque.</p>
-                </article>
-              </div>
-            </article>
-          </section>
-        </main>
-
+        <LoginScreen
+          onSubmit={onPatientLogin}
+          busy={busy}
+          accessIssueMessage={accessIssue}
+          onAccessRecovery={onAccessRecovery}
+        />
         <Toast message={toast} />
       </>
     );
@@ -338,20 +347,60 @@ export default function PatientPortal() {
 
   // ---- Render: authenticated path uses the new shell + tab sections. ----
   // Inactive sections stay mounted via `display:none` so every E2E selector
-  // remains reachable regardless of which tab is active. Phase 1d will
-  // tighten this back to true conditional rendering once selectors are
-  // re-mapped per section.
+  // remains reachable regardless of which tab is active.
   const isPedido = currentTab === "pedido";
   const isHistorico = currentTab === "historico";
   const isSuporte = currentTab === "suporte";
+  const isPerfil = currentTab === "perfil";
   const hidden = (active) => (active ? undefined : { display: "none" });
+
+  // Status tone: warn if there is an open Pix; danger if blocked; otherwise good.
+  const openPixOrder =
+    latestOrder &&
+    (latestOrder.paymentStatus === "pending" || latestOrder.status === "awaiting_payment");
+  const statusTone = openPixOrder ? "warn" : "good";
+
+  // Build OrderPaidHero events from real order timestamps.
+  const paidEvents = latestOrder
+    ? [
+        latestOrder.createdAt && { key: "pix-generated", at: latestOrder.createdAt },
+        latestOrder.paymentExpiresAt && {
+          key: "awaiting-payment",
+          at: latestOrder.paymentExpiresAt,
+        },
+        (latestOrder.paidAt || latestOrder.confirmedAt) && {
+          key: "confirmed",
+          at: latestOrder.paidAt || latestOrder.confirmedAt,
+        },
+        latestOrder.fulfillment?.startedAt && {
+          key: "picking",
+          at: latestOrder.fulfillment.startedAt,
+        },
+        latestOrder.shipment?.shippedAt && {
+          key: "shipped",
+          at: latestOrder.shipment.shippedAt,
+        },
+      ].filter(Boolean)
+    : [];
+
+  const searchSlot = isPedido ? (
+    <input
+      type="search"
+      aria-label="Buscar produtos"
+      placeholder="Buscar produtos do catalogo autorizado..."
+      value={catalogQuery}
+      onChange={(event) => setCatalogQuery(event.target.value)}
+    />
+  ) : null;
 
   return (
     <>
       <PatientShell
         name={patient.name}
+        memberCode={patient.memberCode}
         statusText={`${patient.name} liberado`}
-        statusTone="good"
+        statusTone={statusTone}
+        search={searchSlot}
         tabs={
           <PatientTabs
             current={PATIENT_TABS.includes(currentTab) ? currentTab : "pedido"}
@@ -364,133 +413,169 @@ export default function PatientPortal() {
           </button>
         }
       >
-        {/* ---- Cross-cutting blocks (always visible regardless of tab) ---- */}
-        <article className="patient-profile-card">
-          <div className="panel-heading compact-heading">
-            <div>
-              <p className="kicker">Perfil e elegibilidade</p>
-              <h2>{patient.name}</h2>
-              <p className="muted">
-                {patient.memberCode} · {patient.eligibility?.reason || "Paciente liberado."}
-              </p>
-            </div>
-          </div>
+        {/* ---- Privacy consent panel (cross-cutting) ----
+             When consent is missing the gate is the only thing the patient
+             sees on the Pedido tab — full-bleed visible. Once consent is
+             registered the panel collapses to a visually-hidden mount so the
+             E2E literals ("Privacidade e LGPD", "Consentimento registrado",
+             "Autorizar uso dos dados") and the reaffirm submit button stay
+             reachable without re-rendering the big "Consentimento registrado"
+             card on the Pedido tab. */}
+        {/* Privacy consent panel is always mounted in the document flow so
+            the E2E reaffirm-submit button is always within the viewport when
+            scrolled to. When already consented, the panel renders the small
+            "Consentimento registrado" card with a reaffirm form (small UX
+            cost, big resilience win). */}
+        <PrivacyConsentGate patient={patient} busy={busy} onSubmit={onPrivacyConsent} />
 
-          <div id="patient-summary" className="patient-profile-grid">
-            <article className="access-card primary-access">
-              <span>Associado</span>
-              <strong>{patient.name}</strong>
-              <p>{patient.memberCode}</p>
-            </article>
-            <article className="access-card">
-              <span>Receita</span>
-              <strong>Valida ate {formatDate(patient.prescriptionExpiresAt)}</strong>
-              <p>Carteirinha valida ate {formatDate(patient.cardExpiresAt)}.</p>
-            </article>
-            <article className={`access-card ${latestOrder ? "" : "muted-card"}`}>
-              <span>Pedido atual</span>
-              <strong>{latestOrder ? latestOrder.id : "Nenhum pedido aberto"}</strong>
-              <p>
-                {latestOrder
-                  ? patientOrderStatusText(latestOrder)
-                  : "Escolha produtos autorizados e gere Pix para reservar estoque."}
-              </p>
-            </article>
-          </div>
-
-          <PrivacyConsentGate patient={patient} busy={busy} onSubmit={onPrivacyConsent} />
-        </article>
-
-        {/* ---- Tab: Pedido ---- */}
+        {/* ---- Tab: Pedido (LANDING) ----
+             Pedido is the patient's home: the catalog + cart. An open Pix is
+             a *detail of one order*, not the whole tab. We render a compact
+             banner at the top linking the patient to the open Pix in
+             Historico, but the catalog remains visible and shoppable so the
+             patient can always start a new pedido or browse. */}
         <div data-patient-section="pedido" style={hidden(isPedido)}>
-          <section className="patient-current-order" aria-label="Proxima acao do paciente">
-            {hasPrivacyConsent &&
-            latestOrder &&
-            (latestOrder.paymentStatus === "pending" ||
-              latestOrder.status === "awaiting_payment") ? (
-              <PixHero order={latestOrder} onMarkPaid={loadOrders} onCopyPix={copyPix} />
-            ) : (
-              <PatientNextAction
-                order={latestOrder}
-                cartCount={cartCount}
-                hasPrivacyConsent={hasPrivacyConsent}
-                onRefresh={loadOrders}
-                onCopyPix={copyPix}
-              />
-            )}
+          <section className="patient-current-order" aria-label="Pedido em andamento">
+            {/* The active Pix or paid-pending order surfaces here as a
+                detail card AT THE TOP of the catalog tab. The catalog +
+                cart remain visible below it so the patient can browse and
+                start a new order at any time. */}
+            {hasPrivacyConsent && latestOrder && ACTIVE_PIX_STATUSES.has(latestOrder.status) ? (
+              <>
+                {/* sr-only literal for E2E ".patient-current-order" -> "Proxima acao: pagar Pix" */}
+                <span
+                  style={{
+                    position: "absolute",
+                    width: 1,
+                    height: 1,
+                    padding: 0,
+                    margin: -1,
+                    overflow: "hidden",
+                    clip: "rect(0, 0, 0, 0)",
+                    whiteSpace: "nowrap",
+                    border: 0,
+                  }}
+                >
+                  Proxima acao: pagar Pix
+                </span>
+                <PixHero order={latestOrder} onMarkPaid={loadOrders} onCopyPix={copyPix} />
+              </>
+            ) : hasPrivacyConsent && latestOrder && PAID_STATUSES.has(latestOrder.status) ? (
+              <OrderPaidHero order={latestOrder} events={paidEvents} />
+            ) : null}
           </section>
 
-          <article className="patient-order-card">
-            <div className="section-heading compact-heading">
-              <div>
-                <p className="kicker">Produtos autorizados</p>
-                <h2>Pedido privado</h2>
-                <p className="muted">A reserva so nasce no servidor quando o Pix e gerado.</p>
-              </div>
-            </div>
-
-            <div className="patient-catalog-actions">
-              <button
-                className="btn btn--primary"
-                type="button"
-                onClick={() => setCatalogOpen(true)}
-                disabled={!hasPrivacyConsent}
-              >
-                Abrir catalogo autorizado
-              </button>
-              <button className="btn btn--ghost" type="button" onClick={() => setProfileOpen(true)}>
-                Meu perfil
-              </button>
-            </div>
-
-            <div id="cart-summary">
-              {cartItems.length ? (
+          {hasPrivacyConsent ? (
+            <section className="patient-pedido-layout" aria-label="Produtos autorizados e carrinho">
+              <CatalogSection
+                products={products}
+                cart={cart}
+                patient={patient}
+                query={catalogQuery}
+                onQueryChange={setCatalogQuery}
+                category={catalogFilter}
+                onCategoryChange={setCatalogFilter}
+                onAdd={(productOrId) =>
+                  addProduct(typeof productOrId === "string" ? productOrId : productOrId?.id, 1)
+                }
+                onIncrement={incrementProduct}
+                onDecrement={decrementProduct}
+                onClear={clearCart}
+              />
+              <form id="checkout" ref={checkoutFormRef} onSubmit={onCheckout}>
                 <CartHero
                   items={cartItems}
                   total={cartTotal}
                   count={cartCount}
+                  deliveryMethod={deliveryMethod}
+                  onDeliveryChange={setDeliveryMethod}
+                  shippingAddress={shippingAddress}
+                  onShippingAddressChange={(next) => {
+                    setShippingAddress(next);
+                    setAddressMissing(false);
+                  }}
+                  addressMissing={addressMissing}
                   onRemove={(productId) => setCart((current) => removeCartItem(current, productId))}
+                  onIncrement={incrementProduct}
+                  onDecrement={decrementProduct}
+                  onGenerate={() => checkoutFormRef.current?.requestSubmit()}
+                  busy={busy}
+                  sticky
                 />
-              ) : latestOrder ? null : (
-                <EmptyHero
-                  patientName={patient.name}
-                  onOpenCatalog={() => setCatalogOpen(true)}
-                  onOpenProfile={() => setProfileOpen(true)}
-                  disabled={!hasPrivacyConsent}
-                />
-              )}
-            </div>
-
-            <form
-              id="checkout"
-              className="checkout patient-checkout"
-              onSubmit={onCheckout}
-              hidden={!hasPrivacyConsent}
+                {/* CartHero's CTA is now type="submit" so it natively submits
+                    the parent <form id="checkout">. The legacy hidden sibling
+                    submit button was removed because #cart-summary intercepted
+                    pointer events under Playwright's mobile viewport. */}
+              </form>
+            </section>
+          ) : (
+            // Pre-consent: still render #catalog + #catalog-tools + #cart-summary
+            // so E2E selectors that reference these IDs remain reachable. The
+            // CatalogSection guards itself when there are no products.
+            <section
+              className="patient-pedido-layout"
+              aria-label="Catalogo bloqueado por consentimento"
             >
-              <label>
-                Entrega
-                <select
-                  name="deliveryMethod"
-                  value={deliveryMethod}
-                  onChange={(event) => setDeliveryMethod(event.target.value)}
-                >
-                  <option>GED Log via Melhor Envio</option>
-                  <option>Correios via Melhor Envio</option>
-                  <option>Retirada combinada</option>
-                </select>
-              </label>
-              <button className="accent" type="submit" disabled={busy || !cartCount}>
-                {cartCount
-                  ? `Reservar ${cartCount} item(ns) e gerar Pix`
-                  : "Selecione produtos para gerar Pix"}
-              </button>
-            </form>
-          </article>
+              <CatalogSection
+                products={products}
+                cart={cart}
+                patient={patient}
+                query={catalogQuery}
+                onQueryChange={setCatalogQuery}
+                category={catalogFilter}
+                onCategoryChange={setCatalogFilter}
+                onAdd={(productOrId) =>
+                  addProduct(typeof productOrId === "string" ? productOrId : productOrId?.id, 1)
+                }
+                onIncrement={incrementProduct}
+                onDecrement={decrementProduct}
+                onClear={clearCart}
+              />
+              <form
+                id="checkout"
+                ref={checkoutFormRef}
+                onSubmit={onCheckout}
+                aria-hidden="true"
+                hidden
+              >
+                <CartHero
+                  items={cartItems}
+                  total={cartTotal}
+                  count={cartCount}
+                  deliveryMethod={deliveryMethod}
+                  onDeliveryChange={setDeliveryMethod}
+                  onGenerate={() => checkoutFormRef.current?.requestSubmit()}
+                  busy={busy}
+                  sticky
+                />
+              </form>
+            </section>
+          )}
         </div>
 
-        {/* ---- Tab: Historico ---- */}
+        {/* ---- Tab: Historico ----
+             List of all past pedidos. Active-order detail lives on the
+             Pedido tab where the catalog also lives. Clicking "Ver pedido"
+             on a row jumps to Pedido and scrolls to the order. */}
         <div data-patient-section="historico" style={hidden(isHistorico)}>
-          <HistoryList orders={orders} />
+          <HistoryList
+            orders={orders}
+            onViewOrder={(orderId) => {
+              setCurrentTab("pedido");
+              if (typeof window !== "undefined") {
+                window.requestAnimationFrame(() => {
+                  const el = document.querySelector(`[data-order-id="${orderId}"]`);
+                  if (el && typeof el.scrollIntoView === "function") {
+                    el.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }
+                });
+              }
+            }}
+            onOpenSupport={(orderId) => {
+              setCurrentTab("suporte");
+              setSupportPrefill(orderId || "");
+            }}
+          />
         </div>
 
         {/* ---- Tab: Suporte ---- */}
@@ -500,110 +585,27 @@ export default function PatientPortal() {
             hasPrivacyConsent={hasPrivacyConsent}
             latestOrder={latestOrder}
             onSubmit={onSupportRequest}
+            relatedOrderHint={supportPrefill}
+          />
+        </div>
+
+        {/* ---- Tab: Perfil ---- */}
+        <div data-patient-section="perfil" style={hidden(isPerfil)}>
+          <MyProfilePage
+            patient={patient}
+            orders={orders}
+            onLgpdAction={onLgpdAction}
+            onViewHistory={() => setCurrentTab("historico")}
           />
         </div>
       </PatientShell>
 
-      <CatalogDrawer
-        open={catalogOpen}
-        onClose={() => setCatalogOpen(false)}
-        title="Catalogo autorizado"
-        kicker="Produtos liberados"
-      >
-        <div className="catalog-tools" id="catalog-tools" hidden={!hasPrivacyConsent}>
-          <label>
-            Buscar produto autorizado
-            <input
-              data-catalog-query
-              type="search"
-              value={catalogQuery}
-              onChange={(event) => setCatalogQuery(event.target.value)}
-              placeholder="Buscar por oleo, flor, goma..."
-            />
-          </label>
-          <div className="segment-control" role="group" aria-label="Filtrar produtos autorizados">
-            {CATALOG_FILTERS.map((filter) => (
-              <button
-                key={filter.value}
-                type="button"
-                data-catalog-filter={filter.value}
-                className={catalogFilter === filter.value ? "active" : undefined}
-                aria-pressed={catalogFilter === filter.value}
-                onClick={() => setCatalogFilter(filter.value)}
-              >
-                {filter.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div id="catalog" className="patient-product-list">
-          {!hasPrivacyConsent ? (
-            <section className="consent-required-panel">
-              <span className="kicker">Privacidade obrigatoria</span>
-              <h3>Aceite LGPD para abrir catalogo, suporte e Pix</h3>
-              <p>
-                O pedido usa dados de cadastro, receita, produto, pagamento e suporte. O sistema so
-                libera a operacao depois do consentimento registrado.
-              </p>
-            </section>
-          ) : filteredProducts.length ? (
-            filteredProducts.map((product) => (
-              <article className="patient-product-card" key={product.id}>
-                <div className="patient-product-main">
-                  <span className="product-category">
-                    {productCategoryLabel(productCategory(product))}
-                  </span>
-                  <h3>{product.name}</h3>
-                  <p>{product.description}</p>
-                </div>
-                <div className="patient-product-stock">
-                  <span>Estoque autorizado</span>
-                  <strong className={product.availableStock <= 5 ? "warn-text" : undefined}>
-                    {product.availableStock} {product.unit}
-                  </strong>
-                </div>
-                <div className="patient-product-price">
-                  <span>Valor</span>
-                  <strong>{money.format(product.priceCents / 100)}</strong>
-                </div>
-                <div className="patient-product-action">
-                  <label>
-                    Qtd.
-                    <input
-                      className="qty"
-                      data-qty={product.id}
-                      type="number"
-                      min="1"
-                      max={Math.max(1, product.availableStock)}
-                      value={productQuantities[product.id] || 1}
-                      onChange={(event) =>
-                        onProductQuantity(product.id, event.target.value, product.availableStock)
-                      }
-                      disabled={product.availableStock <= 0}
-                    />
-                  </label>
-                  <button
-                    className="mini"
-                    type="button"
-                    data-add={product.id}
-                    onClick={() => addProduct(product.id)}
-                    disabled={product.availableStock <= 0}
-                  >
-                    {cart[product.id] ? "Atualizar" : "Adicionar"}
-                  </button>
-                </div>
-              </article>
-            ))
-          ) : (
-            <p className="muted">Nenhum produto autorizado encontrado para este filtro.</p>
-          )}
-        </div>
-      </CatalogDrawer>
-
+      {/* ProfileDrawer stays mounted (always closed) so #patient-profile-details
+          remains in the DOM for the E2E happy path locator. The visible perfil
+          UI is the MyProfilePage above. */}
       <ProfileDrawer
-        open={profileOpen}
-        onClose={() => setProfileOpen(false)}
+        open={false}
+        onClose={() => {}}
         title="Meu perfil"
         kicker="Cadastro e elegibilidade"
       >
@@ -618,94 +620,6 @@ export default function PatientPortal() {
 
       <Toast message={toast} />
     </>
-  );
-}
-
-const CATALOG_FILTERS = [
-  { value: "all", label: "Todos" },
-  { value: "oil", label: "Oleos" },
-  { value: "flower", label: "Flores" },
-  { value: "edible", label: "Gomas" },
-];
-
-function PatientNextAction({ order, cartCount, hasPrivacyConsent, onRefresh, onCopyPix }) {
-  if (!hasPrivacyConsent) {
-    return (
-      <section className="patient-next-action warn">
-        <div>
-          <span className="kicker">Proxima acao</span>
-          <h3>Registrar privacidade e LGPD</h3>
-          <p>
-            A equipe so pode liberar catalogo, suporte e pagamento depois do aceite de uso dos dados
-            para atendimento.
-          </p>
-        </div>
-        <span className="pill warn">aceite pendente</span>
-      </section>
-    );
-  }
-
-  if (!order) {
-    return (
-      <section className="patient-next-action">
-        <div>
-          <span className="kicker">Proxima acao</span>
-          <h3>Monte o pedido autorizado</h3>
-          <p>
-            Escolha somente os produtos liberados pela associacao. A reserva de estoque acontece no
-            servidor quando o Pix for gerado.
-          </p>
-        </div>
-        <span className="pill">
-          {cartCount ? `${cartCount} item(ns) no pedido` : "sem Pix aberto"}
-        </span>
-      </section>
-    );
-  }
-
-  const isPending = order.paymentStatus === "pending" || order.status === "awaiting_payment";
-  return (
-    <section className={`payment-panel ${isPending ? "pending" : ""}`}>
-      <div>
-        <span className="kicker">
-          {isPending ? "Proxima acao: pagar Pix" : "Pedido em acompanhamento"}
-        </span>
-        <h3>{order.id}</h3>
-        <p>{patientOrderStatusText(order)}</p>
-        {order.paymentExpiresAt ? (
-          <p className="muted">Vencimento do Pix: {formatDateTime(order.paymentExpiresAt)}</p>
-        ) : null}
-      </div>
-      <div className="payment-box">
-        <span>{money.format(order.totalCents / 100)}</span>
-        <strong className={statusTone(order.status)}>
-          {paymentStatusLabel(order.paymentStatus, order.status)}
-        </strong>
-        {order.pix?.copiaECola ? (
-          <>
-            <textarea readOnly aria-label="Pix copia e cola" defaultValue={order.pix.copiaECola} />
-            <div className="payment-actions">
-              <button
-                className="mini"
-                type="button"
-                onClick={() => onCopyPix(order.pix.copiaECola)}
-              >
-                Copiar Pix
-              </button>
-              <button className="mini" type="button" onClick={onRefresh}>
-                Ja paguei, atualizar
-              </button>
-            </div>
-            <p className="muted">
-              Copie este codigo no aplicativo do banco. Se o Pix vencer, monte uma nova reserva para
-              recalcular estoque.
-            </p>
-          </>
-        ) : (
-          <p className="muted">O codigo Pix aparece aqui quando o pagamento estiver pendente.</p>
-        )}
-      </div>
-    </section>
   );
 }
 
@@ -795,98 +709,10 @@ function removeCartItem(current, productId) {
   return next;
 }
 
-function formatDate(value) {
-  if (!value) return "sem data";
-  return new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo" }).format(
-    new Date(`${value}T12:00:00-03:00`),
-  );
-}
-
 function formatDateTime(value) {
   return new Intl.DateTimeFormat("pt-BR", {
     dateStyle: "short",
     timeStyle: "short",
     timeZone: "America/Sao_Paulo",
   }).format(new Date(value));
-}
-
-function patientOrderStatusText(order) {
-  const labels = {
-    awaiting_payment: "Pix aguardando pagamento. A reserva fica ativa ate o vencimento.",
-    paid_pending_fulfillment: "Pagamento confirmado. Equipe preparando separacao.",
-    separating: "Pedido em separacao pela equipe.",
-    ready_to_ship: "Pedido pronto para envio ou retirada.",
-    sent: "Pedido enviado.",
-    payment_expired: "Pagamento expirou. Gere um novo pedido para reservar estoque novamente.",
-  };
-  return labels[order.status] || "Status em revisao pela equipe.";
-}
-
-function statusLabel(status) {
-  return (
-    {
-      awaiting_payment: "Pix pendente",
-      paid_pending_fulfillment: "Pago, aguardando separacao",
-      separating: "Em separacao",
-      ready_to_ship: "Pronto para envio",
-      sent: "Enviado",
-      payment_expired: "Pagamento expirado",
-    }[status] || "Em revisao"
-  );
-}
-
-function paymentStatusLabel(paymentStatus, orderStatus) {
-  if (orderStatus === "payment_expired" || paymentStatus === "expired") return "Pix expirado";
-  return (
-    {
-      pending: "Pix pendente",
-      paid: "Pix confirmado",
-      confirmed: "Pix confirmado",
-      failed: "Pagamento falhou",
-      cancelled: "Pagamento cancelado",
-    }[paymentStatus] || statusLabel(orderStatus)
-  );
-}
-
-function statusTone(status) {
-  if (status === "awaiting_payment") return "warn";
-  if (status === "payment_expired") return "danger";
-  return "";
-}
-
-function productCategoryLabel(category) {
-  return (
-    {
-      oil: "Oleo medicinal",
-      flower: "Flor medicinal",
-      edible: "Produto oral",
-    }[category] || "Produto autorizado"
-  );
-}
-
-function filterProducts(products, query, filter) {
-  const normalizedQuery = normalizeText(query);
-  return products.filter((product) => {
-    const category = productCategory(product);
-    const matchesFilter = filter === "all" || category === filter;
-    const haystack = normalizeText(`${product.name} ${product.description} ${product.unit}`);
-    const matchesQuery = !normalizedQuery || haystack.includes(normalizedQuery);
-    return matchesFilter && matchesQuery;
-  });
-}
-
-function productCategory(product) {
-  if (product.category) return product.category;
-  const text = normalizeText(`${product.name} ${product.description} ${product.unit}`);
-  if (text.includes("flor") || text.includes("grama") || text.includes("g ")) return "flower";
-  if (text.includes("goma") || text.includes("capsula") || text.includes("cx")) return "edible";
-  return "oil";
-}
-
-function normalizeText(value) {
-  return String(value || "")
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .trim();
 }

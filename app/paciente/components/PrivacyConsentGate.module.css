@@ -1,41 +1,363 @@
-.px-consent {
+.gate {
   display: grid;
-  gap: var(--sp-2);
-  padding: var(--sp-4);
-  border-radius: var(--r-md);
-  border: 1px solid var(--line);
+  gap: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+}
+
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
   background: var(--paper);
+  border: 2px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  box-sizing: border-box;
 }
 
-.px-consent.warn {
-  border-color: var(--warn, #d39a2c);
-  background: color-mix(in srgb, var(--warn, #d39a2c) 6%, var(--paper));
+.stepDone .dot {
+  background: var(--green);
+  border-color: var(--green);
+  color: var(--paper);
 }
 
-.px-consent.good {
-  border-color: var(--ok, #2f8a4a);
-  background: color-mix(in srgb, var(--ok, #2f8a4a) 4%, var(--paper));
+.stepNow {
+  color: var(--ink);
+  font-weight: 500;
 }
 
-.px-consent h3 {
-  margin: var(--sp-1) 0;
-  font-size: var(--fs-md, 16px);
+.stepNow .dot {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
 }
 
-.px-consent form {
+.line {
+  flex: 1;
+  height: 2px;
+  background: var(--line);
+  max-width: 60px;
+}
+
+.lineDone {
+  background: var(--green);
+}
+
+.card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 36px;
+  box-shadow: 0 16px 48px -24px rgba(13, 31, 23, 0.08);
+}
+
+.kicker {
+  font: 600 11px/1 var(--font-ui);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--green);
+}
+
+.card h1 {
+  margin: 10px 0 8px;
+  font: 500 26px/1.25 var(--font-display);
+  letter-spacing: -0.005em;
+}
+
+.card h3 {
+  margin: 10px 0 8px;
+  font: 500 20px/1.3 var(--font-display);
+}
+
+.lead {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0 0 28px;
+  max-width: 54ch;
+}
+
+.uses {
   display: grid;
-  gap: var(--sp-2);
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
 }
 
-.px-consent form button[type="submit"] {
-  justify-self: start;
+.use {
+  background: var(--paper-warm);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-md);
+  padding: 16px;
 }
 
-@media (max-width: 480px) {
-  .px-consent {
-    padding: var(--sp-3);
+.useIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-sm);
+  background: var(--green-tint);
+  color: var(--green-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.use h4 {
+  margin: 0 0 4px;
+  font: 500 14px/1.3 var(--font-display);
+}
+
+.use p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.disclosure {
+  padding: 14px 16px;
+  background: var(--paper-warm);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-sm);
+  margin-bottom: 14px;
+}
+
+.disclosure summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.disclosure summary::-webkit-details-marker {
+  display: none;
+}
+
+.disclosure summary::after {
+  content: "+";
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.disclosure[open] summary::after {
+  content: "−";
+}
+
+.disclosure ul {
+  margin: 12px 0 0;
+  padding-left: 20px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.disclosure ul li {
+  margin-bottom: 4px;
+}
+
+.agree {
+  display: flex;
+  align-items: start;
+  gap: 12px;
+  padding: 16px;
+  background: var(--green-tint);
+  border: 1px solid var(--green-soft);
+  border-radius: var(--r-sm);
+  margin: 24px 0 16px;
+}
+
+.agree input {
+  margin-top: 2px;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--green-deep);
+}
+
+.agree label {
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+}
+
+.agree label b {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.meta {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.submit {
+  padding: 14px 28px;
+  background: var(--ink);
+  color: var(--paper);
+  border: 0;
+  border-radius: var(--r-sm);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.submit:hover:not(:disabled) {
+  background: var(--green-deep);
+}
+
+.submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.code {
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+}
+
+/* Post-consent: collapse to a slim, single-line confirmation strip so the
+   patient is not greeted by a big "Consentimento registrado" card on every
+   visit to the Pedido tab. The richer LGPD UI lives in the Perfil tab. */
+.acceptedCard {
+  background: var(--paper);
+  border: 1px solid var(--green-soft);
+  border-radius: var(--r-md, 5px);
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: var(--sp-4, 16px);
+}
+
+.acceptedCard h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.acceptedCard .kicker {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--green-deep, var(--green));
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.acceptedCard p {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.reaffirmForm {
+  margin: 0;
+  display: inline-flex;
+}
+
+.reaffirmSubmit {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--r-sm, 3px);
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.reaffirmSubmit:hover:not(:disabled) {
+  background: var(--soft);
+  border-color: var(--ink);
+}
+
+.reaffirmSubmit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.visuallyHidden {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 4px;
+  height: 4px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  border: 0;
+  z-index: 2147483647;
+  pointer-events: auto;
+  opacity: 0;
+}
+
+.visuallyHidden button {
+  pointer-events: auto;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 4px;
+  height: 4px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  color: transparent;
+  font-size: 0;
+}
+
+@media (max-width: 640px) {
+  .card {
+    padding: 24px;
   }
-  .px-consent form button[type="submit"] {
-    width: 100%;
+  .uses {
+    grid-template-columns: 1fr;
   }
 }

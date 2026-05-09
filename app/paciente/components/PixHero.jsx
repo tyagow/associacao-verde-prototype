@@ -22,6 +22,16 @@ function formatCountdown(seconds) {
   return `${mm}:${ss}`;
 }
 
+function monogram(name) {
+  if (!name) return "AV";
+  const trimmed = String(name).trim();
+  if (!trimmed) return "AV";
+  const parts = trimmed.split(/\s+/);
+  const first = parts[0]?.[0] || "";
+  const second = parts[1]?.[0] || trimmed[1] || "";
+  return (first + second).toUpperCase().slice(0, 2);
+}
+
 export default function PixHero({ order, onMarkPaid, onCopyPix }) {
   const expiresAt = order?.paymentExpiresAt;
   const [secondsLeft, setSecondsLeft] = useState(() => computeSecondsLeft(expiresAt));
@@ -41,6 +51,14 @@ export default function PixHero({ order, onMarkPaid, onCopyPix }) {
   const items = order?.items || [];
   const delivery = order?.deliveryMethod || "Entrega a combinar";
   const totalCents = order?.totalCents || 0;
+  const orderId = order?.id || "novo pedido";
+  const expiresAtLabel = expiresAt
+    ? new Intl.DateTimeFormat("pt-BR", {
+        dateStyle: "short",
+        timeStyle: "short",
+        timeZone: "America/Sao_Paulo",
+      }).format(new Date(expiresAt))
+    : "sem data";
 
   const handleCopy = async () => {
     if (!copia) return;
@@ -55,6 +73,14 @@ export default function PixHero({ order, onMarkPaid, onCopyPix }) {
     }
   };
 
+  const stripCopy = expired
+    ? "Pix expirado · estoque liberado"
+    : "Pix gerado · estoque reservado até o vencimento";
+
+  const subtitles = expired
+    ? {}
+    : { "awaiting-payment": `${formatCountdown(secondsLeft)} restantes` };
+
   return (
     <section
       className={styles["px-hero"]}
@@ -63,138 +89,136 @@ export default function PixHero({ order, onMarkPaid, onCopyPix }) {
       aria-label="Pagamento Pix"
     >
       <header className={styles["px-hero__bar"]}>
-        <strong>Proxima acao: pagar Pix</strong>
-        <span>·</span>
-        <span>{order?.id || "novo pedido"}</span>
-        <span aria-hidden="true" style={{ flex: 1 }} />
-        <span className={styles["px-hero__pill"]}>{expired ? "Pix expirado" : "Pix pendente"}</span>
+        <span className={styles["px-hero__pulse"]} aria-hidden="true" />
+        <strong>{stripCopy}</strong>
+        <span className={styles["px-hero__order-id"]}>{orderId}</span>
       </header>
 
-      <div className={styles["px-hero__headline"]}>
-        <p className={styles["px-hero__amount"]}>
-          {money.format(totalCents / 100)}
-          <sup>BRL</sup>
-        </p>
-        <div className={styles["px-hero__countdown"]} aria-live="polite">
-          <span>{expired ? "Vencido" : "Vence em"}</span>
-          <strong>{formatCountdown(secondsLeft)}</strong>
-        </div>
-      </div>
-
-      {expired ? (
-        <p className={styles["px-hero__expired-note"]}>
-          Pagamento expirado. Solicite um novo Pix para reservar estoque novamente.
-        </p>
-      ) : null}
-
-      {items.length ? (
-        <div className={styles["px-hero__section"]}>
-          <p className={styles["px-hero__section-title"]}>Produtos reservados</p>
-          {items.map((item, index) => (
-            <div
-              className={styles["px-hero__product"]}
-              key={`${item.productId || item.name}-${index}`}
-            >
-              <div className={styles["px-hero__product-thumb"]} aria-hidden="true">
-                AV
-              </div>
-              <div>
-                <p className={styles["px-hero__product-name"]}>{item.name}</p>
-                <p className={styles["px-hero__product-meta"]}>
-                  {item.quantity} {item.unit || "un"}
-                </p>
-              </div>
-              <span className={styles["px-hero__product-price"]}>
-                {money.format(
-                  (item.subtotalCents != null
-                    ? item.subtotalCents
-                    : (item.unitPriceCents || 0) * item.quantity) / 100,
-                )}
-              </span>
+      <div className={styles["px-hero__grid"]}>
+        <div className={styles["px-hero__left"]}>
+          <div className={styles["px-hero__amount-row"]}>
+            <div>
+              <span className={styles["px-hero__kicker"]}>Total a pagar</span>
+              <p className={styles["px-hero__amount"]}>
+                {money.format(totalCents / 100)}
+                <sup>BRL</sup>
+              </p>
             </div>
-          ))}
+            <div className={styles["px-hero__countdown"]} aria-live="polite">
+              <span>{expired ? "Vencido" : "Vence em"}</span>
+              <strong>{formatCountdown(secondsLeft)}</strong>
+            </div>
+          </div>
+
+          <div className={styles["px-hero__meta-row"]}>
+            <div className={styles["px-hero__meta-item"]}>
+              <label>Método</label>
+              <b>Pix copia-e-cola</b>
+            </div>
+            <div className={styles["px-hero__meta-item"]}>
+              <label>Vencimento</label>
+              <b>{expiresAtLabel}</b>
+            </div>
+            <div className={styles["px-hero__meta-item"]}>
+              <label>Entrega</label>
+              <b>{delivery}</b>
+            </div>
+          </div>
+
+          {expired ? (
+            <p className={styles["px-hero__expired-note"]}>
+              Pagamento expirado. Solicite um novo Pix para reservar estoque novamente.
+            </p>
+          ) : null}
+
+          <div className={styles["px-hero__qr-section"]}>
+            <div className={styles["px-hero__qr"]}>
+              {copia ? (
+                <QRCodeSVG
+                  value={copia}
+                  size={180}
+                  level="M"
+                  bgColor="#ffffff"
+                  fgColor="#0d1f17"
+                  aria-label="QR code Pix"
+                />
+              ) : (
+                <div
+                  className={styles["px-hero__qr-empty"]}
+                  role="img"
+                  aria-label="QR code Pix indisponível"
+                />
+              )}
+            </div>
+            <div className={styles["px-hero__qr-text"]}>
+              <h3>Aponte a câmera do seu app do banco</h3>
+              <p>
+                Ou copie o código abaixo e cole na opção <b>Pix copia-e-cola</b> do seu banco.
+              </p>
+              <div className={styles["px-hero__copy"]}>
+                <textarea readOnly aria-label="Pix copia e cola" value={copia} rows={2} />
+                <button
+                  type="button"
+                  className={styles["px-hero__copy-btn"]}
+                  onClick={handleCopy}
+                  disabled={!copia}
+                >
+                  Copiar
+                </button>
+              </div>
+              <div className={styles["px-hero__actions"]}>
+                <button
+                  type="button"
+                  className={styles["px-hero__btn-primary"]}
+                  onClick={onMarkPaid}
+                >
+                  {expired ? "Solicitar novo Pix" : "Já paguei, atualizar"}
+                </button>
+                <button type="button" className={styles["px-hero__btn-ghost"]}>
+                  Cancelar pedido
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      ) : null}
 
-      <div className={styles["px-hero__section"]}>
-        <p className={styles["px-hero__section-title"]}>Entrega</p>
-        <div className={styles["px-hero__frete"]}>
-          <div>
-            <span>Metodo</span>
-            <strong>{delivery}</strong>
-          </div>
-          <div>
-            <span>Reserva</span>
-            <strong>{expired ? "Encerrada" : "Ativa ate o vencimento"}</strong>
-          </div>
-          <div>
-            <span>Vencimento</span>
-            <strong>
-              {expiresAt
-                ? new Intl.DateTimeFormat("pt-BR", {
-                    dateStyle: "short",
-                    timeStyle: "short",
-                    timeZone: "America/Sao_Paulo",
-                  }).format(new Date(expiresAt))
-                : "sem data"}
-            </strong>
-          </div>
-        </div>
-      </div>
-
-      <div className={styles["px-hero__section"]}>
-        <p className={styles["px-hero__section-title"]}>Linha do tempo</p>
-        <OrderTimeline current="awaiting-payment" />
-      </div>
-
-      <div className={styles["px-hero__section"]}>
-        <p className={styles["px-hero__section-title"]}>Pague pelo Pix</p>
-        <div className={styles["px-hero__qr-block"]}>
-          <div className={styles["px-hero__qr"]}>
-            {copia ? (
-              <QRCodeSVG
-                value={copia}
-                size={180}
-                level="M"
-                bgColor="#ffffff"
-                fgColor="#0d1f17"
-                aria-label="QR code Pix"
-              />
-            ) : (
+        <aside className={styles["px-hero__right"]}>
+          <h4 className={styles["px-hero__rh"]}>
+            {items.length} {items.length === 1 ? "produto reservado" : "produtos reservados"}
+          </h4>
+          {items.map((item, index) => {
+            const subtotal =
+              item.subtotalCents != null
+                ? item.subtotalCents
+                : (item.unitPriceCents || 0) * item.quantity;
+            return (
               <div
-                className={styles["px-hero__qr-empty"]}
-                role="img"
-                aria-label="QR code Pix indisponivel"
-              />
-            )}
+                className={styles["px-hero__item-line"]}
+                key={`${item.productId || item.name}-${index}`}
+              >
+                <div className={styles["px-hero__sq"]} aria-hidden="true">
+                  {monogram(item.name)}
+                </div>
+                <div className={styles["px-hero__item-text"]}>
+                  <div className={styles["px-hero__item-name"]}>{item.name}</div>
+                  <div className={styles["px-hero__item-qty"]}>
+                    {item.quantity} {item.unit || "un"}
+                  </div>
+                </div>
+                <div className={styles["px-hero__item-price"]}>{money.format(subtotal / 100)}</div>
+              </div>
+            );
+          })}
+          <div className={styles["px-hero__right-total"]}>
+            <span>Total</span>
+            <b>{money.format(totalCents / 100)}</b>
           </div>
-          <p className={styles["px-hero__qr-hint"]}>
-            Aponte a camera do app do banco ou copie o codigo abaixo.
-          </p>
-        </div>
 
-        <div className={styles["px-hero__copy"]}>
-          <textarea readOnly aria-label="Pix copia e cola" value={copia} />
-        </div>
-
-        <div className={styles["px-hero__actions"]}>
-          <button
-            className={styles["px-hero__btn"]}
-            type="button"
-            onClick={handleCopy}
-            disabled={!copia}
-          >
-            Copiar Pix
-          </button>
-          <button
-            className={`${styles["px-hero__btn"]} ${styles["px-hero__btn--primary"]}`}
-            type="button"
-            onClick={onMarkPaid}
-            disabled={expired}
-          >
-            {expired ? "Solicitar novo Pix" : "Ja paguei, atualizar"}
-          </button>
-        </div>
+          <h4 className={`${styles["px-hero__rh"]} ${styles["px-hero__rh--mt"]}`}>
+            Linha do tempo
+          </h4>
+          <OrderTimeline current="awaiting-payment" subtitles={subtitles} />
+        </aside>
       </div>
     </section>
   );

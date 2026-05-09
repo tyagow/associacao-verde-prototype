@@ -89,12 +89,15 @@
   --sp-10: 72px;
 
   /* ---- radii ---- */
-  --r-xs:   4px;
-  --r-sm:   8px;
-  --r-md:  12px;
-  --r-lg:  16px;
-  --r-xl:  22px;
-  --r-pill: 999px;
+  --r-xs:   2px;
+  --r-sm:   3px;
+  --r-md:   5px;
+  --r-lg:   7px;
+  --r-xl:   9px;
+  --r-pill: 5px;
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
 
   /* ---- shadow / depth (soft, calm) ---- */
   --shadow-1: 0 1px 0 rgba(13, 31, 23, 0.04), 0 8px 24px -16px rgba(13, 31, 23, 0.16);
@@ -1068,21 +1071,105 @@ textarea {
 .patient-workspace {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: clamp(1rem, 2vw, 1.6rem);
+  gap: var(--sp-4);
   align-items: flex-start;
 }
 
 .patient-profile-card,
 .patient-order-card {
-  background: var(--paper-warm);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--r-lg);
-  padding: clamp(1.3rem, 2vw, 1.85rem);
-  box-shadow: var(--shadow-1);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+}
+
+.patient-profile-card h2,
+.patient-order-card h2 {
+  font-size: 1.55rem;
+  line-height: 1.15;
+  margin-bottom: 0.25rem;
 }
 
 .patient-current-order {
   grid-column: 1 / -1;
+}
+
+/* Compact pointer banner shown at the top of the Pedido tab when an order
+   is in flight. Links the patient to the detail view in Histórico without
+   hijacking the catalog landing experience. */
+.patient-order-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 18px;
+  border-radius: var(--r-md, 5px);
+  border: 1px solid var(--line);
+  background: var(--paper);
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.patient-order-banner--warn {
+  background: var(--gold-soft, #fff8e6);
+  border-color: var(--gold, #d4a017);
+}
+
+.patient-order-banner--good {
+  background: var(--green-soft, #e8f3eb);
+  border-color: var(--green, #2f7d3a);
+}
+
+.patient-order-banner--danger {
+  background: #fdecec;
+  border-color: #c0392b;
+}
+
+.patient-order-banner__main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.patient-order-banner__kicker {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.patient-order-banner__label {
+  font-size: 14px;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.patient-order-banner__cta {
+  background: var(--ink);
+  color: var(--paper);
+  border: 0;
+  padding: 8px 14px;
+  border-radius: var(--r-sm, 3px);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.patient-order-banner__cta:hover {
+  opacity: 0.9;
+}
+
+@media (max-width: 640px) {
+  .patient-order-banner {
+    padding: 10px 14px;
+  }
+  .patient-order-banner__cta {
+    width: 100%;
+  }
 }
 
 .patient-login-card {
@@ -1134,25 +1221,31 @@ textarea {
 .patient-profile-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.65rem;
-  margin-top: 1.2rem;
+  gap: 0;
+  margin-top: var(--sp-3);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-md);
+  overflow: hidden;
 }
 
 .access-card {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  padding: 0.95rem 1rem;
-  background: var(--paper);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--r-md);
-  min-height: 7rem;
+  gap: 0.25rem;
+  padding: var(--sp-3) var(--sp-4);
+  background: #fff;
+  border: 0;
+  border-left: 1px solid var(--line-soft);
+  border-radius: 0;
+  min-height: 5.25rem;
 }
+
+.access-card:first-child { border-left: 0; }
 
 .access-card.muted-card { opacity: 0.78; }
 
 .access-card.primary-access {
-  background: linear-gradient(140deg, var(--green-deep), var(--green));
+  background: var(--green-deep);
   border-color: var(--green-deep);
   color: var(--paper);
 }
@@ -1168,7 +1261,7 @@ textarea {
 
 .access-card strong {
   font-family: var(--font-display);
-  font-size: 1.15rem;
+  font-size: 1rem;
   font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--ink);
@@ -1178,7 +1271,7 @@ textarea {
 
 .access-card p {
   margin: 0;
-  font-size: 0.84rem;
+  font-size: 0.8rem;
   color: var(--muted);
   line-height: 1.45;
 }
@@ -1227,12 +1320,12 @@ textarea {
 /* ---- privacy consent panel ---- */
 
 .privacy-consent-panel {
-  margin-top: 1.4rem;
-  padding: 1.4rem 1.5rem;
-  border: 1px solid var(--line-soft);
-  border-left-width: 4px;
-  border-radius: var(--r-md);
-  background: var(--paper);
+  margin-top: 0;
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--green);
+  border-top: 0;
+  border-radius: 0 0 var(--r-md) var(--r-md);
+  background: color-mix(in srgb, var(--green-tint) 20%, #fff);
 }
 
 .privacy-consent-panel.warn {
@@ -1264,12 +1357,14 @@ textarea {
 .payment-panel {
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-  gap: 1.6rem;
-  padding: 1.4rem 1.6rem;
-  background: var(--paper-warm);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow-1);
+  gap: var(--sp-4);
+  padding: var(--sp-3) 0;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+  border-radius: 0;
+  box-shadow: none;
   position: relative;
 }
 
@@ -1282,7 +1377,7 @@ textarea {
 .payment-panel h3 {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 1.45rem;
+  font-size: 1.2rem;
   letter-spacing: -0.012em;
   margin-bottom: 0.4rem;
 }
@@ -1362,18 +1457,18 @@ textarea {
 
 .catalog-tools {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) auto;
-  gap: 1rem;
+  grid-template-columns: minmax(260px, 1fr) auto;
+  gap: var(--sp-3);
   align-items: end;
-  margin-bottom: 1.4rem;
-  padding-bottom: 1.4rem;
-  border-bottom: 1px solid var(--line-soft);
+  margin: var(--sp-3) 0;
+  padding: 0;
+  border-bottom: 0;
 }
 
 .segment-control {
   display: inline-flex;
   padding: 3px;
-  background: var(--paper);
+  background: #fff;
   border: 1px solid var(--line);
   border-radius: var(--r-pill);
   height: fit-content;
@@ -1402,9 +1497,9 @@ textarea {
 
 .patient-product-card {
   display: grid;
-  grid-template-columns: minmax(0, 2.4fr) auto auto auto;
+  grid-template-columns: minmax(260px, 1fr) 86px 98px 152px;
   align-items: center;
-  gap: 0.5rem 1.5rem;
+  gap: var(--sp-4);
   padding: 1.1rem 0.5rem;
   border-bottom: 1px solid var(--line-soft);
 }
@@ -1415,23 +1510,23 @@ textarea {
 .patient-product-main h3 {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 1.2rem;
+  font-size: 1rem;
   margin-bottom: 0.15rem;
 }
 
 .patient-product-main p {
   margin: 0;
-  font-size: 0.86rem;
+  font-size: 0.8rem;
   color: var(--muted);
   line-height: 1.45;
 }
 
 .product-category {
   display: inline-block;
-  margin-bottom: 0.3rem;
-  font-size: 0.62rem;
+  margin-bottom: 0.2rem;
+  font-size: 0.58rem;
   font-weight: 600;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--green);
 }
@@ -1440,16 +1535,17 @@ textarea {
 .patient-product-price {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  text-align: right;
-  min-width: 6rem;
+  align-items: flex-start;
+  text-align: left;
+  min-width: 0;
 }
 
 .patient-product-stock span,
 .patient-product-price span {
-  font-size: 0.62rem;
+  display: none;
+  font-size: 0.56rem;
   font-weight: 600;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--muted);
   margin-bottom: 0.2rem;
@@ -1458,13 +1554,14 @@ textarea {
 .patient-product-stock strong,
 .patient-product-price strong {
   font-family: var(--font-display);
-  font-size: 1.18rem;
+  font-size: 0.98rem;
   font-weight: 600;
   color: var(--ink);
 }
 
 .patient-product-action {
-  display: flex;
+  display: grid;
+  grid-template-columns: 48px minmax(82px, 1fr);
   align-items: center;
   gap: 0.5rem;
 }
@@ -1474,12 +1571,167 @@ textarea {
   font-size: 0.62rem;
 }
 
+.patient-product-action label {
+  display: grid;
+  gap: 3px;
+}
+
 .patient-product-action input.qty {
-  width: 4.2rem;
-  margin-top: 0.25rem;
-  padding: 0.45rem 0.5rem;
+  width: 48px;
+  min-height: 34px;
+  margin-top: 0;
+  padding: 0.35rem 0.45rem;
   text-align: center;
   font-variant-numeric: tabular-nums;
+}
+
+.patient-pedido-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: var(--sp-6);
+  align-items: start;
+}
+
+.patient-pedido-layout.cart-collapsed {
+  grid-template-columns: minmax(0, 1fr) 64px;
+}
+
+.patient-pedido-layout .patient-order-card {
+  min-width: 0;
+}
+
+.patient-product-list--inline {
+  gap: 0;
+  border-top: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.patient-product-list--inline .patient-product-card {
+  padding: var(--sp-3) 0;
+  border: 0;
+  border-bottom: 1px solid var(--line-soft);
+  border-radius: 0;
+  background: transparent;
+}
+
+.patient-product-list--inline .patient-product-card:last-child {
+  border-bottom: 0;
+}
+
+.patient-cart-drawer {
+  position: sticky;
+  top: var(--sp-5);
+  display: grid;
+  min-width: 0;
+  max-height: calc(100vh - var(--sp-8));
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--line-soft);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.patient-cart-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: 48px;
+  padding: var(--sp-2) var(--sp-4);
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: #fff;
+  color: var(--ink);
+  text-align: left;
+}
+
+.patient-cart-toggle span,
+.patient-cart-toggle strong {
+  min-width: 0;
+}
+
+.patient-cart-toggle span {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+}
+
+.patient-cart-toggle strong {
+  color: var(--green-deep);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.patient-cart-body {
+  display: grid;
+  gap: var(--sp-3);
+  overflow: auto;
+  padding: var(--sp-3) var(--sp-4);
+}
+
+.patient-cart-drawer .px-cart {
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+}
+
+.patient-cart-empty {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-2) 0 var(--sp-3);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.patient-cart-empty h3 {
+  margin: var(--sp-1) 0;
+  font-size: var(--fs-md);
+}
+
+.patient-checkout--drawer {
+  grid-template-columns: 1fr;
+  gap: var(--sp-3);
+  margin: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.patient-checkout--drawer label,
+.patient-checkout--drawer select {
+  width: 100%;
+  min-width: 0;
+}
+
+.patient-checkout--drawer button {
+  width: 100%;
+  white-space: normal;
+}
+
+.patient-cart-drawer.is-collapsed {
+  align-self: stretch;
+}
+
+.patient-cart-drawer.is-collapsed .patient-cart-toggle {
+  height: 100%;
+  min-height: 240px;
+  justify-content: center;
+  padding: var(--sp-3);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  border-bottom: 0;
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.patient-cart-drawer.is-collapsed .patient-cart-toggle strong {
+  color: var(--gold);
+}
+
+.patient-cart-drawer.is-collapsed .patient-cart-body {
+  display: none;
 }
 
 .consent-required-panel {
@@ -1581,6 +1833,59 @@ textarea {
 }
 
 .patient-checkout button { white-space: nowrap; }
+
+.checkout.patient-checkout--drawer,
+.patient-checkout.patient-checkout--drawer {
+  grid-template-columns: 1fr;
+  gap: var(--sp-3);
+  margin: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.patient-checkout--drawer button {
+  width: 100%;
+  white-space: normal;
+}
+
+@media (max-width: 1120px) {
+  .patient-pedido-layout,
+  .patient-pedido-layout.cart-collapsed {
+    grid-template-columns: 1fr;
+    gap: var(--sp-5, 20px);
+  }
+
+  .patient-cart-drawer {
+    position: static;
+    max-height: none;
+  }
+
+  .patient-cart-drawer.is-collapsed .patient-cart-toggle {
+    min-height: 54px;
+    writing-mode: horizontal-tb;
+    text-orientation: mixed;
+  }
+}
+
+/* Mobile (<= 720px) — phone-friendly spacing on Pedido. The default
+   grid-gap (var(--sp-6) = ~24px) is too generous on small screens and
+   pushes the cart far below the catalog. */
+@media (max-width: 720px) {
+  .patient-pedido-layout,
+  .patient-pedido-layout.cart-collapsed {
+    gap: 16px;
+  }
+
+  .patient-current-order {
+    margin-bottom: 4px;
+  }
+
+  /* Cart summary loses its sticky/right-rail behavior at this width and
+     becomes a normal flow block, but we keep the inner padding tighter so
+     the QR/CTA don't push below the fold. CSS-modules-prefixed class lives
+     in CartHero.module.css; we cannot target it from globals, so the
+     responsive tweaks live there too — see CartHero.module.css. */
+}
 
 /* ---- aftercare / support form ---- */
 
@@ -2670,16 +2975,71 @@ textarea {
   .patient-portal-hero { padding: 1.6rem 1.3rem; }
   .patient-portal-hero h1 { font-size: 1.9rem; }
 
-  .patient-product-card {
-    grid-template-columns: 1fr;
-    gap: 0.7rem;
+  .patient-profile-card,
+  .patient-order-card,
+  .patient-next-action,
+  .payment-panel {
+    padding: 0;
   }
+
+  .patient-next-action,
+  .payment-panel {
+    padding: var(--sp-3) 0;
+    border: 0;
+    border-top: 1px solid var(--line-soft);
+    border-bottom: 1px solid var(--line-soft);
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+  }
+
+  .patient-profile-card h2,
+  .patient-order-card h2 {
+    font-size: 1.35rem;
+  }
+
+  .patient-profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .access-card,
+  .access-card:first-child {
+    border-left: 0;
+    border-top: 1px solid var(--line-soft);
+  }
+
+  .access-card:first-child {
+    border-top: 0;
+  }
+
+  .patient-product-card {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "main main"
+      "stock price"
+      "action action";
+    gap: var(--sp-2) var(--sp-4);
+  }
+
+  .patient-product-main { grid-area: main; }
+  .patient-product-stock { grid-area: stock; }
+  .patient-product-price { grid-area: price; }
+  .patient-product-action { grid-area: action; }
+
   .patient-product-stock,
   .patient-product-price { align-items: flex-start; text-align: left; }
+  .patient-product-price { align-items: flex-end; text-align: right; }
+  .patient-product-stock span,
+  .patient-product-price span { display: block; }
   .patient-product-action {
+    grid-template-columns: 56px minmax(96px, 128px);
     justify-content: space-between;
   }
-  .patient-product-action input.qty { width: 4.4rem; }
+  .patient-product-action input.qty { width: 56px; }
+
+  .patient-product-list--inline .patient-product-card {
+    padding: var(--sp-3) 0;
+  }
 
   .catalog-tools { grid-template-columns: 1fr; }
 
@@ -2703,7 +3063,7 @@ textarea {
   /* Phase 1d additive: shrink heavy patient containers at 320–540px so
      they fit inside narrow phones (audit found .patient-order-card and
      #checkout overflowing at 320px). */
-  .patient-order-card { padding: 1rem; }
+  .patient-order-card { padding: var(--sp-4); }
   .patient-order-card * { min-width: 0; }
   #checkout select,
   .patient-checkout select { width: 100%; min-width: 0; max-width: 100%; }
@@ -3296,4 +3656,3 @@ textarea {
   table td,
   table th { word-break: break-word; }
 }
-

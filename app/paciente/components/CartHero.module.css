@@ -1,67 +1,553 @@
-.px-cart {
-  display: grid;
-  gap: var(--sp-3);
-  padding: var(--sp-4);
-}
-
-.px-cart__head h3 {
-  margin: var(--sp-1) 0;
-  font-size: var(--fs-md, 16px);
-}
-
-.px-cart__lines {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: var(--sp-2);
-}
-
-.px-cart__line {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-2);
-  padding: var(--sp-2);
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
+.cart {
   background: var(--paper);
-}
-
-.px-cart__line-main {
-  flex: 1 1 auto;
+  border-left: 1px solid var(--line);
+  padding: var(--sp-6);
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.px-cart__line-main strong {
-  font-weight: 600;
-  word-break: break-word;
-}
-
-.px-cart__line-price {
+  gap: var(--sp-4);
+  align-self: start;
+  height: 100%;
+  overflow: auto;
   font-variant-numeric: tabular-nums;
-  color: var(--muted);
-  font-size: var(--fs-xs, 12px);
 }
 
-.px-cart__total {
+.sticky {
+  position: sticky;
+  top: 110px;
+  height: calc(100vh - 110px);
+}
+
+.kicker {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.title {
+  margin: 0;
+  font: 500 17px/1.2 var(--font-display, "Outfit", sans-serif);
+  color: var(--ink);
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  padding-top: var(--sp-2);
-  border-top: 1px solid var(--line);
+  gap: var(--sp-2);
+}
+
+.count {
+  font-size: var(--fs-sm, 12px);
+  color: var(--muted);
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 
-.px-cart__total strong {
-  font-size: var(--fs-md, 16px);
+.lead {
+  color: var(--muted);
+  font-size: var(--fs-sm, 12px);
+  margin: 0;
+  line-height: 1.4;
 }
 
-@media (max-width: 480px) {
-  .px-cart__line {
-    flex-wrap: wrap;
+.lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.line {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  gap: var(--sp-3);
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line-soft);
+  align-items: center;
+}
+
+.line:last-child {
+  border-bottom: 0;
+}
+
+.sq {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-sm, 3px);
+  background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 700 12px/1 var(--font-display, "Outfit", sans-serif);
+  color: var(--gold-on);
+  letter-spacing: 0.04em;
+}
+
+.lineMain {
+  min-width: 0;
+}
+
+.nm {
+  font-weight: 500;
+  font-size: var(--fs-base, 13px);
+  line-height: 1.3;
+  color: var(--ink);
+  word-break: break-word;
+}
+
+.mt {
+  color: var(--muted);
+  font-size: var(--fs-xs, 11px);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.mtNums {
+  font-variant-numeric: tabular-nums;
+}
+
+.stepBtn {
+  background: transparent;
+  border: 1px solid var(--line);
+  width: 22px;
+  height: 22px;
+  border-radius: var(--r-sm, 3px);
+  color: var(--ink);
+  font-weight: 600;
+  cursor: pointer;
+  line-height: 1;
+  font-size: 12px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stepBtn:hover {
+  background: var(--soft);
+}
+
+.removeBtn {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  font-size: var(--fs-xs, 11px);
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.removeBtn:hover {
+  color: var(--danger);
+}
+
+.pr {
+  font: 600 13px/1 var(--font-display, "Outfit", sans-serif);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  align-self: center;
+}
+
+/* ---------------- Empty state ---------------- */
+
+.emptyBlock {
+  padding: var(--sp-7) 0 var(--sp-4);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.emptyIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  background: var(--paper-warm);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: var(--ink);
+}
+
+.emptyTitle {
+  margin: 0;
+  font: 500 17px/1.2 var(--font-display, "Outfit", sans-serif);
+  color: var(--ink);
+}
+
+.emptyHelper {
+  color: var(--muted);
+  font-size: var(--fs-sm, 13px);
+  margin: 0;
+  max-width: 26ch;
+  line-height: 1.4;
+}
+
+/* ---------------- Delivery select ---------------- */
+
+.ship {
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line);
+}
+
+.shipLabel {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.shipSelect {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm, 3px);
+  background: var(--paper);
+  font: inherit;
+  color: var(--ink);
+}
+
+.shipSelect:focus {
+  outline: 2px solid var(--ink);
+  outline-offset: -1px;
+  border-color: var(--ink);
+}
+
+/* ---------------- Shipping address (collapsible) ----------------
+   Mock b2.html shows ONLY the entrega <select> in the right rail; the address
+   fieldset lives behind a <details disclosure> that the patient opens when
+   they're ready, or that auto-opens when checkout flags missing fields.
+   Generous spacing because patients are typing on phones — tight forms make
+   people abandon checkouts. */
+
+.addressDetails {
+  margin-top: 14px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+.addressSummary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0;
+  user-select: none;
+}
+
+.addressSummary::-webkit-details-marker {
+  display: none;
+}
+
+.addressSummaryHint {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+.addressFieldset {
+  margin: 14px 0 0;
+  padding: 18px 16px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md, 5px);
+  background: var(--paper-warm, #fafaf6);
+}
+
+.addressFieldset legend {
+  padding: 0 8px;
+  margin: 0;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.addressGrid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  column-gap: 14px;
+  row-gap: 16px;
+  margin-top: 10px;
+}
+
+.addressGrid label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: normal;
+  min-width: 0;
+}
+
+.addressGrid input {
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm, 3px);
+  background: var(--paper);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.3;
+  color: var(--ink);
+  min-height: 42px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.addressGrid input::placeholder {
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+.addressGrid input:focus {
+  outline: 2px solid var(--ink);
+  outline-offset: -1px;
+  border-color: var(--ink);
+}
+
+.addressCep {
+  grid-column: span 2;
+}
+.addressStreet {
+  grid-column: span 4;
+}
+.addressNumber {
+  grid-column: span 2;
+}
+.addressComplement {
+  grid-column: span 4;
+}
+.addressNeighborhood {
+  grid-column: span 3;
+}
+.addressCity {
+  grid-column: span 2;
+}
+.addressState {
+  grid-column: span 1;
+}
+.addressNotes {
+  grid-column: span 6;
+}
+
+/* Stack on phones so each field has full width and clear label/value
+   alignment. 12px minimum row gap protects thumb hit-targets. */
+@media (max-width: 720px) {
+  .addressFieldset {
+    padding: 18px 14px 16px;
+  }
+  .addressGrid {
+    grid-template-columns: 1fr 1fr;
+    column-gap: 12px;
+    row-gap: 14px;
+  }
+  .addressCep {
+    grid-column: span 2;
+  }
+  .addressStreet {
+    grid-column: span 2;
+  }
+  .addressNumber {
+    grid-column: 1 / span 1;
+  }
+  .addressComplement {
+    grid-column: 2 / span 1;
+  }
+  .addressNeighborhood {
+    grid-column: span 2;
+  }
+  .addressCity {
+    grid-column: 1 / span 1;
+  }
+  .addressState {
+    grid-column: 2 / span 1;
+  }
+  .addressNotes {
+    grid-column: span 2;
+  }
+}
+
+/* ---------------- Totals ---------------- */
+
+.totalsEmpty {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--line-soft);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.totalsEmpty strong {
+  font: 600 22px/1 var(--font-display, "Outfit", sans-serif);
+  color: var(--ink);
+}
+
+.totals {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line);
+}
+
+.totalsRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--fs-sm, 13px);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.totalsTotal {
+  font-size: var(--fs-lg, 18px);
+  color: var(--ink);
+  font-weight: 600;
+  align-items: baseline;
+}
+
+.totalsTotal strong {
+  font: 700 22px/1 var(--font-display, "Outfit", sans-serif);
+  color: var(--ink);
+}
+
+/* ---------------- CTAs ---------------- */
+
+.cta {
+  padding: 14px;
+  background: var(--ink);
+  color: var(--paper);
+  border: 0;
+  border-radius: var(--r-sm, 3px);
+  font-weight: 700;
+  font-size: var(--fs-base, 14px);
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.cta:hover:not(:disabled) {
+  background: var(--green-deep);
+}
+
+.cta:disabled {
+  background: var(--muted);
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* Inline address-error hint shown above the disabled Gerar Pix button. The
+   wrapper is always rendered (height collapses when empty) so screen readers
+   announce updates rather than treating the message as a brand-new region. */
+.addressError {
+  min-height: 18px;
+  margin: 4px 0 6px;
+  font-size: 12px;
+  color: #b03a2e;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.addressError:empty {
+  margin: 0;
+  min-height: 0;
+}
+
+/* Inline CEP-lookup status: ghosted by default, comes alive while the
+   ViaCEP request is in flight or errors. Reserves vertical space so the
+   layout doesn't shift between idle/loading/done. */
+.cepStatus {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 500;
+  min-height: 14px;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.cepStatus:empty {
+  min-height: 0;
+}
+
+.ctaArrow {
+  display: inline-block;
+  transition: transform 0.15s;
+}
+
+.cta:hover .ctaArrow {
+  transform: translateX(2px);
+}
+
+.ctaDisabled {
+  width: 100%;
+  padding: 14px;
+  background: var(--gold-soft);
+  color: var(--gold-on);
+  border: 0;
+  border-radius: var(--r-sm, 3px);
+  font-weight: 700;
+  font-size: var(--fs-base, 14px);
+  letter-spacing: 0.04em;
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+.reassure {
+  font-size: var(--fs-xs, 11px);
+  color: var(--muted);
+  text-align: center;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.reassure b {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+@media (max-width: 1024px) {
+  .cart {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .sticky {
+    position: static;
+    height: auto;
   }
 }

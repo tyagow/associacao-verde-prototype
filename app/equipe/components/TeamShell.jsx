@@ -69,6 +69,7 @@ export default function TeamShell({
         { href: "/equipe", label: "Comando", key: "command" },
         { href: "/equipe/pacientes", label: "Pacientes", key: "patients" },
         { href: "/equipe/estoque", label: "Estoque", key: "stock" },
+        { href: "/equipe/cultivo", label: "Cultivo", key: "cultivation" },
         { href: "/equipe/pedidos", label: "Pedidos", key: "orders" },
         { href: "/equipe/fulfillment", label: "Fulfillment", key: "fulfillment" },
         { href: "/equipe/suporte", label: "Suporte", key: "support" },
@@ -127,7 +128,7 @@ export default function TeamShell({
         ))}
 
         <div className={styles.footerBand}>
-          <span>{user?.email || "email não informado"}</span>
+          <span>{user?.email ?? ""}</span>
           <span className="actions">
             {onOpenProfile ? (
               <button type="button" disabled={busy} onClick={onOpenProfile}>
@@ -200,7 +201,10 @@ function computeBadgeCounts(dashboard) {
   ).length;
   const blocked = (dashboard.patients || []).filter((p) => !p.eligibility?.allowed).length;
   const lowStock = (dashboard.products || []).filter(
-    (p) => p.availableStock <= (p.lowStockThreshold || 5),
+    (p) => p.availableStock <= (p.lowStockThreshold ?? 5),
+  ).length;
+  const cultivation = (dashboard.cultivationBatches || []).filter(
+    (b) => b.status !== "stocked",
   ).length;
   const support = (dashboard.supportTickets || []).filter(
     (t) => t.status === "open" || t.status === "pending",
@@ -209,6 +213,7 @@ function computeBadgeCounts(dashboard) {
     command: { value: pendingPayments + blocked, tone: pendingPayments + blocked ? "warn" : "" },
     patients: { value: blocked, tone: blocked ? "danger" : "" },
     stock: { value: lowStock, tone: lowStock ? "warn" : "" },
+    cultivation: { value: cultivation, tone: cultivation ? "ok" : "" },
     orders: { value: pendingPayments, tone: pendingPayments ? "warn" : "" },
     fulfillment: { value: fulfillment, tone: fulfillment ? "warn" : "" },
     support: { value: support, tone: support ? "warn" : "" },

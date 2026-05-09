@@ -1,12 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import styles from "./HistoryList.module.css";
 
 const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
+function formatDateOnly(value) {
+  if (!value) return "—";
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+  }).format(new Date(value));
+}
+
 function formatDateTime(value) {
-  if (!value) return "sem data";
+  if (!value) return "—";
   return new Intl.DateTimeFormat("pt-BR", {
     dateStyle: "short",
     timeStyle: "short",
@@ -14,93 +21,246 @@ function formatDateTime(value) {
   }).format(new Date(value));
 }
 
+function formatMonthYear(value) {
+  if (!value) return "—";
+  return new Intl.DateTimeFormat("pt-BR", {
+    month: "long",
+    year: "numeric",
+    timeZone: "America/Sao_Paulo",
+  }).format(new Date(value));
+}
+
 const STATUS_LABEL = {
   awaiting_payment: "Pix pendente",
-  paid_pending_fulfillment: "Pago, aguardando separacao",
+  paid_pending_fulfillment: "Pago",
   separating: "Em separacao",
   ready_to_ship: "Pronto para envio",
   sent: "Enviado",
-  payment_expired: "Pagamento expirado",
-};
-
-const STATUS_TEXT = {
-  awaiting_payment: "Pix aguardando pagamento. A reserva fica ativa ate o vencimento.",
-  paid_pending_fulfillment: "Pagamento confirmado. Equipe preparando separacao.",
-  separating: "Pedido em separacao pela equipe.",
-  ready_to_ship: "Pedido pronto para envio ou retirada.",
-  sent: "Pedido enviado.",
-  payment_expired: "Pagamento expirou. Gere um novo pedido para reservar estoque novamente.",
+  payment_expired: "Pix expirado",
 };
 
 function statusTone(status) {
-  if (status === "awaiting_payment") return "warn";
-  if (status === "payment_expired") return "danger";
-  return "";
+  switch (status) {
+    case "awaiting_payment":
+    case "separating":
+    case "ready_to_ship":
+      return "warn";
+    case "paid_pending_fulfillment":
+    case "sent":
+      return "ok";
+    case "payment_expired":
+      return "danger";
+    default:
+      return "muted";
+  }
+}
+
+const FILTER_DEFS = [
+  { key: "all", label: "Todos" },
+  { key: "active", label: "Ativos" },
+  { key: "done", label: "Concluidos" },
+  { key: "expired", label: "Expirados" },
+];
+
+function filterBucket(status) {
+  if (
+    status === "awaiting_payment" ||
+    status === "paid_pending_fulfillment" ||
+    status === "separating" ||
+    status === "ready_to_ship"
+  )
+    return "active";
+  if (status === "sent") return "done";
+  if (status === "payment_expired") return "expired";
+  return "other";
 }
 
 /**
- * History tab list. Wraps #patient-orders. Compact rows, click-to-expand.
- * E2E only asserts that the container with id="patient-orders" exists; the
- * inner shape is free to evolve.
+ * History tab list. Wraps #patient-orders. Compact rows, click-to-expand,
+ * with a segmented filter chip group up top and a clean grid layout that
+ * places the expanded body on its own row.
  */
-export default function HistoryList({ orders }) {
+export default function HistoryList({ orders, onViewOrder, onOpenSupport }) {
+  const [filter, setFilter] = useState("all");
+
+  const counts = useMemo(() => {
+    const tally = { all: orders.length, active: 0, done: 0, expired: 0 };
+    for (const order of orders) {
+      const bucket = filterBucket(order.status);
+      if (bucket === "active") tally.active += 1;
+      else if (bucket === "done") tally.done += 1;
+      else if (bucket === "expired") tally.expired += 1;
+    }
+    return tally;
+  }, [orders]);
+
+  const totalCents = useMemo(
+    () => orders.reduce((sum, order) => sum + (order.totalCents || 0), 0),
+    [orders],
+  );
+
+  const oldestCreatedAt = useMemo(() => {
+    if (!orders.length) return null;
+    return orders.reduce((oldest, order) => {
+      if (!order.createdAt) return oldest;
+      if (!oldest) return order.createdAt;
+      return order.createdAt < oldest ? order.createdAt : oldest;
+    }, null);
+  }, [orders]);
+
+  const visible = useMemo(() => {
+    if (filter === "all") return orders;
+    return orders.filter((order) => filterBucket(order.status) === filter);
+  }, [orders, filter]);
+
   return (
-    <section id="patient-orders" className={styles["px-history"]}>
-      <header className={styles["px-history__head"]}>
-        <span className="overline">Historico</span>
-        <h3>Historico de pedidos</h3>
+    <section id="patient-orders" className={styles.history}>
+      <header className={styles.pagehead}>
+        <div className={styles.pageheadText}>
+          <h1>Historico de pedidos</h1>
+          <p className={styles.lead}>
+            {orders.length} {orders.length === 1 ? "pedido" : "pedidos"} · totalizado{" "}
+            <span className={styles.tabular}>{money.format(totalCents / 100)}</span>
+            {oldestCreatedAt ? ` desde ${formatMonthYear(oldestCreatedAt)}` : ""}
+          </p>
+        </div>
+        {orders.length ? (
+          <div className={styles.filters} role="group" aria-label="Filtrar por status">
+            <div className={styles.seg}>
+              {FILTER_DEFS.map((def) => (
+                <button
+                  key={def.key}
+                  type="button"
+                  className={`${styles.segBtn} ${filter === def.key ? styles.segBtnOn : ""}`}
+                  aria-pressed={filter === def.key}
+                  onClick={() => setFilter(def.key)}
+                >
+                  {def.label} · <span className={styles.tabular}>{counts[def.key] ?? 0}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </header>
+
       {orders.length ? (
-        <ul className={styles["px-history__list"]}>
-          {orders.map((order) => (
-            <HistoryRow order={order} key={order.id} />
-          ))}
-        </ul>
+        visible.length ? (
+          <ul className={styles.list}>
+            {visible.map((order) => (
+              <HistoryRow
+                key={order.id}
+                order={order}
+                onViewOrder={onViewOrder}
+                onOpenSupport={onOpenSupport}
+              />
+            ))}
+          </ul>
+        ) : (
+          <p className={styles.empty}>Nenhum pedido neste filtro.</p>
+        )
       ) : (
-        <p className="muted">Nenhum pedido criado nesta conta.</p>
+        <p className={styles.empty}>Nenhum pedido criado nesta conta.</p>
       )}
     </section>
   );
 }
 
-function HistoryRow({ order }) {
+function HistoryRow({ order, onViewOrder, onOpenSupport }) {
   const [open, setOpen] = useState(false);
   const tone = statusTone(order.status);
+  const itemCount = order.items?.length || 0;
+  const headline =
+    itemCount > 0
+      ? `${itemCount} ${itemCount === 1 ? "produto" : "produtos"} · ${order.items
+          .map((item) => item.name)
+          .filter(Boolean)
+          .slice(0, 2)
+          .join(", ")}${itemCount > 2 ? "…" : ""}`
+      : "Pedido";
+  const isPaid =
+    order.paymentStatus === "paid" ||
+    order.paymentStatus === "confirmed" ||
+    order.status === "paid_pending_fulfillment" ||
+    order.status === "separating" ||
+    order.status === "ready_to_ship" ||
+    order.status === "sent";
+
   return (
-    <li className={`${styles["px-history__row"]} ${open ? styles["is-open"] : ""}`}>
+    <li className={`${styles.row} ${open ? styles.rowOpen : ""}`}>
       <button
         type="button"
-        className={styles["px-history__summary"]}
+        className={styles.summary}
         aria-expanded={open}
+        aria-controls={`history-body-${order.id}`}
         onClick={() => setOpen((current) => !current)}
       >
-        <div className={styles["px-history__id"]}>
-          <strong>{order.id}</strong>
-          <span className={`pill ${tone}`.trim()}>
-            {STATUS_LABEL[order.status] || "Em revisao"}
+        <span className={styles.id}>{order.id}</span>
+        <span className={styles.name}>
+          <span className={styles.nameLine}>{headline}</span>
+          <span className={styles.meta}>
+            {formatDateOnly(order.createdAt)}
+            {order.deliveryMethod ? ` · ${order.deliveryMethod}` : ""}
           </span>
-        </div>
-        <span className={styles["px-history__money"]}>{money.format(order.totalCents / 100)}</span>
+        </span>
+        <span className={`pill ${tone}`}>{STATUS_LABEL[order.status] || "Em revisao"}</span>
+        <span className={styles.total}>{money.format((order.totalCents || 0) / 100)}</span>
+        <span className={styles.chev} aria-hidden="true">
+          {open ? "▴" : "▾"}
+        </span>
       </button>
+
       {open ? (
-        <div className={styles["px-history__detail"]}>
-          <p>{STATUS_TEXT[order.status] || "Status em revisao pela equipe."}</p>
+        <div id={`history-body-${order.id}`} className={styles.body}>
           {order.items?.length ? (
-            <ul className={styles["px-history__items"]}>
+            <ul className={styles.items}>
               {order.items.map((item, index) => (
                 <li key={`${item.productId || item.name}-${index}`}>
-                  {item.quantity} {item.unit || "un"} · {item.name}
+                  <span>
+                    {item.quantity} {item.unit || "un"} · {item.name}
+                  </span>
+                  <span className={styles.tabular}>
+                    {money.format((item.subtotalCents || 0) / 100)}
+                  </span>
                 </li>
               ))}
             </ul>
           ) : null}
-          <p className="muted">
-            {order.deliveryMethod || "Entrega a combinar"}
-            {order.paymentExpiresAt ? ` · Pix vence ${formatDateTime(order.paymentExpiresAt)}` : ""}
-            {order.shipment
-              ? ` · ${order.shipment.carrier} ${order.shipment.trackingCode || ""}`
-              : ""}
-          </p>
+          <div className={styles.metaRow}>
+            <span>
+              Pago: <b>{isPaid ? formatDateTime(order.updatedAt || order.createdAt) : "—"}</b>
+            </span>
+            <span>
+              Entrega: <b>{order.deliveryMethod || "a combinar"}</b>
+            </span>
+            <span>
+              Rastreio:{" "}
+              <b>
+                {order.shipment?.trackingCode
+                  ? `${order.shipment.carrier || ""} ${order.shipment.trackingCode}`.trim()
+                  : "aguardando"}
+              </b>
+            </span>
+          </div>
+          <div className={styles.actions}>
+            {onViewOrder ? (
+              <button
+                type="button"
+                className={styles.actionPrimary}
+                onClick={() => onViewOrder(order.id)}
+              >
+                Ver pedido
+              </button>
+            ) : null}
+            {onOpenSupport ? (
+              <button
+                type="button"
+                className={styles.actionGhost}
+                onClick={() => onOpenSupport(order.id)}
+              >
+                Falar com suporte
+              </button>
+            ) : null}
+          </div>
         </div>
       ) : null}
     </li>
