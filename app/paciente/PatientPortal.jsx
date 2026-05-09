@@ -5,7 +5,9 @@ import CartHero from "./components/CartHero";
 import CatalogSection from "./components/CatalogSection";
 import HistoryList from "./components/HistoryList";
 import LoginScreen from "./components/LoginScreen";
+import MobileCheckoutBar from "./components/MobileCheckoutBar";
 import MyProfilePage from "./components/MyProfilePage";
+import OnboardingSteps from "./components/OnboardingSteps";
 import OrderPaidHero from "./components/OrderPaidHero";
 import PatientShell from "./components/PatientShell";
 import PatientTabs, { PATIENT_TABS } from "./components/PatientTabs";
@@ -14,6 +16,27 @@ import PrivacyConsentGate from "./components/PrivacyConsentGate";
 import ProfileDrawer from "./components/ProfileDrawer";
 import SupportThread from "./components/SupportThread";
 import Toast from "./components/Toast";
+
+// Friendly toast labels for live status transitions (UX2 polling).
+const STATUS_DELTA_LABEL = {
+  paid_pending_fulfillment: "Pagamento confirmado!",
+  separating: "Pedido em separacao",
+  ready_to_ship: "Pedido pronto para envio",
+  sent: "Pedido enviado",
+  shipped: "Pedido enviado",
+  payment_expired: "Pix expirado · estoque liberado",
+};
+
+function pollIntervalForStatus(status) {
+  if (status === "awaiting_payment") return 10000;
+  if (
+    status === "paid_pending_fulfillment" ||
+    status === "separating" ||
+    status === "ready_to_ship"
+  )
+    return 30000;
+  return 0;
+}
 
 const PIX_STATUSES = new Set(["awaiting_payment", "payment_expired"]);
 // Only `awaiting_payment` is treated as an active in-flight Pix that should
@@ -82,6 +105,85 @@ export default function PatientPortal() {
   useEffect(() => {
     refreshSession();
   }, []);
+
+  // ---- UX2: live order-status polling.
+  // Cadence keyed off latestOrder.status. Pauses when document.hidden,
+  // resumes on visibility change. Aborts in-flight fetch on unmount.
+  const prevStatusRef = useRef(null);
+  useEffect(() => {
+    if (session?.role !== "patient") return undefined;
+    const status = latestOrder?.status;
+    const interval = pollIntervalForStatus(status);
+    if (!interval) {
+      prevStatusRef.current = status || null;
+      return undefined;
+    }
+
+    let cancelled = false;
+    let timer = null;
+    let controller = null;
+
+    const tick = async () => {
+      if (cancelled) return;
+      if (typeof document !== "undefined" && document.hidden) {
+        schedule();
+        return;
+      }
+      controller = new AbortController();
+      try {
+        const response = await fetch("/api/my-orders", {
+          signal: controller.signal,
+        });
+        if (!response.ok) throw new Error("fetch failed");
+        const payload = await response.json();
+        if (cancelled) return;
+        const fresh = payload.orders || [];
+        const nextLatest = fresh[0] || null;
+        const prevStatus = prevStatusRef.current;
+        const nextStatus = nextLatest?.status || null;
+        if (prevStatus && nextStatus && prevStatus !== nextStatus) {
+          const label = STATUS_DELTA_LABEL[nextStatus];
+          if (label) showToast(label);
+        }
+        prevStatusRef.current = nextStatus;
+        setOrders(fresh);
+      } catch {
+        /* abort or transient error — retry on next tick */
+      } finally {
+        if (!cancelled) schedule();
+      }
+    };
+
+    const schedule = () => {
+      timer = window.setTimeout(tick, interval);
+    };
+
+    const onVisibility = () => {
+      if (typeof document !== "undefined" && !document.hidden) {
+        // Wake immediately when the tab becomes visible.
+        if (timer) {
+          window.clearTimeout(timer);
+          timer = null;
+        }
+        tick();
+      }
+    };
+
+    prevStatusRef.current = status || null;
+    schedule();
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", onVisibility);
+    }
+
+    return () => {
+      cancelled = true;
+      if (timer) window.clearTimeout(timer);
+      if (controller) controller.abort();
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", onVisibility);
+      }
+    };
+  }, [session?.role, latestOrder?.status]);
 
   async function refreshSession() {
     const payload = await api("/api/session");
@@ -189,6 +291,79 @@ export default function PatientPortal() {
     } finally {
       setBusy(false);
     }
+  }
+
+  // UX7: rebuild a cart from a past order's items. Skip products that are
+  // missing from the current catalog or out of stock.
+  function handleReorder(orderItems) {
+    if (!hasPrivacyConsent)
+      return showToast("Aceite a privacidade e LGPD antes de montar o pedido.");
+    const items = Array.isArray(orderItems) ? orderItems : [];
+    if (!items.length) return showToast("Pedido sem itens para repetir.");
+    const skipped = [];
+    setCart((current) => {
+      const next = { ...current };
+      for (const item of items) {
+        const product = products.find((p) => p.id === item.productId);
+        if (!product || (product.availableStock ?? 0) <= 0) {
+          skipped.push({ name: item.name || item.productId });
+          continue;
+        }
+        const desired = Math.max(1, Number(item.quantity || 1));
+        const had = Number(next[product.id] || 0);
+        const target = Math.min(had + desired, product.availableStock);
+        next[product.id] = target;
+      }
+      return next;
+    });
+    setCurrentTab("pedido");
+    const added = items.length - skipped.length;
+    if (added === 0) {
+      showToast("Nenhum dos produtos esta disponivel. Tente novamente em breve.");
+    } else if (skipped.length === 0) {
+      showToast(`${added} ${added === 1 ? "item adicionado" : "itens adicionados"} ao carrinho.`);
+    } else {
+      const names = skipped.map((s) => s.name).join(", ");
+      showToast(
+        `${added} ${added === 1 ? "item adicionado" : "itens adicionados"}; ${skipped.length} indisponivel: ${names}`,
+      );
+    }
+  }
+
+  // UX8: when an expired Pix tombstone offers retry, copy items into the
+  // cart. mode === "regenerate" auto-submits Gerar Pix once cart is hydrated;
+  // mode === "edit" just lands the patient on the cart for review.
+  function handleExpiredRetry(orderItems, mode) {
+    handleReorder(orderItems);
+    if (mode === "regenerate") {
+      // Defer until after the next paint so cart state is committed and the
+      // checkout form renders with its current items + address.
+      if (typeof window !== "undefined") {
+        window.setTimeout(() => {
+          const form = checkoutFormRef.current;
+          if (form && typeof form.requestSubmit === "function") {
+            form.requestSubmit();
+          }
+        }, 80);
+      }
+    } else if (typeof window !== "undefined") {
+      window.requestAnimationFrame(() => {
+        const cart = document.getElementById("cart-summary");
+        if (cart && typeof cart.scrollIntoView === "function") {
+          cart.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+    }
+  }
+
+  // CatalogSection restock notify -> prefill suporte.
+  function handleNotifyRestock(productId, productName) {
+    setSupportPrefill({
+      subject: `Aviso de reposicao: ${productName}`,
+      message: `Por favor avise quando o produto ${productName} estiver disponivel.`,
+      priority: "normal",
+    });
+    setCurrentTab("suporte");
   }
 
   async function submitCheckout() {
@@ -350,6 +525,7 @@ export default function PatientPortal() {
   // ---- Render: authenticated path uses the new shell + tab sections. ----
   // Inactive sections stay mounted via `display:none` so every E2E selector
   // remains reachable regardless of which tab is active.
+  const hasActivePix = Boolean(latestOrder && ACTIVE_PIX_STATUSES.has(latestOrder.status));
   const isPedido = currentTab === "pedido";
   const isHistorico = currentTab === "historico";
   const isSuporte = currentTab === "suporte";
@@ -464,6 +640,7 @@ export default function PatientPortal() {
                   order={latestOrder}
                   onMarkPaid={loadOrders}
                   onCopyPix={copyPix}
+                  onRetry={handleExpiredRetry}
                   onCancel={() => {
                     setSupportPrefill({
                       orderId: latestOrder?.id || "",
@@ -480,7 +657,20 @@ export default function PatientPortal() {
           </section>
 
           {hasPrivacyConsent ? (
-            <section className="patient-pedido-layout" aria-label="Produtos autorizados e carrinho">
+            <section
+              className="patient-pedido-layout"
+              aria-label="Produtos autorizados e carrinho"
+              style={hasActivePix ? { display: "none" } : undefined}
+            >
+              {/* UX9: first-time onboarding strip. Shows only when there is
+                  no order history and the cart is empty, and dismissible via
+                  localStorage so it never re-renders for the same patient. */}
+              <OnboardingSteps
+                visible={orders.length === 0 && cartCount === 0}
+                onDismiss={() => {
+                  /* localStorage flag is owned by the component */
+                }}
+              />
               <CatalogSection
                 products={products}
                 cart={cart}
@@ -495,6 +685,7 @@ export default function PatientPortal() {
                 onIncrement={incrementProduct}
                 onDecrement={decrementProduct}
                 onClear={clearCart}
+                onNotifyRestock={handleNotifyRestock}
               />
               <form id="checkout" ref={checkoutFormRef} onSubmit={onCheckout}>
                 <CartHero
@@ -574,6 +765,7 @@ export default function PatientPortal() {
         <div data-patient-section="historico" style={hidden(isHistorico)}>
           <HistoryList
             orders={orders}
+            onReorder={handleReorder}
             onViewOrder={(orderId) => {
               setCurrentTab("pedido");
               if (typeof window !== "undefined") {
@@ -610,6 +802,15 @@ export default function PatientPortal() {
             orders={orders}
             onLgpdAction={onLgpdAction}
             onViewHistory={() => setCurrentTab("historico")}
+            onProfileSaved={async ({ message } = {}) => {
+              await refreshSession();
+              if (message) showToast(message);
+            }}
+            onContactEditRequest={(kind) => {
+              const subject = kind === "email" ? "Atualizar e-mail" : "Atualizar WhatsApp";
+              setSupportPrefill({ subject, priority: "normal" });
+              setCurrentTab("suporte");
+            }}
           />
         </div>
       </PatientShell>
@@ -631,6 +832,23 @@ export default function PatientPortal() {
           <PatientProfileDetails patient={patient} latestOrder={latestOrder} />
         </section>
       </ProfileDrawer>
+
+      {/* UX10: floating mobile checkout bar. Component handles its own
+          viewport gating via CSS media query. */}
+      <MobileCheckoutBar
+        visible={hasPrivacyConsent && cartCount > 0 && !hasActivePix && isPedido}
+        count={cartCount}
+        totalCents={cartTotal}
+        busy={busy}
+        onSubmit={() => {
+          if (checkoutFormRef.current?.requestSubmit) {
+            checkoutFormRef.current.requestSubmit();
+          } else if (typeof document !== "undefined") {
+            const cta = document.querySelector("#cart-summary button[type='submit']");
+            if (cta && typeof cta.focus === "function") cta.focus();
+          }
+        }}
+      />
 
       <Toast message={toast} />
     </>

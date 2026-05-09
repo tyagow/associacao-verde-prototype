@@ -221,6 +221,24 @@
   font-size: var(--fs-sm, 13px);
   text-align: center;
   background: var(--paper-warm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.emptyHeading {
+  margin: 0;
+  color: var(--ink);
+  font-size: var(--fs-base, 14px);
+  font-weight: 500;
+}
+
+.emptyActions {
+  display: flex;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .product {
@@ -289,10 +307,33 @@
   flex: 1;
 }
 
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
 .body h3 {
   margin: 0;
   font: 500 15px/1.25 var(--font-display, "Outfit", sans-serif);
   color: var(--ink);
+  flex: 1;
+  min-width: 0;
+}
+
+.productOut {
+  opacity: 0.6;
+}
+
+.productOut:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.notify {
+  margin-top: var(--sp-2);
+  align-self: flex-start;
 }
 
 .meta {

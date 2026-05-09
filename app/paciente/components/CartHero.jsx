@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import AddressFieldset from "./AddressFieldset";
 import styles from "./CartHero.module.css";
 
 const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
@@ -49,10 +50,9 @@ export default function CartHero({
   busy = false,
 }) {
   const isEmpty = count === 0 || items.length === 0;
-  const requiresAddress = !/Retirada/i.test(deliveryMethod || "");
+  const isPickup = /retirada/i.test(deliveryMethod || "");
+  const requiresAddress = !isPickup;
   const addr = shippingAddress || {};
-  const setAddrField = (field) => (event) =>
-    onShippingAddressChange?.({ ...addr, [field]: event.target.value });
 
   // Hard validation: which required address fields are still empty? The
   // submit button is disabled until all of these are filled, AND we surface
@@ -77,69 +77,10 @@ export default function CartHero({
   // <details> when the parent flags `addressMissing` (i.e. the user clicked
   // Gerar Pix and a required field was empty). User can also toggle manually.
   const [addressOpen, setAddressOpen] = useState(false);
-  const [cepLookupState, setCepLookupState] = useState("idle"); // idle | loading | ok | error
   useEffect(() => {
     if (addressMissing) setAddressOpen(true);
   }, [addressMissing]);
 
-  // Pin latest addr + handler in refs so the CEP effect can depend solely
-  // on the CEP string. Without this we'd either suppress react-hooks/
-  // exhaustive-deps or refetch on every keystroke.
-  const addrRef = useRef(addr);
-  const onShippingAddressChangeRef = useRef(onShippingAddressChange);
-  useEffect(() => {
-    addrRef.current = addr;
-    onShippingAddressChangeRef.current = onShippingAddressChange;
-  });
-
-  // CEP autocomplete via viacep.com.br. Debounced 250ms; aborts in-flight
-  // requests when the CEP changes again or the component unmounts. Only
-  // fills empty fields so we never overwrite typed/saved values.
-  useEffect(() => {
-    const raw = String(addr.cep || "").replace(/\D/g, "");
-    if (raw.length !== 8) {
-      setCepLookupState((current) => (current === "idle" ? current : "idle"));
-      return undefined;
-    }
-    const controller = new AbortController();
-    const debounceId = window.setTimeout(() => {
-      setCepLookupState("loading");
-      fetch(`https://viacep.com.br/ws/${raw}/json/`, { signal: controller.signal })
-        .then((response) => (response.ok ? response.json() : Promise.reject(response)))
-        .then((data) => {
-          if (!data || data.erro) {
-            setCepLookupState("error");
-            return;
-          }
-          const current = addrRef.current || {};
-          const next = { ...current };
-          let changed = false;
-          const fill = (key, value) => {
-            if (!next[key] && value) {
-              next[key] = value;
-              changed = true;
-            }
-          };
-          fill("street", data.logradouro);
-          fill("neighborhood", data.bairro);
-          fill("city", data.localidade);
-          fill("state", (data.uf || "").toUpperCase());
-          if (changed && onShippingAddressChangeRef.current) {
-            onShippingAddressChangeRef.current(next);
-          }
-          setCepLookupState("ok");
-        })
-        .catch((error) => {
-          // AbortError fires on unmount / debounce reset — not user-visible.
-          if (error?.name === "AbortError") return;
-          setCepLookupState("error");
-        });
-    }, 250);
-    return () => {
-      window.clearTimeout(debounceId);
-      controller.abort();
-    };
-  }, [addr.cep]);
   // If the cart has items and the address is incomplete, open the fieldset
   // automatically — the patient cannot generate Pix until they fill it, so
   // there is no value in keeping it collapsed.
@@ -267,102 +208,13 @@ export default function CartHero({
                 {addressOpen ? "fechar" : "abrir"}
               </span>
             </summary>
-            <fieldset className={styles.addressFieldset} aria-label="Endereco de entrega">
-              <div className={styles.addressGrid}>
-                <label className={styles.addressCep}>
-                  CEP
-                  <input
-                    name="cep"
-                    inputMode="numeric"
-                    autoComplete="postal-code"
-                    required={!isEmpty}
-                    placeholder="00000-000"
-                    aria-describedby="cep-status"
-                    value={addr.cep || ""}
-                    onChange={setAddrField("cep")}
-                  />
-                  <span id="cep-status" className={styles.cepStatus} aria-live="polite">
-                    {cepLookupState === "loading"
-                      ? "Buscando endereco..."
-                      : cepLookupState === "error"
-                        ? "CEP nao encontrado. Preencha manualmente."
-                        : cepLookupState === "ok"
-                          ? "Endereco preenchido pelo CEP."
-                          : ""}
-                  </span>
-                </label>
-                <label className={styles.addressStreet}>
-                  Logradouro
-                  <input
-                    name="street"
-                    autoComplete="address-line1"
-                    required={!isEmpty}
-                    placeholder="Rua, Avenida"
-                    value={addr.street || ""}
-                    onChange={setAddrField("street")}
-                  />
-                </label>
-                <label className={styles.addressNumber}>
-                  Numero
-                  <input
-                    name="number"
-                    required={!isEmpty}
-                    placeholder="123"
-                    value={addr.number || ""}
-                    onChange={setAddrField("number")}
-                  />
-                </label>
-                <label className={styles.addressComplement}>
-                  Complemento
-                  <input
-                    name="complement"
-                    placeholder="Apto, bloco (opcional)"
-                    value={addr.complement || ""}
-                    onChange={setAddrField("complement")}
-                  />
-                </label>
-                <label className={styles.addressNeighborhood}>
-                  Bairro
-                  <input
-                    name="neighborhood"
-                    required={!isEmpty}
-                    value={addr.neighborhood || ""}
-                    onChange={setAddrField("neighborhood")}
-                  />
-                </label>
-                <label className={styles.addressCity}>
-                  Cidade
-                  <input
-                    name="city"
-                    autoComplete="address-level2"
-                    required={!isEmpty}
-                    value={addr.city || ""}
-                    onChange={setAddrField("city")}
-                  />
-                </label>
-                <label className={styles.addressState}>
-                  UF
-                  <input
-                    name="state"
-                    autoComplete="address-level1"
-                    maxLength={2}
-                    required={!isEmpty}
-                    placeholder="SP"
-                    value={addr.state || ""}
-                    onChange={setAddrField("state")}
-                  />
-                </label>
-                <label className={styles.addressNotes}>
-                  Observacoes
-                  <input
-                    name="notes"
-                    placeholder="Ponto de referencia (opcional)"
-                    value={addr.notes || ""}
-                    onChange={setAddrField("notes")}
-                  />
-                </label>
-              </div>
-            </fieldset>
+            <AddressFieldset
+              value={addr}
+              onChange={onShippingAddressChange}
+              busy={busy}
+              idPrefix="cart"
+              required={!isEmpty}
+            />
           </details>
         ) : null}
       </div>
@@ -395,13 +247,23 @@ export default function CartHero({
             </div>
             <div className={styles.totalsRow}>
               <span>Frete</span>
-              <span>calculado no Pix</span>
+              {isPickup ? (
+                <span className={styles.shippingFree}>Sem custo &middot; retirada combinada</span>
+              ) : (
+                <span>calculado no Pix</span>
+              )}
             </div>
             <div className={`${styles.totalsRow} ${styles.totalsTotal}`}>
-              <span>Total estimado</span>
+              <span>{isPickup ? "Total" : "Subtotal"}</span>
               <strong>{money.format(total / 100)}</strong>
             </div>
           </div>
+          {isPickup ? null : (
+            <p className={styles.shippingNotice} role="note">
+              O valor do frete sera calculado pela transportadora quando o Pix for gerado e somado
+              ao total.
+            </p>
+          )}
           {/* aria-live error region: announces the first missing required
               address field so screen readers + sighted users get the same
               hint. The wrapper is always rendered (empty when ok) so SR

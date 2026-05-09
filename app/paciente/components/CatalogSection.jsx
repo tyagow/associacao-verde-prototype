@@ -35,6 +35,23 @@ export function productCategory(product) {
   return "oil";
 }
 
+/**
+ * Compute stock tier for a product. `low` triggers when capacity is unknown
+ * but available <= 3, OR when capacity is known and available <= 10% of it.
+ * `out` triggers on availableStock <= 0 or an explicit out-of-stock flag.
+ */
+export function productStockTier(product) {
+  const available = Number(product?.availableStock ?? 0);
+  if (available <= 0 || product?.outOfStock === true) return "out";
+  const capacity = Number(product?.capacity ?? 0);
+  if (capacity > 0) {
+    if (available <= Math.max(1, Math.floor(capacity * 0.1))) return "low";
+  } else if (available <= 3) {
+    return "low";
+  }
+  return "ok";
+}
+
 export function filterProducts(products, query, filter) {
   const normalizedQuery = normalizeText(query);
   return products.filter((product) => {
@@ -118,6 +135,65 @@ function PedidoWelcomeHero({ patient }) {
 }
 
 /**
+ * Empty-state branch: differentiates "no products at all" from
+ * "filter+query produced zero results" with a recovery CTA pair.
+ */
+function renderEmpty({
+  query,
+  category,
+  categories,
+  onQueryChange,
+  onCategoryChange,
+  productsEmpty,
+}) {
+  if (productsEmpty) {
+    return (
+      <div className={styles.empty}>Nenhum produto autorizado encontrado para este filtro.</div>
+    );
+  }
+  const hasQuery = query !== "";
+  const isFiltered = category !== "all";
+  if (!hasQuery && !isFiltered) {
+    return (
+      <div className={styles.empty}>Nenhum produto autorizado encontrado para este filtro.</div>
+    );
+  }
+  const catLabel = (categories.find((c) => c.value === category) || {}).label || "esta categoria";
+  let heading;
+  if (hasQuery && isFiltered) {
+    heading = `Sem resultados para "${query}" em ${catLabel}`;
+  } else if (hasQuery) {
+    heading = `Sem resultados para "${query}"`;
+  } else {
+    heading = `Sem produtos em ${catLabel}`;
+  }
+  return (
+    <div className={styles.empty}>
+      <p className={styles.emptyHeading}>{heading}</p>
+      <div className={styles.emptyActions}>
+        <button
+          type="button"
+          className="btn btn--primary btn--sm"
+          onClick={() => onQueryChange?.("")}
+        >
+          Limpar busca
+        </button>
+        <button
+          type="button"
+          className="btn btn--ghost btn--sm"
+          onClick={() => {
+            onQueryChange?.("");
+            onCategoryChange?.("all");
+          }}
+        >
+          Ver todos os produtos
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/**
  * Catalog grid + filter bar for the Pedido tab.
  *
  * Renders the breadcrumb, pagehead, category chips, and the responsive
@@ -136,6 +212,7 @@ export default function CatalogSection({
   category,
   onCategoryChange,
   onClear,
+  onNotifyRestock,
   categories = DEFAULT_CATEGORIES,
 }) {
   // Cart is either a Map<id, qty> or plain object — accept both for safety.
@@ -232,71 +309,102 @@ export default function CatalogSection({
       </div>
 
       <div id="catalog" className={styles.grid}>
-        {visible.length === 0 ? (
-          <div className={styles.empty}>Nenhum produto autorizado encontrado para este filtro.</div>
-        ) : (
-          visible.map((product) => {
-            const qty = getQty(product.id);
-            const inCart = qty > 0;
-            const stockOut = product.availableStock <= 0;
-            return (
-              <article
-                key={product.id}
-                className={`${styles.product} ${inCart ? styles.productIn : ""}`}
-              >
-                {inCart ? <span className={styles.badge}>&#10003; {qty} no carrinho</span> : null}
-                <div className={styles.thumb} style={productThumbStyle(product)} aria-hidden="true">
-                  {productMonogram(product)}
-                </div>
-                <div className={styles.body}>
-                  <h3>{product.name}</h3>
-                  <p className={styles.meta}>
-                    {product.description || product.unit}
-                    <br />
-                    {product.availableStock} {product.unit} em estoque
-                  </p>
-                  <div className={styles.row}>
-                    <span className={styles.price}>{money.format(product.priceCents / 100)}</span>
-                    {inCart ? (
-                      <div
-                        className={styles.qty}
-                        role="group"
-                        aria-label={`Quantidade de ${product.name}`}
-                      >
+        {visible.length === 0
+          ? renderEmpty({
+              query: query || "",
+              category: activeCategory,
+              categories,
+              onQueryChange,
+              onCategoryChange,
+              productsEmpty: products.length === 0,
+            })
+          : visible.map((product) => {
+              const qty = getQty(product.id);
+              const inCart = qty > 0;
+              const tier = productStockTier(product);
+              const stockOut = tier === "out";
+              return (
+                <article
+                  key={product.id}
+                  className={`${styles.product} ${inCart ? styles.productIn : ""} ${stockOut ? styles.productOut : ""}`}
+                >
+                  {inCart ? <span className={styles.badge}>&#10003; {qty} no carrinho</span> : null}
+                  <div
+                    className={styles.thumb}
+                    style={productThumbStyle(product)}
+                    aria-hidden="true"
+                  >
+                    {productMonogram(product)}
+                  </div>
+                  <div className={styles.body}>
+                    <div className={styles.titleRow}>
+                      <h3>{product.name}</h3>
+                      {tier === "out" ? (
+                        <span className="pill pill--danger" data-stock="out">
+                          Esgotado
+                        </span>
+                      ) : tier === "low" ? (
+                        <span className="pill pill--warn" data-stock="low">
+                          {`Últimas ${Number(product.availableStock)} un.`}
+                        </span>
+                      ) : null}
+                    </div>
+                    <p className={styles.meta}>
+                      {product.description || product.unit}
+                      <br />
+                      {product.availableStock} {product.unit} em estoque
+                    </p>
+                    <div className={styles.row}>
+                      <span className={styles.price}>{money.format(product.priceCents / 100)}</span>
+                      {inCart ? (
+                        <div
+                          className={styles.qty}
+                          role="group"
+                          aria-label={`Quantidade de ${product.name}`}
+                        >
+                          <button
+                            type="button"
+                            aria-label={`Diminuir ${product.name}`}
+                            onClick={() => onDecrement?.(product.id)}
+                          >
+                            &minus;
+                          </button>
+                          <span className={styles.qtyValue}>{qty}</span>
+                          <button
+                            type="button"
+                            aria-label={`Aumentar ${product.name}`}
+                            onClick={() => onIncrement?.(product.id)}
+                            disabled={qty >= product.availableStock}
+                          >
+                            +
+                          </button>
+                        </div>
+                      ) : (
                         <button
                           type="button"
-                          aria-label={`Diminuir ${product.name}`}
-                          onClick={() => onDecrement?.(product.id)}
+                          data-add={product.id}
+                          className={styles.add}
+                          disabled={stockOut}
+                          aria-disabled={stockOut ? "true" : undefined}
+                          onClick={() => onAdd?.(product.id)}
                         >
-                          &minus;
+                          {stockOut ? "Sem estoque" : "Adicionar"}
                         </button>
-                        <span className={styles.qtyValue}>{qty}</span>
-                        <button
-                          type="button"
-                          aria-label={`Aumentar ${product.name}`}
-                          onClick={() => onIncrement?.(product.id)}
-                          disabled={qty >= product.availableStock}
-                        >
-                          +
-                        </button>
-                      </div>
-                    ) : (
+                      )}
+                    </div>
+                    {stockOut && !inCart ? (
                       <button
                         type="button"
-                        data-add={product.id}
-                        className={styles.add}
-                        disabled={stockOut}
-                        onClick={() => onAdd?.(product.id)}
+                        className={`btn btn--ghost btn--mini ${styles.notify}`}
+                        onClick={() => onNotifyRestock?.(product.id, product.name)}
                       >
-                        {stockOut ? "Sem estoque" : "Adicionar"}
+                        Avisar quando voltar
                       </button>
-                    )}
+                    ) : null}
                   </div>
-                </div>
-              </article>
-            );
-          })
-        )}
+                </article>
+              );
+            })}
       </div>
     </section>
   );

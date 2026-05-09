@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import AddressFieldset from "./AddressFieldset";
 import styles from "./MyProfilePage.module.css";
 
 const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
@@ -181,13 +183,107 @@ function ordersStats(orders) {
  * LGPD action buttons are wired as no-op-with-toast for now (no backend
  * endpoint exists).
  */
-export default function MyProfilePage({ patient, orders = [], onLgpdAction, onViewHistory }) {
+export default function MyProfilePage({
+  patient,
+  orders = [],
+  onLgpdAction,
+  onViewHistory,
+  onProfileSaved,
+  onContactEditRequest,
+}) {
+  const [editingAddress, setEditingAddress] = useState(false);
+  const [draftAddress, setDraftAddress] = useState(null);
+  const [savingAddress, setSavingAddress] = useState(false);
+  const [addressError, setAddressError] = useState("");
+
   if (!patient) return null;
   const stats = ordersStats(orders);
   const activity = buildActivity(patient, orders);
   const handleLgpd = (kind) => {
     if (typeof onLgpdAction === "function") onLgpdAction(kind);
   };
+
+  const REQUIRED_ADDRESS_FIELDS = [
+    { key: "cep", label: "CEP" },
+    { key: "street", label: "logradouro" },
+    { key: "number", label: "numero" },
+    { key: "neighborhood", label: "bairro" },
+    { key: "city", label: "cidade" },
+    { key: "state", label: "UF" },
+  ];
+
+  function openAddressEditor() {
+    setDraftAddress({
+      cep: "",
+      street: "",
+      number: "",
+      complement: "",
+      neighborhood: "",
+      city: "",
+      state: "",
+      notes: "",
+      ...(patient.shippingAddress || {}),
+    });
+    setAddressError("");
+    setEditingAddress(true);
+  }
+
+  function cancelAddressEditor() {
+    setEditingAddress(false);
+    setDraftAddress(null);
+    setAddressError("");
+    setSavingAddress(false);
+  }
+
+  async function saveAddress() {
+    if (!draftAddress) return;
+    const missing = REQUIRED_ADDRESS_FIELDS.find(
+      (field) => !String(draftAddress[field.key] || "").trim(),
+    );
+    if (missing) {
+      setAddressError(`Preencha ${missing.label} antes de salvar.`);
+      return;
+    }
+    setSavingAddress(true);
+    setAddressError("");
+    try {
+      const response = await fetch("/api/patient/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ shippingAddress: draftAddress }),
+      });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload?.error || `Erro ${response.status}`);
+      }
+      if (typeof onProfileSaved === "function") {
+        await onProfileSaved({ kind: "address", message: "Endereco atualizado." });
+      }
+      setEditingAddress(false);
+      setDraftAddress(null);
+    } catch (error) {
+      setAddressError(
+        error?.message
+          ? `Nao foi possivel salvar: ${error.message}`
+          : "Nao foi possivel salvar agora. Tente novamente em instantes.",
+      );
+    } finally {
+      setSavingAddress(false);
+    }
+  }
+
+  function requestContactEdit(kind) {
+    // Email + WhatsApp are association-managed (PII change requires Suporte
+    // verification). Route the patient to the Suporte tab with a pre-filled
+    // subject so they don't bounce out of the portal. PatientPortal supplies
+    // the callback that flips the tab + setSupportPrefill.
+    if (typeof onContactEditRequest === "function") {
+      onContactEditRequest(kind);
+    } else {
+      handleLgpd(kind === "email" ? "edit-email" : "edit-phone");
+    }
+  }
   return (
     <article className={styles.page} data-patient-perfil="true">
       <header className={styles.pagehead}>
@@ -294,7 +390,8 @@ export default function MyProfilePage({ patient, orders = [], onLgpdAction, onVi
               <button
                 type="button"
                 className={styles.editBtn}
-                onClick={() => handleLgpd("edit-email")}
+                onClick={() => requestContactEdit("email")}
+                aria-label="Solicitar troca de e-mail via Suporte"
               >
                 editar
               </button>
@@ -307,7 +404,8 @@ export default function MyProfilePage({ patient, orders = [], onLgpdAction, onVi
               <button
                 type="button"
                 className={styles.editBtn}
-                onClick={() => handleLgpd("edit-phone")}
+                onClick={() => requestContactEdit("phone")}
+                aria-label="Solicitar troca de WhatsApp via Suporte"
               >
                 editar
               </button>
@@ -316,18 +414,77 @@ export default function MyProfilePage({ patient, orders = [], onLgpdAction, onVi
               <div>
                 <label>Endereço de entrega</label>
                 <b>
-                  {[patient.address, patient.city, patient.state].filter(Boolean).join(" · ") ||
-                    "Cadastro pendente"}
+                  {(() => {
+                    const sa = patient.shippingAddress || {};
+                    const line = [
+                      sa.street && sa.number ? `${sa.street}, ${sa.number}` : sa.street,
+                      sa.neighborhood,
+                      sa.city,
+                      sa.state,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ");
+                    return (
+                      line ||
+                      [patient.address, patient.city, patient.state].filter(Boolean).join(" · ") ||
+                      "Cadastro pendente"
+                    );
+                  })()}
                 </b>
               </div>
               <button
                 type="button"
                 className={styles.editBtn}
-                onClick={() => handleLgpd("edit-address")}
+                aria-expanded={editingAddress}
+                aria-controls="profile-address-editor"
+                onClick={() => (editingAddress ? cancelAddressEditor() : openAddressEditor())}
               >
-                editar
+                {editingAddress ? "fechar" : "editar"}
               </button>
             </div>
+            {editingAddress ? (
+              <div
+                id="profile-address-editor"
+                className={styles.addressEditor}
+                role="region"
+                aria-label="Editar endereco de entrega"
+              >
+                <AddressFieldset
+                  value={draftAddress || {}}
+                  onChange={setDraftAddress}
+                  busy={savingAddress}
+                  idPrefix="profile"
+                  autoFocusFirstEmpty
+                />
+                {addressError ? (
+                  <div className={styles.addressError} role="alert" aria-live="assertive">
+                    {addressError}
+                  </div>
+                ) : (
+                  <div className={styles.addressHint} aria-live="polite">
+                    Atualize seu endereco — o proximo pedido sera enviado para este local.
+                  </div>
+                )}
+                <div className={styles.addressActions}>
+                  <button
+                    type="button"
+                    className={styles.addressCancel}
+                    onClick={cancelAddressEditor}
+                    disabled={savingAddress}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.addressSave}
+                    onClick={saveAddress}
+                    disabled={savingAddress}
+                  >
+                    {savingAddress ? "Salvando..." : "Salvar endereco"}
+                  </button>
+                </div>
+              </div>
+            ) : null}
           </section>
         </div>
 

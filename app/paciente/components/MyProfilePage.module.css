@@ -329,3 +329,71 @@
 .lgpdDanger:hover {
   background: #fbe5e1;
 }
+
+/* ---------------- Inline address editor ---------------- */
+
+.addressEditor {
+  margin-top: var(--sp-2, 8px);
+  padding-top: var(--sp-2, 8px);
+  border-top: 1px dashed var(--line-soft, var(--line));
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2, 8px);
+}
+
+.addressHint {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.addressError {
+  font-size: 12px;
+  font-weight: 500;
+  color: #7c2419;
+  background: #fbe5e1;
+  border: 1px solid #ecc3bd;
+  border-radius: var(--r-sm, 3px);
+  padding: var(--sp-2, 8px) var(--sp-3, 12px);
+  line-height: 1.4;
+}
+
+.addressActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-2, 8px);
+  flex-wrap: wrap;
+}
+
+.addressCancel,
+.addressSave {
+  padding: var(--sp-2, 8px) var(--sp-4, 16px);
+  border-radius: var(--r-sm, 3px);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 38px;
+}
+
+.addressCancel:hover:not(:disabled) {
+  background: var(--paper-warm);
+}
+
+.addressSave {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.addressSave:hover:not(:disabled) {
+  opacity: 0.92;
+}
+
+.addressCancel:disabled,
+.addressSave:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}

@@ -427,6 +427,63 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* ---------- Verify (UX3) ---------- */
+
+.px-hero__btn-primary[aria-busy="true"] {
+  cursor: progress;
+  opacity: 0.85;
+}
+
+.px-hero__spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 8px;
+  border: 2px solid var(--paper);
+  border-top-color: transparent;
+  border-radius: 50%;
+  vertical-align: -2px;
+  animation: px-hero-spin 0.8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .px-hero__spinner {
+    animation: none;
+  }
+}
+
+.px-hero[data-reduce-motion="true"] .px-hero__spinner {
+  animation: none;
+}
+
+@keyframes px-hero-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.px-hero__verify-note {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  background: var(--paper-warm);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  font-size: 12.5px;
+  color: var(--ink);
+}
+
+.px-hero__verify-note--ok {
+  background: var(--green-tint);
+  border-color: var(--green);
+  color: var(--green-deep, var(--green));
+}
+
+.px-hero__verify-note--danger {
+  background: var(--danger-soft);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
 /* ---------- Expired note ---------- */
 
 .px-hero__expired-note {

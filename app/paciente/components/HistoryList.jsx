@@ -80,8 +80,9 @@ function filterBucket(status) {
  * with a segmented filter chip group up top and a clean grid layout that
  * places the expanded body on its own row.
  */
-export default function HistoryList({ orders, onViewOrder, onOpenSupport }) {
+export default function HistoryList({ orders, onViewOrder, onOpenSupport, onReorder }) {
   const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState("");
 
   const counts = useMemo(() => {
     const tally = { all: orders.length, active: 0, done: 0, expired: 0 };
@@ -109,9 +110,28 @@ export default function HistoryList({ orders, onViewOrder, onOpenSupport }) {
   }, [orders]);
 
   const visible = useMemo(() => {
-    if (filter === "all") return orders;
-    return orders.filter((order) => filterBucket(order.status) === filter);
-  }, [orders, filter]);
+    const needle = search.trim().toLowerCase();
+    let pool = orders;
+    if (filter !== "all") {
+      pool = pool.filter((order) => filterBucket(order.status) === filter);
+    }
+    if (needle) {
+      pool = pool.filter((order) => {
+        if (
+          String(order.id || "")
+            .toLowerCase()
+            .includes(needle)
+        )
+          return true;
+        return (order.items || []).some((item) =>
+          String(item.name || "")
+            .toLowerCase()
+            .includes(needle),
+        );
+      });
+    }
+    return pool;
+  }, [orders, filter, search]);
 
   return (
     <section id="patient-orders" className={styles.history}>
@@ -144,6 +164,20 @@ export default function HistoryList({ orders, onViewOrder, onOpenSupport }) {
       </header>
 
       {orders.length ? (
+        <div className={styles.searchRow}>
+          <input
+            type="search"
+            data-history-search
+            className={styles.search}
+            placeholder="Buscar pedido por ID ou produto..."
+            aria-label="Buscar no historico de pedidos"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
+        </div>
+      ) : null}
+
+      {orders.length ? (
         visible.length ? (
           <ul className={styles.list}>
             {visible.map((order) => (
@@ -152,6 +186,7 @@ export default function HistoryList({ orders, onViewOrder, onOpenSupport }) {
                 order={order}
                 onViewOrder={onViewOrder}
                 onOpenSupport={onOpenSupport}
+                onReorder={onReorder}
               />
             ))}
           </ul>
@@ -165,7 +200,7 @@ export default function HistoryList({ orders, onViewOrder, onOpenSupport }) {
   );
 }
 
-function HistoryRow({ order, onViewOrder, onOpenSupport }) {
+function HistoryRow({ order, onViewOrder, onOpenSupport, onReorder }) {
   const [open, setOpen] = useState(false);
   const tone = statusTone(order.status);
   const itemCount = order.items?.length || 0;
@@ -242,10 +277,20 @@ function HistoryRow({ order, onViewOrder, onOpenSupport }) {
             </span>
           </div>
           <div className={styles.actions}>
-            {onViewOrder ? (
+            {onReorder && order.items?.length ? (
               <button
                 type="button"
                 className={styles.actionPrimary}
+                data-action="reorder"
+                onClick={() => onReorder(order.items)}
+              >
+                Repetir pedido
+              </button>
+            ) : null}
+            {onViewOrder ? (
+              <button
+                type="button"
+                className={onReorder ? styles.actionGhost : styles.actionPrimary}
                 onClick={() => onViewOrder(order.id)}
               >
                 Ver pedido

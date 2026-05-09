@@ -32,12 +32,48 @@ function monogram(name) {
   return (first + second).toUpperCase().slice(0, 2);
 }
 
-export default function PixHero({ order, onMarkPaid, onCopyPix, onCancel }) {
+export default function PixHero({ order, onMarkPaid, onCopyPix, onCancel, onRetry }) {
   const expiresAt = order?.paymentExpiresAt;
   const [secondsLeft, setSecondsLeft] = useState(() => computeSecondsLeft(expiresAt));
   const [announcement, setAnnouncement] = useState("");
   const prevSecondsRef = useRef(null);
   const reduce = useReducedMotion();
+
+  // UX3: "Ja paguei" verification feedback.
+  // verifying: button is showing the spinner / waiting on confirmation.
+  // verifyAttempt: how many round-trips so far (max 2 before we surface
+  // the suporte fallback hint).
+  // verifyState: idle | pending | success | retry | exhausted
+  const [verifyState, setVerifyState] = useState("idle");
+  const [verifyAttempt, setVerifyAttempt] = useState(0);
+  const verifyTimerRef = useRef(null);
+  const prevStatusRef = useRef(order?.status);
+
+  useEffect(() => {
+    return () => {
+      if (verifyTimerRef.current) window.clearTimeout(verifyTimerRef.current);
+    };
+  }, []);
+
+  // When the parent re-renders with a different order.status while we are
+  // verifying, treat any move out of awaiting_payment as success.
+  useEffect(() => {
+    const prev = prevStatusRef.current;
+    const next = order?.status;
+    prevStatusRef.current = next;
+    if (
+      (verifyState === "pending" || verifyState === "retry") &&
+      prev === "awaiting_payment" &&
+      next &&
+      next !== "awaiting_payment"
+    ) {
+      if (verifyTimerRef.current) {
+        window.clearTimeout(verifyTimerRef.current);
+        verifyTimerRef.current = null;
+      }
+      setVerifyState("success");
+    }
+  }, [order?.status, verifyState]);
 
   useEffect(() => {
     setSecondsLeft(computeSecondsLeft(expiresAt));
@@ -79,6 +115,64 @@ export default function PixHero({ order, onMarkPaid, onCopyPix, onCancel }) {
         timeZone: "America/Sao_Paulo",
       }).format(new Date(expiresAt))
     : "sem data";
+
+  const runVerify = async () => {
+    if (typeof onMarkPaid === "function") {
+      try {
+        await onMarkPaid();
+      } catch {
+        /* parent already toasts */
+      }
+    }
+    // Give the parent a tick to swap order.status if the webhook landed.
+    verifyTimerRef.current = window.setTimeout(() => {
+      // If the prevStatus effect already moved us to success, do nothing.
+      setVerifyState((current) => {
+        if (current === "success") return current;
+        // Re-evaluate against the latest order prop via closure: if the
+        // prop has been updated, the prevStatus effect would have flipped
+        // us to success already.
+        if (order?.status && order.status !== "awaiting_payment") {
+          return "success";
+        }
+        // Determine retry vs exhausted from attempt count.
+        return verifyAttempt >= 2 ? "exhausted" : "retry";
+      });
+    }, 2500);
+  };
+
+  const handleVerify = async () => {
+    if (verifyState === "pending") return;
+    setVerifyAttempt((n) => n + 1);
+    setVerifyState("pending");
+    await runVerify();
+  };
+
+  // After landing in "retry", auto-attempt one more time after 10s
+  // (caps at attempt count 2; after that we surface the suporte hint).
+  useEffect(() => {
+    if (verifyState !== "retry") return undefined;
+    const id = window.setTimeout(() => {
+      if (verifyAttempt >= 2) {
+        setVerifyState("exhausted");
+        return;
+      }
+      setVerifyAttempt((n) => n + 1);
+      setVerifyState("pending");
+      runVerify();
+    }, 10000);
+    return () => window.clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [verifyState]);
+
+  const verifying = verifyState === "pending";
+  const markPaidLabel = expired
+    ? "Solicitar novo Pix"
+    : verifying
+      ? "Verificando pagamento..."
+      : verifyState === "success"
+        ? "Pagamento confirmado!"
+        : "Ja paguei, atualizar";
 
   const handleCopy = async () => {
     if (!copia) return;
@@ -190,14 +284,43 @@ export default function PixHero({ order, onMarkPaid, onCopyPix, onCancel }) {
                 </button>
               </div>
               <div className={styles["px-hero__actions"]}>
-                <button
-                  type="button"
-                  className={styles["px-hero__btn-primary"]}
-                  onClick={onMarkPaid}
-                >
-                  {expired ? "Solicitar novo Pix" : "Já paguei, atualizar"}
-                </button>
-                {onCancel ? (
+                {expired ? (
+                  <>
+                    <button
+                      type="button"
+                      className={styles["px-hero__btn-primary"]}
+                      onClick={() => onRetry?.(items, "regenerate")}
+                    >
+                      Gerar novo Pix
+                    </button>
+                    <button
+                      type="button"
+                      className={styles["px-hero__btn-ghost"]}
+                      onClick={() => onRetry?.(items, "edit")}
+                    >
+                      Editar pedido antes
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    className={styles["px-hero__btn-primary"]}
+                    data-pix-verify
+                    onClick={handleVerify}
+                    disabled={verifying}
+                    aria-busy={verifying ? "true" : undefined}
+                  >
+                    {verifying ? (
+                      <>
+                        <span className={styles["px-hero__spinner"]} aria-hidden="true" />
+                        {markPaidLabel}
+                      </>
+                    ) : (
+                      markPaidLabel
+                    )}
+                  </button>
+                )}
+                {onCancel && !expired ? (
                   <button
                     type="button"
                     className={styles["px-hero__btn-ghost"]}
@@ -208,6 +331,30 @@ export default function PixHero({ order, onMarkPaid, onCopyPix, onCancel }) {
                   </button>
                 ) : null}
               </div>
+              {!expired && verifyState === "retry" ? (
+                <p className={styles["px-hero__verify-note"]} role="status" aria-live="polite">
+                  Ainda nao recebemos a confirmacao do banco. Pix pode levar ate 1 minuto. Vamos
+                  tentar de novo.
+                </p>
+              ) : null}
+              {!expired && verifyState === "exhausted" ? (
+                <p
+                  className={`${styles["px-hero__verify-note"]} ${styles["px-hero__verify-note--danger"]}`}
+                  role="status"
+                  aria-live="polite"
+                >
+                  Nao localizamos o pagamento ainda. Se o debito ja saiu, fale com o suporte.
+                </p>
+              ) : null}
+              {!expired && verifyState === "success" ? (
+                <p
+                  className={`${styles["px-hero__verify-note"]} ${styles["px-hero__verify-note--ok"]}`}
+                  role="status"
+                  aria-live="polite"
+                >
+                  Pagamento confirmado!
+                </p>
+              ) : null}
             </div>
           </div>
         </div>
