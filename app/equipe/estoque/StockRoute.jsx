@@ -15,9 +15,10 @@
      - [data-filter='stockQuery'] and [data-filter='stockStatus'] still
        drive the ledger filter.
      - The legacy management forms (#product-form, #product-update-form,
-       #stock-form, #cultivation-form, #cultivation-update-form) stay in
-       the DOM inside the bottom <details> drawers so any future selectors
-       remain reachable.
+       #stock-form) stay in the DOM inside the bottom <details> drawers
+       so any future selectors remain reachable. The cultivation forms
+       (#cultivation-form, #cultivation-update-form, [data-cultivation-
+       action]) moved to /equipe/cultivo — see CultivoRoute.jsx.
 
    Data sources:
      - /api/team/dashboard → session check + cultivation batches +
