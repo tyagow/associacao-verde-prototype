@@ -1,54 +1,45 @@
+/* GateCard — visual primitives (.pill, .pill--*, .codeBlock,
+   .surface--bordered-left-*) come from globals.css. This module owns
+   layout chrome (gate shell, footer rail, label rows). */
+
 .gate {
   appearance: none;
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
-  padding: var(--sp-4);
-  background: var(--surface-elevated, #fff);
-  border: 1px solid var(--border-default, #e3ebe6);
-  border-left: 3px solid var(--border-default, #e3ebe6);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
   border-radius: var(--r-md);
   text-align: left;
   cursor: pointer;
   font: inherit;
   color: inherit;
   transition:
-    background 80ms ease,
-    border-color 80ms ease;
+    background var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out);
 }
 
 .gate:hover {
-  background: var(--paper-warm, #f7f9f6);
+  background: var(--surface-hover);
 }
 
 .gate:focus-visible {
-  outline: 2px solid var(--ink, #0d1f17);
+  outline: 2px solid var(--border-focus);
   outline-offset: 2px;
 }
 
 .selected {
-  background: var(--paper-warm, #f7f9f6);
-  border-color: var(--ink, #0d1f17);
-}
-
-.good {
-  border-left-color: var(--good, #1d8c52);
-}
-.warn {
-  border-left-color: var(--warn, #d6a91a);
-}
-.danger {
-  border-left-color: var(--danger, #b03a2e);
-}
-.pending {
-  border-left-color: var(--muted-2, #92a098);
+  background: var(--surface-hover);
+  border-color: var(--ink);
 }
 
 .tag {
-  font-size: 11px;
+  font-size: var(--fs-xs);
   letter-spacing: 0.06em;
   text-transform: lowercase;
-  color: var(--muted, #687970);
+  color: var(--text-subtle);
 }
 
 .titleRow {
@@ -59,72 +50,27 @@
 }
 
 .label {
-  font-size: 13px;
+  font-size: var(--fs-ui);
   font-weight: 600;
-  color: var(--ink, #0d1f17);
+  color: var(--text);
 }
 
 .detail {
-  font-size: 12px;
+  font-size: var(--fs-sm);
   line-height: 1.55;
-  color: var(--muted, #687970);
+  color: var(--text-subtle);
 }
 
 .caption {
-  font-size: 12px;
-  color: var(--ink-soft, #324a3c);
-}
-
-.cmd {
-  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
-  font-size: 11px;
-  background: var(--soft, #f1f5f2);
-  padding: var(--sp-2);
-  border-radius: var(--r-sm);
-  color: var(--ink-soft, #324a3c);
-  display: block;
-  word-break: break-word;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
 }
 
 .footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 11px;
-  color: var(--muted, #687970);
+  font-size: var(--fs-xs);
+  color: var(--text-subtle);
   margin-top: auto;
-}
-
-.pill {
-  font-size: 11px;
-  padding: var(--sp-1) var(--sp-2);
-  border-radius: 999px;
-  border: 1px solid var(--line, #e3ebe6);
-  background: var(--paper, #fff);
-  color: var(--ink-soft, #324a3c);
-  text-transform: lowercase;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-}
-
-.pill_good {
-  background: var(--green-tint, #e6f4ec);
-  color: var(--green-deep, #115e3a);
-  border-color: var(--green, #2f9e6c);
-}
-
-.pill_warn {
-  background: var(--warn-soft, #fff4d6);
-  color: var(--warn-ink, #7a5500);
-  border-color: var(--warn, #d29a00);
-}
-
-.pill_danger {
-  background: var(--danger-soft, #fde2e2);
-  color: var(--danger-ink, #8a1f1f);
-  border-color: var(--danger, #c63838);
-}
-
-.pill_pending {
-  color: var(--muted, #687970);
 }

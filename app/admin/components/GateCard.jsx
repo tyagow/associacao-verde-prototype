@@ -5,6 +5,10 @@ import styles from "./GateCard.module.css";
 /**
  * Per-gate card. Tone drives the left border color.
  *
+ * Visual primitives (.pill / .pill--*, .codeBlock,
+ * .surface--bordered-left-*) live in globals.css. This module owns
+ * the gate shell layout only.
+ *
  * Props:
  *   id       unique gate id (label)
  *   label    short title
@@ -19,6 +23,20 @@ import styles from "./GateCard.module.css";
  *   selected whether this card is currently expanded
  *   onSelect click handler (id)
  */
+const TONE_BORDER = {
+  good: "surface--bordered-left-ok",
+  warn: "surface--bordered-left-warn",
+  danger: "surface--bordered-left-danger",
+  pending: "surface--bordered-left-neutral",
+};
+
+const TONE_PILL = {
+  good: "pill--good",
+  warn: "pill--warn",
+  danger: "pill--danger",
+  pending: "pill--neutral",
+};
+
 export default function GateCard({
   id,
   label,
@@ -33,10 +51,14 @@ export default function GateCard({
   selected,
   onSelect,
 }) {
-  const className = [styles.gate, styles[tone] || styles.pending, selected ? styles.selected : ""]
+  const className = [
+    styles.gate,
+    TONE_BORDER[tone] || TONE_BORDER.pending,
+    selected ? styles.selected : "",
+  ]
     .filter(Boolean)
     .join(" ");
-  const pillClass = [styles.pill, styles[`pill_${tone}`] || ""].filter(Boolean).join(" ");
+  const pillClass = `pill ${TONE_PILL[tone] || TONE_PILL.pending}`;
   return (
     <button
       type="button"
@@ -53,7 +75,7 @@ export default function GateCard({
       </div>
       <small className={styles.detail}>{detail}</small>
       {caption ? <small className={styles.caption}>{caption}</small> : null}
-      {command ? <code className={styles.cmd}>{command}</code> : null}
+      {command ? <code className="codeBlock">{command}</code> : null}
       {footerText || footerCta ? (
         <span className={styles.footer}>
           {footerText ? <span>{footerText}</span> : <span />}
