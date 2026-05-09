@@ -90,8 +90,10 @@ export default function CultivoRoute() {
       await callback();
       await loadAll();
       setMessage(success);
+      return true;
     } catch (nextError) {
       setError(nextError.message);
+      return false;
     } finally {
       setBusy("");
     }
@@ -103,16 +105,18 @@ export default function CultivoRoute() {
     const payload = Object.fromEntries(new FormData(form));
     payload.plants = Number(payload.plants);
     payload.week = Number(payload.week);
-    await run("cultivation-create", "Lote de cultivo criado.", async () => {
+    const ok = await run("cultivation-create", "Lote de cultivo criado.", async () => {
       await api("/api/team/cultivation-batches", { method: "POST", body: payload });
       form.reset();
     });
-    // After a successful create, the operator's natural next move is to
-    // advance/harvest/dry/stock the batch they just made. Pivot the
-    // drawer focus there: close Criar, open Avançar. (Smart-default
-    // ref already fired on first paint and won't re-fire on its own.)
-    if (detailsCreateRef.current) detailsCreateRef.current.open = false;
-    if (detailsActionRef.current) detailsActionRef.current.open = true;
+    // After a SUCCESSFUL create, pivot drawers so the operator lands on
+    // the routine action with the batch they just made. On failure (api
+    // error, validation), keep the create drawer open so they can fix
+    // the form and retry.
+    if (ok) {
+      if (detailsCreateRef.current) detailsCreateRef.current.open = false;
+      if (detailsActionRef.current) detailsActionRef.current.open = true;
+    }
   }
 
   async function submitCultivationAction(action) {
