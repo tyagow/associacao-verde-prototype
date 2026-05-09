@@ -19,6 +19,43 @@ const moneyFmt = new Intl.NumberFormat("pt-BR", {
   currency: "BRL",
 });
 
+// A1 fix (audit cycle 3): pill tone now tracks order.status. Previously
+// hard-coded to `warn` for every status, which lied about ok/danger states.
+const STATUS_TONE = {
+  awaiting_payment: "warn",
+  paid_pending_fulfillment: "info",
+  separating: "info",
+  ready_to_ship: "ok",
+  shipped: "ok",
+  delivered: "ok",
+  expired: "danger",
+  payment_expired: "danger",
+  fulfillment_exception: "danger",
+  cancelled: "neutral",
+  canceled: "neutral",
+};
+
+const STATUS_LABEL = {
+  awaiting_payment: "aguardando pgto",
+  paid_pending_fulfillment: "pago, em fila",
+  separating: "em separação",
+  ready_to_ship: "pronto p/ envio",
+  shipped: "enviado",
+  delivered: "entregue",
+  expired: "expirado",
+  payment_expired: "Pix expirado",
+  fulfillment_exception: "exceção",
+  cancelled: "cancelado",
+  canceled: "cancelado",
+};
+
+function statusToneClass(status) {
+  return STATUS_TONE[status] || "neutral";
+}
+function statusLabel(status) {
+  return STATUS_LABEL[status] || status || "aguardando pgto";
+}
+
 export default function OrderDrawer({
   order,
   payment,
@@ -33,13 +70,10 @@ export default function OrderDrawer({
         <header className="ph">
           <h3>Detalhes</h3>
         </header>
-        <div
-          className="adm-empty-state"
-          style={{ border: 0, background: "transparent", minHeight: 120 }}
-        >
+        <div className={`adm-empty-state ${styles.emptyInset}`}>
           <span className="adm-empty-state__title">Sem pedido selecionado</span>
           <span className="adm-empty-state__hint">
-            Escolha um pedido na fila para ver itens, pagamento e proximos passos.
+            Escolha um pedido na fila para ver itens, pagamento e próximos passos.
           </span>
         </div>
       </aside>
@@ -72,7 +106,9 @@ export default function OrderDrawer({
       <div className={styles.row}>
         <span className={styles.lbl}>Status</span>
         <span className={styles.val}>
-          <span className="pill warn">{order?.status || "aguardando pgto"}</span>
+          <span className={`pill pill--${statusToneClass(order?.status)}`}>
+            {statusLabel(order?.status)}
+          </span>
         </span>
       </div>
       {payment ? (
@@ -107,12 +143,12 @@ export default function OrderDrawer({
               <div key={idx} className={styles.li}>
                 <div className={styles.thumb}>{monogram(item.name)}</div>
                 <div>
-                  <div style={{ fontWeight: 600 }}>{item.name}</div>
-                  <div style={{ color: "var(--muted)", fontSize: 11 }}>
+                  <div className={styles.itemName}>{item.name}</div>
+                  <div className={styles.itemMeta}>
                     {item.quantity}× {moneyFmt.format(unit / 100)}
                   </div>
                 </div>
-                <div className="num" style={{ fontWeight: 600 }}>
+                <div className={`num ${styles.itemTotal}`}>
                   {moneyFmt.format((item.subtotalCents || 0) / 100)}
                 </div>
               </div>
@@ -129,11 +165,11 @@ export default function OrderDrawer({
         <span className={styles.lbl}>Frete</span>
         <span className={styles.val}>incluso no Pix</span>
       </div>
-      <div className={styles.row} style={{ borderBottom: 0 }}>
+      <div className={`${styles.row} ${styles.totalRow}`}>
         <span className={styles.lbl}>
           <strong>Total</strong>
         </span>
-        <span className={`${styles.val} num`} style={{ fontSize: 16 }}>
+        <span className={`${styles.val} ${styles.totalVal} num`}>
           <strong>{moneyFmt.format(totalCents / 100)}</strong>
         </span>
       </div>
@@ -142,10 +178,9 @@ export default function OrderDrawer({
         {payment ? (
           <button
             type="button"
-            className="btn primary"
+            className={`btn primary ${styles.payAction}`}
             data-pay={payment.id}
             disabled={payBusy}
-            style={{ flex: 1 }}
             onClick={() => onPaymentAction?.(payment.id, "pay")}
           >
             {payBusy ? "Simulando…" : "Confirmar Pix"}
@@ -154,7 +189,7 @@ export default function OrderDrawer({
         {cancelable ? (
           <form
             onSubmit={(event) => onCancelOrder?.(event, order.id)}
-            style={{ display: "inline" }}
+            className={styles.cancelForm}
           >
             <input type="hidden" name="reason" value="Cancelamento via drawer" />
             <button type="submit" className="btn ghost">

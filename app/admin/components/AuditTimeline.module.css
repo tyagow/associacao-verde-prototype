@@ -110,10 +110,9 @@
   background: var(--paper-warm, #f7f9f6);
 }
 
-.tevButton:focus-visible {
-  outline: 2px solid var(--ink, #0d1f17);
-  outline-offset: -2px;
-}
+/* B5 (audit cycle 3): rely on the global :focus-visible box-shadow ring
+   from app/globals.css. Local outline-offset:-2px clipped against the row
+   hover background. */
 
 .time {
   font-size: 11px;

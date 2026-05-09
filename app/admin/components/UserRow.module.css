@@ -68,14 +68,14 @@
   border-color: var(--green-soft, #c7e2d2);
 }
 .role_operations {
-  background: #eaf1ff;
-  color: #1d3a8a;
-  border-color: #c8d6f1;
+  background: var(--status-info-bg);
+  color: var(--status-info-text);
+  border-color: var(--status-info-border);
 }
 .role_support {
-  background: var(--warn-soft, #fff5d4);
-  color: var(--warn-ink, #876f12);
-  border-color: #f0d883;
+  background: var(--status-warn-bg, var(--warn-soft));
+  color: var(--status-warn-text, var(--warn-ink));
+  border-color: var(--status-warn-border);
 }
 
 .statusPill {

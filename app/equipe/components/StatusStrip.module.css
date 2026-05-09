@@ -98,10 +98,8 @@
   background: var(--paper);
   color: var(--ink);
 }
-.filterInput:focus {
-  outline: 2px solid var(--ink);
-  outline-offset: -1px;
-}
+/* B5 (audit cycle 3): use the global :focus-visible ring; the local
+   outline-offset:-1px collided with the input border on Safari. */
 select.filterInput {
   padding-right: 24px;
   appearance: none;

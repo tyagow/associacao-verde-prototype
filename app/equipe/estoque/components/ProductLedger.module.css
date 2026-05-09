@@ -15,8 +15,8 @@
    keep their default rhythm. */
 .ledgerPanel :global(table.adm) tbody td,
 .ledgerPanel :global(table.adm) thead th {
-  padding-top: 13px;
-  padding-bottom: 13px;
+  padding-top: var(--sp-3);
+  padding-bottom: var(--sp-3);
 }
 .ledgerPanel :global(.ph) {
   padding: var(--sp-4) var(--sp-5) var(--sp-2);

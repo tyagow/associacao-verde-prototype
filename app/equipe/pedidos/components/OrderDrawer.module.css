@@ -25,6 +25,33 @@
   font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
+.itemName {
+  font-weight: 600;
+}
+.itemMeta {
+  color: var(--muted);
+  font-size: 11px;
+}
+.itemTotal {
+  font-weight: 600;
+}
+.totalRow {
+  border-bottom: 0;
+}
+.totalVal {
+  font-size: 16px;
+}
+.cancelForm {
+  display: inline;
+}
+.payAction {
+  flex: 1;
+}
+.emptyInset {
+  border: 0;
+  background: transparent;
+  min-height: 120px;
+}
 .lineitems {
   padding: var(--sp-3) var(--sp-4);
 }
