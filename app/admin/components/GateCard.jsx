@@ -65,8 +65,10 @@ export default function GateCard({
 }
 
 function labelFor(tone) {
+  // D5 fix: consistent lowercase across all tones (the danger/pending pills
+  // were capitalised, the others weren't).
   if (tone === "good") return "verde";
-  if (tone === "danger") return "Bloqueio";
+  if (tone === "danger") return "bloqueio";
   if (tone === "warn") return "amarelo";
-  return "Pendente";
+  return "pendente";
 }
