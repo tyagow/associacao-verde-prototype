@@ -11,7 +11,9 @@
   background: var(--surface-elevated);
   border: 1px solid var(--border);
   border-left: 3px solid var(--border);
-  border-radius: var(--r-md);
+  /* Mockup b-admin.html .gateCard uses --r-sm (3px) — the tighter
+     Direction B dialect; --r-md (5px) belonged to marketing chrome. */
+  border-radius: var(--r-sm);
   text-align: left;
   cursor: pointer;
   font: inherit;
