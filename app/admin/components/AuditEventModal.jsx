@@ -4,16 +4,22 @@ import { useEffect, useRef } from "react";
 import styles from "./AuditEventModal.module.css";
 
 /**
- * Modal that renders a full audit event payload. Closes on overlay click,
- * the close button, or Escape. Restores focus to the previously focused
- * element on close.
+ * Drawer (right-side rail) that renders a full audit event payload.
+ *
+ * Spec 2026-05-09 §8: read-only detail belongs in a drawer, not a centered
+ * modal — keeps the audit list visible as stable left context. Visual
+ * primitives (.drawer / .drawer__head / .drawer__body / .drawer__overlay,
+ * .btn--icon) live in app/globals.css; this module owns the local payload
+ * + meta layout only.
+ *
+ * Closes on overlay click, the close button, or Escape. Restores focus
+ * to the previously focused element on close.
  *
  * Props:
  *   event   the audit event to display (or null/undefined to render nothing)
  *   onClose () => void
  */
 export default function AuditEventModal({ event, onClose }) {
-  const dialogRef = useRef(null);
   const closeButtonRef = useRef(null);
   const previouslyFocusedRef = useRef(null);
 
@@ -49,16 +55,15 @@ export default function AuditEventModal({ event, onClose }) {
   })();
 
   return (
-    <div className={styles.overlay} role="presentation" onClick={onClose}>
-      <div
-        ref={dialogRef}
-        className={styles.dialog}
+    <>
+      <div className="drawer__overlay" role="presentation" onClick={onClose} />
+      <aside
+        className="drawer"
         role="dialog"
         aria-modal="true"
         aria-label="Detalhes do evento de auditoria"
-        onClick={(e) => e.stopPropagation()}
       >
-        <header className={styles.header}>
+        <header className="drawer__head">
           <div>
             <p className={styles.kicker}>Evento de auditoria</p>
             <h3>{event.action}</h3>
@@ -66,32 +71,34 @@ export default function AuditEventModal({ event, onClose }) {
           <button
             ref={closeButtonRef}
             type="button"
-            className={styles.close}
+            className="btn btn--icon"
             onClick={onClose}
             aria-label="Fechar detalhes"
           >
             ×
           </button>
         </header>
-        <dl className={styles.meta}>
-          <div>
-            <dt>Quando</dt>
-            <dd>{formatDateTime(event.at)}</dd>
-          </div>
-          <div>
-            <dt>Ator</dt>
-            <dd>{event.actor || "desconhecido"}</dd>
-          </div>
-          <div>
-            <dt>Acao</dt>
-            <dd>{event.action}</dd>
-          </div>
-        </dl>
-        <section className={styles.payload} aria-label="Payload completo">
-          <pre>{detailsJson}</pre>
-        </section>
-      </div>
-    </div>
+        <div className="drawer__body">
+          <dl className={styles.meta}>
+            <div>
+              <dt>Quando</dt>
+              <dd>{formatDateTime(event.at)}</dd>
+            </div>
+            <div>
+              <dt>Ator</dt>
+              <dd>{event.actor || "desconhecido"}</dd>
+            </div>
+            <div>
+              <dt>Acao</dt>
+              <dd>{event.action}</dd>
+            </div>
+          </dl>
+          <section className={styles.payload} aria-label="Payload completo">
+            <pre>{detailsJson}</pre>
+          </section>
+        </div>
+      </aside>
+    </>
   );
 }
 

@@ -1,70 +1,15 @@
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(13, 31, 23, 0.42);
-  z-index: 90;
-  display: grid;
-  place-items: center;
-  padding: var(--sp-6);
-  backdrop-filter: blur(2px);
-}
-
-.dialog {
-  width: min(640px, 100%);
-  max-height: min(80vh, 720px);
-  background: var(--paper, #fff);
-  border: 1px solid var(--line, #e3ebe6);
-  border-radius: 3px;
-  box-shadow: 0 24px 64px -28px rgba(13, 31, 23, 0.4);
-  display: grid;
-  grid-template-rows: auto auto 1fr;
-  overflow: hidden;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--sp-3);
-  padding: var(--sp-5) var(--sp-5) var(--sp-3);
-  border-bottom: 1px solid var(--line, #e3ebe6);
-}
-
-.header h3 {
-  margin: 0;
-  font-size: 16px;
-  color: var(--ink, #0d1f17);
-  word-break: break-word;
-}
+/* AuditEventModal — converted to a drawer in Phase 14d (spec
+   2026-05-09 §8). The shell + overlay + close button now come from the
+   global .drawer / .drawer__head / .drawer__body / .drawer__overlay /
+   .btn--icon primitives in app/globals.css. This module only owns the
+   payload + meta rows that are local to audit detail. */
 
 .kicker {
   margin: 0 0 2px;
-  font-size: 11px;
+  font-size: var(--fs-xs);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--muted, #687970);
-}
-
-.close {
-  appearance: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid var(--line, #e3ebe6);
-  background: #fff;
-  font-size: 18px;
-  line-height: 1;
-  cursor: pointer;
-  color: var(--ink, #0d1f17);
-}
-
-.close:hover {
-  background: var(--paper-warm, #f7f9f6);
-}
-
-.close:focus-visible {
-  outline: 2px solid var(--green, #1d8c52);
-  outline-offset: 2px;
+  color: var(--text-subtle);
 }
 
 .meta {
@@ -72,8 +17,6 @@
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: var(--sp-3) var(--sp-5);
   margin: 0;
-  padding: var(--sp-3) var(--sp-5);
-  border-bottom: 1px solid var(--line, #e3ebe6);
 }
 
 .meta div {
@@ -82,31 +25,33 @@
 }
 
 .meta dt {
-  font-size: 11px;
+  font-size: var(--fs-xs);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--muted, #687970);
+  color: var(--text-subtle);
 }
 
 .meta dd {
   margin: 0;
-  font-size: 13px;
-  color: var(--ink, #0d1f17);
+  font-size: var(--fs-ui);
+  color: var(--text);
   font-variant-numeric: tabular-nums;
   word-break: break-word;
 }
 
 .payload {
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-sm);
+  padding: var(--sp-3);
   overflow: auto;
-  padding: var(--sp-3) var(--sp-5) var(--sp-5);
-  background: var(--paper-warm, #f7f9f6);
 }
 
 .payload pre {
   margin: 0;
-  font-size: 12px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  color: var(--ink, #0d1f17);
+  font-size: var(--fs-sm);
+  font-family: var(--font-mono);
+  color: var(--text);
   white-space: pre-wrap;
   word-break: break-word;
 }
