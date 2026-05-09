@@ -15,14 +15,21 @@ const ROLE_LABELS = {
 };
 
 /**
- * Phase 3 — Team app shell. Sidebar (Comando, Pacientes, Estoque, Pedidos,
- * Fulfillment, Suporte, Admin, Auditoria) with badge counts driven by the
- * /api/team/dashboard payload. Brand seal + role label + Cmd-K hint in
- * topbar; logout + password rotation in the footer.
+ * Phase 0 — Team app shell (Direction B chassis).
  *
- * Mounted today only by /equipe (TeamCommand). Future phases (4-9) will
- * migrate sibling routes to invoke this shell as well; the passthrough
- * layout at app/equipe/layout.jsx is the integration seam.
+ * Sidebar (Operação / Compliance navheads) collects the 8 internal routes
+ * (Comando, Pacientes, Estoque, Pedidos, Fulfillment, Suporte, Admin,
+ * Auditoria) with badge counts driven by the /api/team/dashboard payload.
+ * Topbar carries breadcrumb + global search (⌘K) + role chip. Footer band
+ * is folded into the sidebar bottom and exposes Perfil / Sair.
+ *
+ * E2E selectors preserved verbatim:
+ *   - data-cmdk-trigger on the global search button
+ *   - all 8 sidebar hrefs (see navGroups below)
+ *   - ⌘K / Ctrl+K keydown binding
+ *   - <CommandPalette> mount
+ *   - #team-status is owned by app/equipe/TeamCommand.jsx (rendered as
+ *     children into <main className={styles.main}>) — DO NOT add it here.
  */
 export default function TeamShell({
   session,
@@ -55,94 +62,118 @@ export default function TeamShell({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
-  const items = [
-    { href: "/equipe", label: "Comando", key: "command" },
-    { href: "/equipe/pacientes", label: "Pacientes", key: "patients" },
-    { href: "/equipe/estoque", label: "Estoque", key: "stock" },
-    { href: "/equipe/pedidos", label: "Pedidos", key: "orders" },
-    { href: "/equipe/fulfillment", label: "Fulfillment", key: "fulfillment" },
-    { href: "/equipe/suporte", label: "Suporte", key: "support" },
-    { href: "/admin", label: "Admin", key: "admin" },
-    { href: "/admin#auditoria", label: "Auditoria", key: "audit" },
+  const navGroups = [
+    {
+      head: "Operação",
+      items: [
+        { href: "/equipe", label: "Comando", key: "command" },
+        { href: "/equipe/pacientes", label: "Pacientes", key: "patients" },
+        { href: "/equipe/estoque", label: "Estoque", key: "stock" },
+        { href: "/equipe/pedidos", label: "Pedidos", key: "orders" },
+        { href: "/equipe/fulfillment", label: "Fulfillment", key: "fulfillment" },
+        { href: "/equipe/suporte", label: "Suporte", key: "support" },
+      ],
+    },
+    {
+      head: "Compliance",
+      items: [
+        { href: "/admin", label: "Admin", key: "admin" },
+        { href: "/admin#auditoria", label: "Auditoria", key: "audit" },
+      ],
+    },
   ];
 
   const user = session?.user;
   const role = ROLE_LABELS[user?.role] || "Equipe";
+  const breadcrumbLabel = currentBreadcrumb(currentRoute, navGroups);
+  const platformKey = platformMeta();
 
   return (
-    <div className={styles.txShell}>
-      <header className={styles.txTopbar} aria-label="Topbar da operacao">
-        <div className={styles.txTopbarLeft}>
-          <Brand />
-          <span className={styles.txRoleChip}>
-            <strong>{user?.name || "Equipe Apoiar"}</strong>
-            <span aria-hidden>·</span>
-            <span>{role}</span>
+    <div className={styles.shell}>
+      <aside className={styles.sidebar} aria-label="Navegação da equipe">
+        <Brand />
+
+        {navGroups.map((group) => (
+          <nav key={group.head} className={styles.navGroup} aria-label={group.head}>
+            <span className={styles.navhead}>{group.head}</span>
+            {group.items.map((item) => {
+              const badge = counts[item.key];
+              const isActive = isCurrent(currentRoute, item.href);
+              const linkClass = [styles.navLink, isActive ? "active" : null]
+                .filter(Boolean)
+                .join(" ");
+              return (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className={linkClass}
+                  aria-current={isActive ? "page" : undefined}
+                >
+                  <span>{item.label}</span>
+                  {badge && badge.value > 0 ? (
+                    <span
+                      className={[styles.badge, badge.tone ? badge.tone : null]
+                        .filter(Boolean)
+                        .join(" ")}
+                      aria-label={`${badge.value} pendente(s)`}
+                    >
+                      {badge.value}
+                    </span>
+                  ) : null}
+                </a>
+              );
+            })}
+          </nav>
+        ))}
+
+        <div className={styles.footerBand}>
+          <span>{user?.email || "email não informado"}</span>
+          <span className="actions">
+            {onOpenProfile ? (
+              <button type="button" disabled={busy} onClick={onOpenProfile}>
+                Perfil
+              </button>
+            ) : null}
+            {onLogout ? (
+              <button type="button" disabled={busy} onClick={onLogout}>
+                Sair
+              </button>
+            ) : null}
           </span>
         </div>
-        <div className={styles.txTopbarRight}>
-          <button
-            type="button"
-            className={styles.txKbdHint}
-            aria-label="Abrir paleta de comandos"
-            data-cmdk-trigger
-            onClick={() => setPaletteOpen(true)}
-            style={{ background: "transparent", border: 0, cursor: "pointer", padding: 0 }}
-          >
-            <kbd>{platformMeta()}</kbd>
-            <kbd>K</kbd>
-            <span>paleta</span>
-          </button>
+      </aside>
+
+      <header className={styles.topbar} aria-label="Topbar da operação">
+        <div className={styles.breadcrumb}>
+          <span>Equipe</span>
+          <span className={styles.sep} aria-hidden>
+            /
+          </span>
+          <strong>{breadcrumbLabel}</strong>
         </div>
+
+        <button
+          type="button"
+          className={styles.globalSearch}
+          data-cmdk-trigger
+          aria-label="Abrir paleta de comandos"
+          onClick={() => setPaletteOpen(true)}
+        >
+          <span aria-hidden style={{ color: "var(--muted)" }}>
+            ⌕
+          </span>
+          <span className={styles.searchInput}>Buscar paciente, pedido, lote, suporte…</span>
+          <span className={styles.kbd}>{platformKey}K</span>
+        </button>
+
+        <span className={styles.roleChip}>
+          <strong>{user?.name || "Equipe Apoiar"}</strong>
+          <span aria-hidden>·</span>
+          <span>{role}</span>
+        </span>
       </header>
 
-      <nav className={styles.txSidebar} aria-label="Areas da equipe">
-        {items.map((item) => {
-          const badge = counts[item.key];
-          const isActive = isCurrent(currentRoute, item.href);
-          return (
-            <a
-              key={item.href}
-              href={item.href}
-              className={isActive ? "active" : undefined}
-              aria-current={isActive ? "page" : undefined}
-            >
-              <span>{item.label}</span>
-              {badge && badge.value > 0 ? (
-                <span
-                  className={`${styles.txBadge}${badge.tone ? " " + badge.tone : ""}`}
-                  aria-label={`${badge.value} pendente(s)`}
-                >
-                  {badge.value}
-                </span>
-              ) : null}
-            </a>
-          );
-        })}
-      </nav>
-
-      <main className={styles.txMain}>{children}</main>
-
-      <footer className={styles.txFooter} aria-label="Rodape da equipe">
-        <div className={styles.txFooterMeta}>
-          <span>
-            {user?.email || "email nao informado"} · {role}
-          </span>
-          <span>Apoiar Brasil — operacao privada</span>
-        </div>
-        <div className={styles.txFooterActions}>
-          {onOpenProfile ? (
-            <button type="button" className="mini" disabled={busy} onClick={onOpenProfile}>
-              Perfil e senha
-            </button>
-          ) : null}
-          {onLogout ? (
-            <button type="button" className="mini" disabled={busy} onClick={onLogout}>
-              Sair
-            </button>
-          ) : null}
-        </div>
-      </footer>
+      <main className={styles.main}>{children}</main>
 
       <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} dashboard={dashboard} />
     </div>
@@ -184,4 +215,14 @@ function computeBadgeCounts(dashboard) {
     admin: { value: 0, tone: "" },
     audit: { value: 0, tone: "" },
   };
+}
+
+function currentBreadcrumb(currentRoute, navGroups) {
+  if (!currentRoute) return "Comando";
+  for (const group of navGroups) {
+    for (const item of group.items) {
+      if (isCurrent(currentRoute, item.href)) return item.label;
+    }
+  }
+  return "Comando";
 }
