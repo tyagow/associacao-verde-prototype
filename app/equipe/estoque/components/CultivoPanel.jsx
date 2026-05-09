@@ -31,19 +31,24 @@ export default function CultivoPanel({ batches }) {
         </div>
       ) : (
         <table className="adm">
+          <colgroup>
+            <col style={{ width: 120 }} />
+            <col />
+            <col style={{ width: 130 }} />
+            <col style={{ width: 130 }} />
+            <col style={{ width: 90 }} />
+            <col style={{ width: 120 }} />
+            <col style={{ width: 120 }} />
+          </colgroup>
           <thead>
             <tr>
-              <th style={{ width: 120 }}>Batch</th>
+              <th>Batch</th>
               <th>Strain</th>
-              <th style={{ width: 130 }}>Plantio</th>
-              <th style={{ width: 130 }}>Estimativa</th>
-              <th className="right" style={{ width: 90 }}>
-                Plantas
-              </th>
-              <th className="right" style={{ width: 120 }}>
-                Estim. (g)
-              </th>
-              <th style={{ width: 120 }}>Stage</th>
+              <th>Plantio</th>
+              <th>Estimativa</th>
+              <th className="right">Plantas</th>
+              <th className="right">Estim. (g)</th>
+              <th>Stage</th>
             </tr>
           </thead>
           <tbody>

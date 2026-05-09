@@ -29,22 +29,26 @@ export default function ProductLedger({ children }) {
         </div>
       ) : (
         <table className="adm">
+          <colgroup>
+            <col style={{ width: 120 }} />
+            <col />
+            <col style={{ width: 110 }} />
+            <col style={{ width: 80 }} />
+            <col style={{ width: 80 }} />
+            <col style={{ width: 80 }} />
+            <col style={{ width: 120 }} />
+            <col style={{ width: 110 }} />
+          </colgroup>
           <thead>
             <tr>
-              <th style={{ width: 120 }}>Identificador</th>
+              <th>Identificador</th>
               <th>Produto</th>
-              <th style={{ width: 110 }}>Categoria</th>
-              <th className="right" style={{ width: 80 }}>
-                Estoque
-              </th>
-              <th className="right" style={{ width: 80 }}>
-                Reservado
-              </th>
-              <th className="right" style={{ width: 80 }}>
-                Lotes
-              </th>
-              <th style={{ width: 120 }}>Limiar</th>
-              <th style={{ width: 110 }}>Status</th>
+              <th>Categoria</th>
+              <th className="right">Estoque</th>
+              <th className="right">Reservado</th>
+              <th className="right">Lotes</th>
+              <th>Limiar</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>{children}</tbody>
