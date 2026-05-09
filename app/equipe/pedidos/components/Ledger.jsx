@@ -12,17 +12,24 @@ import styles from "./Ledger.module.css";
 export default function Ledger({ children }) {
   return (
     <table className={`adm ${styles.table}`}>
+      <colgroup>
+        <col style={{ width: 104 }} />
+        <col />
+        <col style={{ width: 130 }} />
+        <col style={{ width: 140 }} />
+        <col style={{ width: 130 }} />
+        <col style={{ width: 110 }} />
+        <col style={{ width: 90 }} />
+      </colgroup>
       <thead>
         <tr>
-          <th style={{ width: 104 }}>Pedido</th>
+          <th>Pedido</th>
           <th>Paciente</th>
-          <th style={{ width: 130 }}>Itens</th>
-          <th style={{ width: 140 }}>SLA / Pix</th>
-          <th style={{ width: 130 }}>Status</th>
-          <th className="right" style={{ width: 110 }}>
-            Total
-          </th>
-          <th style={{ width: 90 }} aria-label="ações"></th>
+          <th>Itens</th>
+          <th>SLA / Pix</th>
+          <th>Status</th>
+          <th className="right">Total</th>
+          <th aria-label="ações"></th>
         </tr>
       </thead>
       <tbody>{children}</tbody>

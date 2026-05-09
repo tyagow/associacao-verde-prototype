@@ -61,17 +61,24 @@ export default function PriorityQueue({ rows = [], onExport }) {
       </header>
       <div className={styles.tableWrap}>
         <table className={`adm dataTable`}>
+          <colgroup>
+            <col style={{ width: 80 }} />
+            <col style={{ width: 110 }} />
+            <col />
+            <col style={{ width: 150 }} />
+            <col style={{ width: 140 }} />
+            <col style={{ width: 110 }} />
+            <col style={{ width: 70 }} />
+          </colgroup>
           <thead>
             <tr>
-              <th style={{ width: 80 }}>Tipo</th>
-              <th style={{ width: 110 }}>ID</th>
+              <th>Tipo</th>
+              <th>ID</th>
               <th>Paciente</th>
-              <th style={{ width: 150 }}>SLA / vencimento</th>
-              <th style={{ width: 140 }}>Status</th>
-              <th className="num" style={{ width: 110 }}>
-                Valor
-              </th>
-              <th style={{ width: 70 }} aria-label="ação" />
+              <th>SLA / vencimento</th>
+              <th>Status</th>
+              <th className="num">Valor</th>
+              <th aria-label="ação" />
             </tr>
           </thead>
           <tbody>
