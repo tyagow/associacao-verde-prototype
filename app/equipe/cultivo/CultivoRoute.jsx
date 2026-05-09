@@ -319,9 +319,20 @@ export default function CultivoRoute() {
 
           <details ref={detailsActionRef}>
             <summary>Avançar, colher, secar ou estocar</summary>
+            {batchOptions.length === 0 ? (
+              <div className="adm-empty-state adm-empty-state--inset">
+                <span className="adm-empty-state__title">
+                  Nenhum lote ativo para acionar
+                </span>
+                <span className="adm-empty-state__hint">
+                  Quando um cultivo entrar em vegetativo, ele aparece aqui.
+                </span>
+              </div>
+            ) : null}
             <form
               id="cultivation-update-form"
               className="inline-form compact-management-form action-form"
+              hidden={batchOptions.length === 0}
             >
               <label>
                 Lote
