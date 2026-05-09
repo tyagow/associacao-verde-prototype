@@ -47,6 +47,15 @@
    leaving ~200px for the name column at standard panel widths. */
 .colCode {
   width: 88px;
+  max-width: 110px;
+}
+.colCode :global(.mono) {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
 }
 .colReceita {
   width: 112px;

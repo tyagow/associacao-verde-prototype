@@ -408,8 +408,10 @@ function PatientsRegistryTable({ rows, focusedMemberCode, onFocus }) {
           const isFocused = patient.memberCode === focusedMemberCode;
           return (
             <tr key={patient.id} className={isFocused ? styles.focusedRow : undefined}>
-              <td>
-                <span className="mono">{patient.memberCode}</span>
+              <td className={styles.colCode}>
+                <span className="mono" title={patient.memberCode}>
+                  {patient.memberCode}
+                </span>
               </td>
               <td>
                 <div className={styles.who}>
