@@ -1,0 +1,18 @@
+/* Comando dashboard layout — two-column body with priority queue + activity rail. */
+
+.commandBody {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 16px;
+  align-items: start;
+}
+
+.profileSlot {
+  margin-top: 28px;
+}
+
+@media (max-width: 1080px) {
+  .commandBody {
+    grid-template-columns: 1fr;
+  }
+}

@@ -10,6 +10,7 @@ import KpiRibbon from "./components/KpiRibbon";
 import KpiSpark from "./components/KpiSpark";
 import PriorityQueue from "./components/PriorityQueue";
 import ActivityFeed from "./components/ActivityFeed";
+import commandStyles from "./TeamCommand.module.css";
 
 const ROLE_LABELS = {
   admin: "Administrador",
@@ -374,20 +375,13 @@ function CommandSurface({
         <KpiSpark label="Suporte aberto" value={counts.support} delta="SLA < 24h" />
       </KpiRibbon>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(0, 1fr) 360px",
-          gap: 16,
-          alignItems: "start",
-        }}
-      >
+      <div className={commandStyles.commandBody}>
         <PriorityQueue rows={rows} />
         <ActivityFeed initialEvents={dashboard.auditLog || []} />
       </div>
 
       {profileOpen ? (
-        <div ref={profileRef} style={{ marginTop: 28 }}>
+        <div ref={profileRef} className={commandStyles.profileSlot}>
           <TeamAccountPanel
             session={session}
             busy={busy}

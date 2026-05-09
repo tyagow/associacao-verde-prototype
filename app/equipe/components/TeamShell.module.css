@@ -91,7 +91,7 @@
 }
 .badge.danger {
   background: var(--danger-soft);
-  color: #7c2419;
+  color: var(--danger-ink);
   border-color: var(--danger-line);
 }
 

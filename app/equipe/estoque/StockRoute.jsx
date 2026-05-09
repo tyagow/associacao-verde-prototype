@@ -270,10 +270,7 @@ export default function StockRoute() {
       {message ? <p className="status">{message}</p> : null}
       {error ? <p className="pill danger">{error}</p> : null}
 
-      <div
-        className="stack"
-        style={{ display: "flex", flexDirection: "column", gap: "var(--sp-5)" }}
-      >
+      <div className="stack">
         <ProductLedger>
           {filteredProducts.map((product) => (
             <ProductRow

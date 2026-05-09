@@ -54,6 +54,7 @@
   --danger:         #b03a2e;
   --danger-soft:    #fbe5e1;
   --danger-line:    #ecc3bd;
+  --danger-ink:     #7c2419;        /* readable text on --danger-soft */
 
   /* ---- type: families ---- */
   --font-ui:      var(--font-ui-next), "Inter", -apple-system, system-ui, "Segoe UI", sans-serif;

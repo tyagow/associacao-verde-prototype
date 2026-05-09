@@ -68,7 +68,7 @@
 }
 .pillN.tone_warn {
   background: var(--warn);
-  color: #1a1408;
+  color: var(--gold-on);
 }
 .pillN.tone_ok {
   background: var(--green);
