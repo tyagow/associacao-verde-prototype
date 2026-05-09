@@ -1,5 +1,9 @@
-.selected {
-  background: var(--green-tint);
+/* The global zebra rule (`table.adm tbody tr:nth-child(even) td`)
+   paints the bg at td level, so a tr-level background never reaches
+   the rendered cell on even rows. Apply `.selected` at td level with
+   !important so the highlight wins on both odd and even rows. */
+.selected > td {
+  background: var(--green-tint) !important;
 }
 .sla_warn {
   color: var(--warn-ink);
