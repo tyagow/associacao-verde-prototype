@@ -16,6 +16,18 @@
   align-items: start;
 }
 
+/* Cycle 4 (B2): unauth fallback shell — replaces inline styles on
+   <main> and <h1> in UnauthShell. */
+.unauthMain {
+  padding: var(--sp-6);
+  max-width: 480px;
+  margin: 0 auto;
+}
+.unauthTitle {
+  font: 600 22px var(--font-display);
+  color: var(--ink);
+}
+
 @media (max-width: 1100px) {
   .twoCol {
     grid-template-columns: 1fr;

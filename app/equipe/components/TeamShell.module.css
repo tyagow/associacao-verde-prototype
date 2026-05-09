@@ -180,6 +180,12 @@
   font-size: 12px;
   color: var(--ink);
   pointer-events: none;
+  /* Cycle 4 (C5): truncate so the long Portuguese placeholder doesn't
+     push the kbd hint off the topbar at narrow widths. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 .kbd {
   font-family: var(--font-mono);

@@ -347,10 +347,8 @@ export default function PatientsClient() {
 
 function UnauthShell({ busy, error, onSubmit }) {
   return (
-    <main style={{ padding: "var(--sp-6)", maxWidth: 480, margin: "0 auto" }}>
-      <h1 style={{ font: "600 22px var(--font-display)", color: "var(--ink)" }}>
-        Pacientes e documentos
-      </h1>
+    <main className={styles.unauthMain}>
+      <h1 className={styles.unauthTitle}>Pacientes e documentos</h1>
       <p className="muted">Acesso, receita e carteirinha</p>
       <form id="team-login" className="inline-form auth-form" onSubmit={onSubmit}>
         <label>
