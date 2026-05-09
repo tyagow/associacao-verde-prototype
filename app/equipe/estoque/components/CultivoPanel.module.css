@@ -1,78 +1,8 @@
-/* Phase 6 — Cultivo separate panel below the product ledger. */
-
-.panel {
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow-soft);
-  padding: var(--sp-5);
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-4);
-}
-
-.head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-3);
-}
-
-.title {
-  font-weight: 600;
-  font-size: 15px;
-  color: var(--ink);
-}
-
-.subtitle {
-  font-size: 12px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.facts {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--sp-3);
-}
-
-.fact {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: var(--sp-3) var(--sp-4);
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-  background: var(--paper-warm);
-}
-
-.fact span {
-  font-size: 11px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.fact strong {
-  font-size: 16px;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-}
-
-.fact small {
-  font-size: 11.5px;
-  color: var(--muted);
-}
+/* Phase 3 — Direction B. Most styling lives in globals (.panel, .ph, table.adm, .pill). */
 
 .empty {
-  font-size: 13px;
   color: var(--muted);
-  padding: var(--sp-3) 0;
-}
-
-@media (max-width: 720px) {
-  .facts {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  padding: 24px 16px;
+  text-align: center;
+  font-size: 13px;
 }

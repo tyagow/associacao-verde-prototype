@@ -1,56 +1,74 @@
 "use client";
 
-/* Phase 6 — Cultivo panel.
+/* Phase 3 — Direction B Cultivo panel.
 
-   Sibling of the product ledger; visualizes active cultivation batches as
-   a fact grid (Lote · Plantas · Previsao · Proxima colheita). The legacy
-   action forms (criar / avancar / colher / peso seco / mover para estoque)
-   stay in the page-level `details` drawer in StockRoute so the data is
-   still reachable, but this panel itself stays read-only. */
+   Sibling of the product ledger; renders active cultivation batches as a
+   single <table class="adm"> with stage pills. Read-only — the legacy
+   create / advance / harvest / dry / move-to-stock actions live in the
+   <details> drawer in StockRoute.jsx. */
 
 import styles from "./CultivoPanel.module.css";
 
-export default function CultivoPanel({ batches }) {
-  const active = batches.filter((batch) => batch.status !== "stocked");
-  return (
-    <section className={styles.panel} aria-label="Cultivo ativo">
-      <header className={styles.head}>
-        <strong className={styles.title}>Cultivo</strong>
-        <span className={styles.subtitle}>{active.length} lote(s) em andamento</span>
-      </header>
+const STAGE_TONE = { growing: "warn", harvested: "warn", dried: "ok", stocked: "" };
 
+export default function CultivoPanel({ batches }) {
+  const active = (batches || []).filter((batch) => batch.status !== "stocked");
+  return (
+    <section className="panel" aria-label="Cultivo ativo">
+      <header className="ph">
+        <h3>Cultivo em curso</h3>
+        <span className="meta">{active.length} lote(s) em andamento</span>
+      </header>
       {active.length === 0 ? (
         <p className={styles.empty}>Nenhum lote de cultivo ativo no momento.</p>
       ) : (
-        active.map((batch) => (
-          <div key={batch.id} className={styles.facts}>
-            <div className={styles.fact}>
-              <span>Lote</span>
-              <strong>
-                {batch.strain} · semana {batch.week}
-              </strong>
-              <small>{statusLabel(batch.status)}</small>
-            </div>
-            <div className={styles.fact}>
-              <span>Plantas</span>
-              <strong>{batch.plants} plantas</strong>
-              <small>cultivo organico</small>
-            </div>
-            <div className={styles.fact}>
-              <span>Colheita</span>
-              <strong>{batch.harvested ? `${batch.harvested} g` : "ainda nao colhido"}</strong>
-              <small>{batch.dried ? `seco ${batch.dried} g` : "aguardando peso seco"}</small>
-            </div>
-            <div className={styles.fact}>
-              <span>Produto vinculado</span>
-              <strong>{batch.productId || "sem vinculo"}</strong>
-              <small>destino do lote final</small>
-            </div>
-          </div>
-        ))
+        <table className="adm">
+          <thead>
+            <tr>
+              <th style={{ width: 120 }}>Batch</th>
+              <th>Strain</th>
+              <th style={{ width: 130 }}>Plantio</th>
+              <th style={{ width: 130 }}>Estimativa</th>
+              <th className="right" style={{ width: 90 }}>
+                Plantas
+              </th>
+              <th className="right" style={{ width: 120 }}>
+                Estim. (g)
+              </th>
+              <th style={{ width: 120 }}>Stage</th>
+            </tr>
+          </thead>
+          <tbody>
+            {active.map((batch) => {
+              const tone = STAGE_TONE[batch.status] ?? "";
+              return (
+                <tr key={batch.id}>
+                  <td>
+                    <span className="mono">{batchLabel(batch)}</span>
+                  </td>
+                  <td>{batch.strain}</td>
+                  <td className="num">semana {batch.week}</td>
+                  <td className="num">{batch.harvestEta || "—"}</td>
+                  <td className="right num">{batch.plants}</td>
+                  <td className="right num">{batch.estimatedGrams ?? batch.harvested ?? "—"}</td>
+                  <td>
+                    <span className={`pill ${tone}`.trim()}>{statusLabel(batch.status)}</span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       )}
     </section>
   );
+}
+
+function batchLabel(batch) {
+  const tail = String(batch.id || "")
+    .slice(-4)
+    .toUpperCase();
+  return `CV-${tail || "0000"}`;
 }
 
 function statusLabel(status) {

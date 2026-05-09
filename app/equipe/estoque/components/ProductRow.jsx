@@ -1,18 +1,18 @@
 "use client";
 
-/* Phase 6 — single product row.
+/* Phase 3 — Direction B product row.
 
-   Click row to expand. Expanded panel hosts inline-edit fields for the four
-   ledger metadata properties (lowStockThreshold, category, controlled,
-   internalNote) plus the lot detail grid (LotRow children). All edit state
-   is optimistic via the parent-supplied `onMetaChange` callback. */
+   Emits <tbody> per product. The main <tr> is clickable (role=button); when
+   expanded a sibling <tr> spans all 8 columns and houses (a) the inline-edit
+   grid for the four meta fields and (b) an inner <table class="adm"> with
+   the lot rows. Edit logic + optimistic UI is unchanged from Phase 6. */
 
 import { useEffect, useState } from "react";
 import styles from "./ProductRow.module.css";
 import LotRow from "./LotRow.jsx";
 
 const CATEGORY_OPTIONS = [
-  ["oil", "Oleo medicinal"],
+  ["oil", "Óleo medicinal"],
   ["flower", "Flor medicinal"],
   ["edible", "Produto oral"],
   ["other", "Outro"],
@@ -25,9 +25,6 @@ export default function ProductRow({ product, expanded, onToggle, onMetaChange, 
 
   useEffect(() => {
     setDraft(initialDraft(product));
-    // We intentionally re-sync the draft when these specific server fields
-    // change rather than depending on the entire `product` reference, which
-    // would re-run after every parent re-render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     product.id,
@@ -47,9 +44,8 @@ export default function ProductRow({ product, expanded, onToggle, onMetaChange, 
   }
 
   return (
-    <>
-      <div
-        className={`${styles.row}${isLow ? " " + styles.lowRow : ""}`}
+    <tbody className={isLow ? styles.lowGroup : undefined}>
+      <tr
         role="button"
         tabIndex={0}
         aria-expanded={expanded}
@@ -62,129 +58,142 @@ export default function ProductRow({ product, expanded, onToggle, onMetaChange, 
           }
         }}
         data-product-id={product.id}
+        className={styles.row}
       >
-        <div className={styles.product}>
-          <div className={styles.thumb}>{thumbLabel(product)}</div>
-          <div className={styles.productName}>
-            <strong>{product.name}</strong>
-            <small>
-              {product.unit} · {product.controlled ? "controlled" : "open"} ·{" "}
-              {moneyFmt.format(product.priceCents / 100)}
-            </small>
+        <td>
+          <span className="mono">{skuLabel(product)}</span>
+        </td>
+        <td>
+          <div className={styles.product}>
+            <span className={styles.thumb} aria-hidden>
+              {thumbLabel(product)}
+            </span>
+            <div className={styles.productName}>
+              <span className={styles.name}>{product.name}</span>
+              <span className={styles.subline}>
+                {product.unit} · {product.controlled ? "controlled" : "open"} ·{" "}
+                {moneyFmt.format(product.priceCents / 100)}
+              </span>
+            </div>
           </div>
-        </div>
-        <div className={`${styles.cell}${isLow ? " " + styles.cellLow : ""}`}>
-          <strong>
-            {product.availableStock} {product.unit}
-          </strong>
-          <small>limite {product.lowStockThreshold}</small>
-        </div>
-        <div className={styles.cell}>
-          <strong>{product.reserved}</strong>
-          <small>{product.reserved ? "em pedidos" : "sem reservas"}</small>
-        </div>
-        <div className={styles.cell}>
-          <strong>{product.lots.length} lote(s)</strong>
-          <small>{summarizeLotIds(product.lots)}</small>
-        </div>
-        <div className={styles.cell}>
-          <strong>{categoryLabel(product.category)}</strong>
-        </div>
-        <span
-          className={`${styles.pill} ${
-            isInactive ? styles.pillMuted : isLow ? styles.pillWarn : ""
-          }`.trim()}
-        >
-          {isInactive ? "Inativo" : isLow ? "Repor" : "Ativo"}
-        </span>
-      </div>
+        </td>
+        <td>
+          <span className={styles.editable}>{categoryLabel(product.category)}</span>
+        </td>
+        <td className="right num">{product.availableStock}</td>
+        <td className="right num">{product.reserved}</td>
+        <td className="right num">{product.lots.length}</td>
+        <td>
+          <span className={`${styles.editable} num`}>≤ {product.lowStockThreshold}</span>
+        </td>
+        <td>
+          <span className={`pill ${isInactive ? "" : isLow ? "warn" : "ok"}`.trim()}>
+            {isInactive ? "Inativo" : isLow ? "baixo" : "OK"}
+          </span>
+        </td>
+      </tr>
 
       {expanded ? (
-        <div className={styles.expand} id={`product-detail-${product.id}`} role="region">
-          <div className={styles.editGrid} aria-label="Edicao inline do produto">
-            <label>
-              Limite de baixo estoque
-              <input
-                type="number"
-                min="0"
-                value={draft.lowStockThreshold}
-                onChange={(event) =>
-                  setDraft((current) => ({ ...current, lowStockThreshold: event.target.value }))
-                }
-                onBlur={(event) => commit("lowStockThreshold", Number(event.target.value))}
-              />
-              {savingField === "lowStockThreshold" ? (
-                <span className={styles.saving}>salvando…</span>
-              ) : null}
-            </label>
-            <label>
-              Categoria
-              <select
-                value={draft.category}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  setDraft((current) => ({ ...current, category: value }));
-                  commit("category", value);
-                }}
-              >
-                {CATEGORY_OPTIONS.map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-              {savingField === "category" ? <span className={styles.saving}>salvando…</span> : null}
-            </label>
-            <label>
-              Controle
-              <select
-                value={draft.controlled ? "true" : "false"}
-                onChange={(event) => {
-                  const value = event.target.value === "true";
-                  setDraft((current) => ({ ...current, controlled: value }));
-                  commit("controlled", value);
-                }}
-              >
-                <option value="true">Controlado</option>
-                <option value="false">Nao controlado</option>
-              </select>
-              {savingField === "controlled" ? (
-                <span className={styles.saving}>salvando…</span>
-              ) : null}
-            </label>
-            <label>
-              Nota interna
-              <input
-                type="text"
-                value={draft.internalNote}
-                placeholder="Observacao operacional"
-                onChange={(event) =>
-                  setDraft((current) => ({ ...current, internalNote: event.target.value }))
-                }
-                onBlur={(event) => commit("internalNote", event.target.value)}
-              />
-              {savingField === "internalNote" ? (
-                <span className={styles.saving}>salvando…</span>
-              ) : null}
-            </label>
-          </div>
-
-          <div className={styles.lots}>
-            <div className={styles.lotsHead}>
-              <span>Lote</span>
-              <span>Quantidade</span>
-              <span>Validade</span>
-              <span>Origem</span>
+        <tr id={`product-detail-${product.id}`}>
+          <td colSpan={8} className={styles.expand}>
+            <div className={styles.editGrid} aria-label="Edição inline do produto">
+              <label>
+                Limite de baixo estoque
+                <input
+                  type="number"
+                  min="0"
+                  value={draft.lowStockThreshold}
+                  onChange={(event) =>
+                    setDraft((current) => ({ ...current, lowStockThreshold: event.target.value }))
+                  }
+                  onBlur={(event) => commit("lowStockThreshold", Number(event.target.value))}
+                />
+                {savingField === "lowStockThreshold" ? (
+                  <span className={styles.saving}>salvando…</span>
+                ) : null}
+              </label>
+              <label>
+                Categoria
+                <select
+                  value={draft.category}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setDraft((current) => ({ ...current, category: value }));
+                    commit("category", value);
+                  }}
+                >
+                  {CATEGORY_OPTIONS.map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+                {savingField === "category" ? (
+                  <span className={styles.saving}>salvando…</span>
+                ) : null}
+              </label>
+              <label>
+                Controle
+                <select
+                  value={draft.controlled ? "true" : "false"}
+                  onChange={(event) => {
+                    const value = event.target.value === "true";
+                    setDraft((current) => ({ ...current, controlled: value }));
+                    commit("controlled", value);
+                  }}
+                >
+                  <option value="true">Controlado</option>
+                  <option value="false">Não controlado</option>
+                </select>
+                {savingField === "controlled" ? (
+                  <span className={styles.saving}>salvando…</span>
+                ) : null}
+              </label>
+              <label className={styles.wide}>
+                Nota interna
+                <input
+                  type="text"
+                  value={draft.internalNote}
+                  placeholder="Observação operacional"
+                  onChange={(event) =>
+                    setDraft((current) => ({ ...current, internalNote: event.target.value }))
+                  }
+                  onBlur={(event) => commit("internalNote", event.target.value)}
+                />
+                {savingField === "internalNote" ? (
+                  <span className={styles.saving}>salvando…</span>
+                ) : null}
+              </label>
             </div>
-            {product.lots.length === 0 ? (
-              <p style={{ color: "var(--muted)", fontSize: 13 }}>Sem lotes registrados.</p>
-            ) : (
-              product.lots.map((lot) => <LotRow key={lot.id} lot={lot} />)
-            )}
-          </div>
-        </div>
+
+            <div className={styles.lotsWrap}>
+              <h4 className={styles.lotsHead}>Lotes ativos · {product.name}</h4>
+              {product.lots.length === 0 ? (
+                <p className={styles.lotsEmpty}>Sem lotes registrados.</p>
+              ) : (
+                <table className="adm" style={{ margin: 0 }}>
+                  <thead>
+                    <tr>
+                      <th>Lote</th>
+                      <th className="right">Quantidade</th>
+                      <th>Validade</th>
+                      <th>Origem</th>
+                      <th className="right">Reservado</th>
+                      <th aria-label="Ações" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {product.lots.map((lot) => (
+                      <LotRow key={lot.id} lot={lot} />
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </td>
+        </tr>
       ) : null}
-    </>
+    </tbody>
   );
 }
 
@@ -207,21 +216,19 @@ function thumbLabel(product) {
 function categoryLabel(category) {
   return (
     {
-      oil: "Oleo medicinal",
-      flower: "Flor medicinal",
-      edible: "Produto oral",
+      oil: "Óleo",
+      flower: "Flor",
+      edible: "Goma",
       other: "Outro",
     }[category] || "Outro"
   );
 }
 
-function summarizeLotIds(lots) {
-  if (!lots.length) return "Sem lote";
-  const ids = lots.slice(0, 2).map((lot) =>
-    lot.id
-      .replace(/^lot_|^mvt_/, "")
-      .slice(0, 6)
-      .toUpperCase(),
-  );
-  return ids.join(" · ") + (lots.length > 2 ? ` · +${lots.length - 2}` : "");
+function skuLabel(product) {
+  // Best-effort short SKU from product.id (stable, monospace-friendly).
+  const tail = String(product.id || "")
+    .replace(/^(prod_|product_)/i, "")
+    .slice(-6)
+    .toUpperCase();
+  return `PRD-${tail || "0000"}`;
 }

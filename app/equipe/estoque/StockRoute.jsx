@@ -29,6 +29,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import TeamShell from "../components/TeamShell";
+import PageHead from "../components/PageHead";
+import StatusStrip from "../components/StatusStrip";
 import ProductLedger from "./components/ProductLedger.jsx";
 import ProductRow from "./components/ProductRow.jsx";
 import CultivoPanel from "./components/CultivoPanel.jsx";
@@ -165,16 +167,105 @@ export default function StockRoute() {
       onLogout={logout}
       busy={!!busy}
     >
-      <div className="panel-heading" style={{ marginBottom: "var(--sp-5)" }}>
-        <div>
-          <p className="kicker">Produtos, estoque e cultivo</p>
-          <h2>Rastreabilidade de produto e lote</h2>
-          <p className="muted">
-            Estoque, reservas, cultivo e validade. Clique em um produto para abrir o lote.
-          </p>
-        </div>
-        <span className="status">equipe autenticada</span>
-      </div>
+      <PageHead
+        title="Produtos, estoque e cultivo"
+        meta={`Atualizado ${formatNow()} · clique no produto para abrir lotes`}
+        actions={
+          <>
+            <button
+              type="button"
+              className="btn ghost mini"
+              onClick={() =>
+                document
+                  .querySelector("#cultivation-form")
+                  ?.scrollIntoView({ behavior: "smooth", block: "center" })
+              }
+            >
+              + Lote
+            </button>
+            <button
+              type="button"
+              className="btn primary"
+              onClick={() =>
+                document
+                  .querySelector("#product-form")
+                  ?.scrollIntoView({ behavior: "smooth", block: "center" })
+              }
+            >
+              + Produto
+            </button>
+          </>
+        }
+      />
+
+      <StatusStrip
+        chips={[
+          { label: "produtos", count: totals.productCount },
+          {
+            label: "abaixo do limiar",
+            count: totals.lowStockCount,
+            tone: totals.lowStockCount > 0 ? "warn" : undefined,
+          },
+          { label: "lotes rastreados", count: totals.lotCount },
+          {
+            label: "cultivos em curso",
+            count: batches.filter((b) => b.status !== "stocked").length,
+            tone: "ok",
+          },
+        ]}
+        segments={[
+          {
+            label: "Todos",
+            count: totals.productCount,
+            active: filters.stockStatus === "all",
+            onClick: () => setFilters((c) => ({ ...c, stockStatus: "all" })),
+          },
+          {
+            label: "Baixo",
+            count: totals.lowStockCount,
+            active: filters.stockStatus === "low",
+            onClick: () => setFilters((c) => ({ ...c, stockStatus: "low" })),
+          },
+          {
+            label: "OK",
+            count: totals.productCount - totals.lowStockCount,
+            active: filters.stockStatus === "ok",
+            onClick: () => setFilters((c) => ({ ...c, stockStatus: "ok" })),
+          },
+        ]}
+        filters={
+          <>
+            <label className="srOnly" htmlFor="stock-query">
+              Buscar
+            </label>
+            <input
+              id="stock-query"
+              data-filter="stockQuery"
+              placeholder="Filtrar produtos (CBD, Flor…)"
+              value={filters.stockQuery}
+              onInput={updateFilter}
+              onChange={updateFilter}
+            />
+            <label className="srOnly" htmlFor="stock-status">
+              Situação
+            </label>
+            <select
+              id="stock-status"
+              data-filter="stockStatus"
+              value={filters.stockStatus}
+              onInput={updateFilter}
+              onChange={updateFilter}
+            >
+              <option value="all">Todos os status</option>
+              <option value="low">Baixo</option>
+              <option value="ok">OK</option>
+              <option value="inactive">Inativos</option>
+              <option value="cultivation">Cultivo ativo</option>
+            </select>
+          </>
+        }
+        onRefresh={() => loadAll().catch((nextError) => setError(nextError.message))}
+      />
 
       {message ? <p className="status">{message}</p> : null}
       {error ? <p className="pill danger">{error}</p> : null}
@@ -183,12 +274,7 @@ export default function StockRoute() {
         className="stack"
         style={{ display: "flex", flexDirection: "column", gap: "var(--sp-5)" }}
       >
-        <ProductLedger
-          products={filteredProducts}
-          filters={filters}
-          onFilterChange={updateFilter}
-          totals={totals}
-        >
+        <ProductLedger>
           {filteredProducts.map((product) => (
             <ProductRow
               key={product.id}
@@ -686,6 +772,7 @@ function filterProducts(products, filters) {
     const matchesStatus =
       status === "all" ||
       (status === "low" && product.status === "low") ||
+      (status === "ok" && product.status !== "low" && product.status !== "inactive") ||
       (status === "inactive" && product.status === "inactive") ||
       (status === "cultivation" && true);
     return matchesQuery && matchesStatus;
@@ -713,6 +800,11 @@ function normalizeMetaPatch(patch) {
     next.controlled = next.controlled === true || next.controlled === "true";
   if ("lowStockThreshold" in next) next.lowStockThreshold = Number(next.lowStockThreshold);
   return next;
+}
+
+function formatNow() {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
 async function api(path, options = {}) {
