@@ -1,31 +1,31 @@
 .shell {
   display: grid;
-  gap: 18px;
+  gap: var(--sp-5);
 }
 
 .form {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
-  padding: 16px;
-  background: var(--paper-warm, #f7f9f6);
-  border: 1px solid var(--line, #e3ebe6);
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  background: var(--surface-sunken, #f7f9f6);
+  border: 1px solid var(--border-default, #e3ebe6);
   border-radius: var(--r-md);
   align-items: end;
 }
 
 .form label {
   display: grid;
-  gap: 4px;
+  gap: var(--sp-1);
   font-size: 12px;
-  color: var(--muted, #687970);
+  color: var(--text-tertiary, #687970);
 }
 
 .form input,
 .form select {
   font: inherit;
-  padding: 8px 10px;
-  border: 1px solid var(--line, #e3ebe6);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--border-default, #e3ebe6);
   border-radius: var(--r-sm);
   background: #fff;
 }
@@ -34,7 +34,7 @@
   appearance: none;
   font: inherit;
   font-size: 13px;
-  padding: 10px 16px;
+  padding: var(--sp-3) var(--sp-4);
   border-radius: var(--r-sm);
   background: var(--green, #1d8c52);
   color: #fff;
@@ -67,7 +67,7 @@
   text-transform: uppercase;
   color: var(--muted, #687970);
   text-align: left;
-  padding: 10px 14px;
+  padding: var(--sp-3) var(--sp-4);
   background: var(--paper-warm, #f7f9f6);
   border-bottom: 1px solid var(--line, #e3ebe6);
 }
@@ -78,8 +78,8 @@
 
 .empty {
   text-align: center;
-  padding: 24px;
-  color: var(--muted, #687970);
+  padding: var(--sp-6);
+  color: var(--text-tertiary, #687970);
   font-size: 13px;
 }
 
@@ -94,7 +94,7 @@
     width: 100%;
   }
   .table tr {
-    padding: 12px 14px;
+    padding: var(--sp-3) var(--sp-4);
   }
 }
 
@@ -114,7 +114,7 @@
    top (cells) and looser at the bottom (footer + drawer). */
 .tableCompact th,
 .tableCompact td {
-  padding: 10px 14px;
+  padding: var(--sp-3) var(--sp-4);
   border-bottom: 1px solid var(--line-soft, #eef2ef);
   text-align: left;
 }
@@ -134,8 +134,8 @@
 
 .compactFooter {
   display: flex;
-  gap: 8px;
-  padding: 10px 14px;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
   border-top: 1px solid var(--line, #e3ebe6);
 }
 
@@ -145,7 +145,7 @@
 
 .inviteDrawer {
   border-top: 1px solid var(--line-soft, #eef2ef);
-  padding: 10px 14px;
+  padding: var(--sp-3) var(--sp-4);
 }
 
 .srOnly {

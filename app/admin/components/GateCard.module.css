@@ -2,12 +2,12 @@
   appearance: none;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 14px 16px;
-  background: var(--paper, #fff);
-  border: 1px solid var(--line, #e3ebe6);
-  border-left: 3px solid var(--line, #e3ebe6);
-  border-radius: var(--r-sm, 6px);
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  background: var(--surface-elevated, #fff);
+  border: 1px solid var(--border-default, #e3ebe6);
+  border-left: 3px solid var(--border-default, #e3ebe6);
+  border-radius: var(--r-md);
   text-align: left;
   cursor: pointer;
   font: inherit;
@@ -55,7 +55,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-2);
 }
 
 .label {
@@ -79,8 +79,8 @@
   font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
   font-size: 11px;
   background: var(--soft, #f1f5f2);
-  padding: 6px 8px;
-  border-radius: var(--r-sm, 6px);
+  padding: var(--sp-2);
+  border-radius: var(--r-sm);
   color: var(--ink-soft, #324a3c);
   display: block;
   word-break: break-word;
@@ -97,7 +97,7 @@
 
 .pill {
   font-size: 11px;
-  padding: 2px 8px;
+  padding: var(--sp-1) var(--sp-2);
   border-radius: 999px;
   border: 1px solid var(--line, #e3ebe6);
   background: var(--paper, #fff);

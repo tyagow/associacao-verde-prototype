@@ -1,11 +1,11 @@
 .detail {
   display: grid;
-  gap: 14px;
-  padding: 16px 18px;
-  background: var(--paper, #fff);
-  border: 1px solid var(--line, #e3ebe6);
+  gap: var(--sp-4);
+  padding: var(--sp-4) var(--sp-5);
+  background: var(--surface-elevated, #fff);
+  border: 1px solid var(--border-default, #e3ebe6);
   border-left-width: 3px;
-  border-radius: var(--r-sm, 6px);
+  border-radius: var(--r-md);
   box-shadow: none;
 }
 
@@ -26,7 +26,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 16px;
+  gap: var(--sp-4);
 }
 
 .overline {
@@ -41,8 +41,8 @@
   font-family: var(--font-display, inherit);
   font-size: 20px;
   font-weight: 600;
-  margin: 4px 0 6px;
-  color: var(--ink, #0d1f17);
+  margin: var(--sp-1) 0 var(--sp-2);
+  color: var(--text-primary, #0d1f17);
 }
 
 .summary {
@@ -58,7 +58,7 @@
   border: 1px solid var(--line, #e3ebe6);
   color: var(--muted, #687970);
   border-radius: var(--r-md);
-  padding: 6px 14px;
+  padding: var(--sp-2) var(--sp-4);
   font-size: 12px;
   cursor: pointer;
 }
@@ -72,9 +72,9 @@
 .evidence {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 10px 18px;
+  gap: var(--sp-3) var(--sp-5);
   margin: 0;
-  padding: 12px 14px;
+  padding: var(--sp-3) var(--sp-4);
   background: var(--paper-cool, #f3f7f4);
   border-radius: var(--r-md);
 }
@@ -105,7 +105,7 @@
 
 .run {
   margin: 0;
-  padding: 10px 12px;
+  padding: var(--sp-3);
   border-radius: var(--r-sm);
   background: var(--paper-warm, #f7f9f6);
   border: 1px dashed var(--line-strong, #c7d3cc);
@@ -116,5 +116,5 @@
 
 .formArea {
   display: grid;
-  gap: 12px;
+  gap: var(--sp-3);
 }

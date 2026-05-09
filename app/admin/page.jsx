@@ -253,6 +253,14 @@ export default function AdminPage() {
           <h2 className={adminStyles.h2Section}>Release gates · Readiness do ambiente</h2>
 
           <section className={adminStyles.gateGrid} aria-label="Gates de readiness">
+            {gates.length === 0 ? (
+              <div className="adm-empty-state" style={{ gridColumn: "1 / -1" }}>
+                <span className="adm-empty-state__title">Sem gates configurados</span>
+                <span className="adm-empty-state__hint">
+                  Quando o checklist de readiness rodar, os gates aparecem aqui.
+                </span>
+              </div>
+            ) : null}
             {gates.map((gate) => {
               const detail = buildDetailForGate(gate, readiness);
               const tag = GATE_TAGS[gate.label] || "";

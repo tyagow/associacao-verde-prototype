@@ -5,7 +5,7 @@
   z-index: 90;
   display: grid;
   place-items: center;
-  padding: 24px;
+  padding: var(--sp-6);
   backdrop-filter: blur(2px);
 }
 
@@ -25,8 +25,8 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 12px;
-  padding: 18px 20px 12px;
+  gap: var(--sp-3);
+  padding: var(--sp-5) var(--sp-5) var(--sp-3);
   border-bottom: 1px solid var(--line, #e3ebe6);
 }
 
@@ -70,9 +70,9 @@
 .meta {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 12px 18px;
+  gap: var(--sp-3) var(--sp-5);
   margin: 0;
-  padding: 12px 20px;
+  padding: var(--sp-3) var(--sp-5);
   border-bottom: 1px solid var(--line, #e3ebe6);
 }
 
@@ -98,7 +98,7 @@
 
 .payload {
   overflow: auto;
-  padding: 12px 20px 20px;
+  padding: var(--sp-3) var(--sp-5) var(--sp-5);
   background: var(--paper-warm, #f7f9f6);
 }
 

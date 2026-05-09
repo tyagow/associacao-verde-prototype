@@ -3,7 +3,7 @@
 }
 
 .row td {
-  padding: 12px 14px;
+  padding: var(--sp-3) var(--sp-4);
   vertical-align: middle;
   font-size: 13px;
   color: var(--ink, #0d1f17);
@@ -12,7 +12,7 @@
 .cellUser {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--sp-3);
   min-width: 0;
 }
 
@@ -51,7 +51,7 @@
 
 .rolePill {
   display: inline-block;
-  padding: 3px 10px;
+  padding: var(--sp-1) var(--sp-3);
   border-radius: var(--r-pill);
   font-size: 11px;
   font-weight: 600;
@@ -81,7 +81,7 @@
 .statusPill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-2);
   font-size: 12px;
   color: var(--ink, #0d1f17);
   white-space: nowrap;
@@ -111,7 +111,7 @@
 
 .cellActions {
   display: flex;
-  gap: 6px;
+  gap: var(--sp-2);
   justify-content: flex-end;
   flex-wrap: wrap;
 }
@@ -120,11 +120,11 @@
   appearance: none;
   font: inherit;
   font-size: 12px;
-  padding: 6px 10px;
+  padding: var(--sp-2) var(--sp-3);
   border-radius: var(--r-sm);
-  border: 1px solid var(--line, #e3ebe6);
+  border: 1px solid var(--border-default, #e3ebe6);
   background: #fff;
-  color: var(--ink, #0d1f17);
+  color: var(--text-primary, #0d1f17);
   cursor: pointer;
   transition:
     background 140ms ease,
@@ -160,26 +160,26 @@
 }
 
 .drawerRow td {
-  background: var(--paper-warm, #f7f9f6);
-  padding: 14px 18px;
+  background: var(--surface-sunken, #f7f9f6);
+  padding: var(--sp-4) var(--sp-5);
   border-bottom: 1px solid var(--line, #e3ebe6);
 }
 
 .drawer {
   display: grid;
-  gap: 12px;
+  gap: var(--sp-3);
 }
 
 .drawer label {
   display: grid;
-  gap: 4px;
+  gap: var(--sp-1);
   font-size: 12px;
   color: var(--muted, #687970);
 }
 
 .drawer input {
   font: inherit;
-  padding: 8px 10px;
+  padding: var(--sp-2) var(--sp-3);
   border: 1px solid var(--line, #e3ebe6);
   border-radius: var(--r-sm);
   background: #fff;
@@ -193,7 +193,7 @@
 
 .drawerActions {
   display: flex;
-  gap: 8px;
+  gap: var(--sp-2);
   flex-wrap: wrap;
 }
 
@@ -201,7 +201,7 @@
   appearance: none;
   font: inherit;
   font-size: 12px;
-  padding: 8px 14px;
+  padding: var(--sp-2) var(--sp-4);
   border-radius: var(--r-sm);
   background: var(--green, #1d8c52);
   color: #fff;
@@ -217,7 +217,7 @@
   appearance: none;
   font: inherit;
   font-size: 12px;
-  padding: 8px 14px;
+  padding: var(--sp-2) var(--sp-4);
   border-radius: var(--r-sm);
   background: #fff;
   color: var(--muted, #687970);
