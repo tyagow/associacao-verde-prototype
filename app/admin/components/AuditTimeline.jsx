@@ -2,6 +2,7 @@
 
 import styles from "./AuditTimeline.module.css";
 import { groupAuditEvents, GROUP_ORDER, GROUP_LABEL } from "./groupAuditEvents.js";
+import { describeAction, previewDetailsForAction } from "../../equipe/components/auditCopy.js";
 
 export { groupAuditEvents } from "./groupAuditEvents.js";
 
@@ -60,31 +61,33 @@ export default function AuditTimeline({
               <span className={styles.groupCount}>{list.length}</span>
             </header>
             <ol className={styles.events}>
-              {list.map((event) => (
-                <li
-                  key={`${event.at}-${event.action}-${event.actor}`}
-                  className={styles.tev}
-                  data-tone={toneForEvent(event)}
-                >
-                  <button
-                    type="button"
-                    className={styles.tevButton}
-                    onClick={() => onSelect && onSelect(event)}
+              {list.map((event) => {
+                const meta = describeAction(event.action);
+                const preview = previewDetailsForAction(event.action, event.details);
+                return (
+                  <li
+                    key={`${event.at}-${event.action}-${event.actor}`}
+                    className={styles.tev}
+                    data-tone={toneForEvent(event, meta.tone)}
                   >
-                    <time className={styles.time}>{formatTime(event.at)}</time>
-                    <span className={styles.dot} aria-hidden />
-                    <div className={styles.body}>
-                      <div className={styles.what}>{event.action}</div>
-                      <div className={styles.meta}>
-                        <span>{event.actor}</span>
-                        {previewDetails(event.details) ? (
-                          <span> · {previewDetails(event.details)}</span>
-                        ) : null}
+                    <button
+                      type="button"
+                      className={styles.tevButton}
+                      onClick={() => onSelect && onSelect(event)}
+                    >
+                      <time className={styles.time}>{formatTime(event.at)}</time>
+                      <span className={styles.dot} aria-hidden />
+                      <div className={styles.body}>
+                        <div className={styles.what}>{meta.label}</div>
+                        <div className={styles.meta}>
+                          <span>{event.actor || "sistema"}</span>
+                          {preview ? <span> · {preview}</span> : null}
+                        </div>
                       </div>
-                    </div>
-                  </button>
-                </li>
-              ))}
+                    </button>
+                  </li>
+                );
+              })}
             </ol>
           </section>
         );
@@ -93,7 +96,8 @@ export default function AuditTimeline({
   );
 }
 
-function toneForEvent(event) {
+function toneForEvent(event, copyTone) {
+  if (copyTone) return copyTone;
   const action = String(event?.action || "").toLowerCase();
   if (action.includes("failed") || action.includes("blocked") || action.includes("security_alert"))
     return "danger";
@@ -113,28 +117,4 @@ function formatTime(value) {
   } catch (error) {
     return "--:--";
   }
-}
-
-function previewDetails(details) {
-  if (!details || typeof details !== "object") return "";
-  const entries = Object.entries(details);
-  if (!entries.length) return "";
-  return entries
-    .slice(0, 2)
-    .map(([key, value]) => `${key}: ${formatPreviewValue(value)}`)
-    .join(" · ");
-}
-
-function formatPreviewValue(value) {
-  if (value === null || value === undefined || value === "") return "—";
-  if (typeof value === "object") {
-    try {
-      const json = JSON.stringify(value);
-      return json.length > 60 ? `${json.slice(0, 57)}...` : json;
-    } catch (error) {
-      return "[obj]";
-    }
-  }
-  const str = String(value);
-  return str.length > 60 ? `${str.slice(0, 57)}...` : str;
 }

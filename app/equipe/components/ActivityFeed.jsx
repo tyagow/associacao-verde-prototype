@@ -2,41 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import styles from "./ActivityFeed.module.css";
+import { ACTION_COPY } from "./auditCopy.js";
 
 const POLL_INTERVAL_MS = 5000;
 const MAX_EVENTS = 40;
-
-const ACTION_COPY = {
-  team_login: { label: "Login da equipe", tone: "" },
-  patient_login: { label: "Login do paciente", tone: "" },
-  team_user_bootstrapped: { label: "Usuario da equipe criado (bootstrap)", tone: "" },
-  team_user_created: { label: "Usuario da equipe criado", tone: "" },
-  team_user_status_updated: { label: "Status de usuario atualizado", tone: "" },
-  team_user_password_reset: { label: "Senha redefinida pelo admin", tone: "warn" },
-  team_user_password_changed: { label: "Senha individual atualizada", tone: "" },
-  patient_concurrent_checkout_blocked: { label: "Checkout concorrente bloqueado", tone: "warn" },
-  paid_after_expiry_conflict: { label: "Pix pago apos expiracao", tone: "danger" },
-  checkout_created: { label: "Checkout criado", tone: "" },
-  payment_confirmed: { label: "Pix confirmado", tone: "" },
-  payment_reconciled: { label: "Pix conciliado", tone: "" },
-  payment_reconciliation_exception: { label: "Excecao de conciliacao Pix", tone: "warn" },
-  support_request_created: { label: "Suporte aberto", tone: "warn" },
-  support_request_updated: { label: "Suporte atualizado", tone: "" },
-  patient_access_recovery_requested: { label: "Recuperacao de acesso solicitada", tone: "warn" },
-  patient_access_updated: { label: "Acesso do paciente atualizado", tone: "" },
-  patient_invite_reset: { label: "Convite do paciente reemitido", tone: "" },
-  patient_created: { label: "Paciente criado", tone: "" },
-  stock_added: { label: "Estoque registrado", tone: "" },
-  cultivation_batch_created: { label: "Lote de cultivo criado", tone: "" },
-  cultivation_batch_advanced: { label: "Lote avancou semana", tone: "" },
-  cultivation_harvest_recorded: { label: "Colheita registrada", tone: "" },
-  cultivation_dry_weight_recorded: { label: "Secagem registrada", tone: "" },
-  cultivation_batch_stocked: { label: "Lote estocado", tone: "" },
-  member_card_issued: { label: "Carteirinha emitida", tone: "" },
-  privacy_consent_accepted: { label: "Consentimento aceito", tone: "" },
-  provider_approval_evidence_recorded: { label: "Aceite do provider registrado", tone: "" },
-  backup_schedule_evidence_recorded: { label: "Backup offsite registrado", tone: "" },
-};
 
 export default function ActivityFeed({ initialEvents = [] }) {
   const [events, setEvents] = useState(() => initialEvents.slice(0, MAX_EVENTS));
@@ -98,7 +67,9 @@ export default function ActivityFeed({ initialEvents = [] }) {
     <aside className={styles.panel} aria-label="Atividade recente">
       <header className={styles.head}>
         <h3 className={styles.title}>Atividade recente</h3>
-        <span className={styles.meta}>{status === "ao vivo" ? "ultimos 30 min" : status}</span>
+        <span className={styles.meta}>
+          {status === "ao vivo" ? `ao vivo · ${events.length} evento(s)` : status}
+        </span>
       </header>
       {events.length === 0 ? (
         <p className={styles.empty}>Sem eventos relevantes na janela atual.</p>
