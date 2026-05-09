@@ -1,11 +1,15 @@
 .ordersGrid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 380px;
+  grid-template-columns: 1fr;
   gap: var(--sp-4);
   align-items: start;
 }
+.ordersGrid[data-drawer-open="true"] {
+  grid-template-columns: minmax(0, 1fr) 380px;
+}
 @media (max-width: 1080px) {
-  .ordersGrid {
+  .ordersGrid,
+  .ordersGrid[data-drawer-open="true"] {
     grid-template-columns: 1fr;
   }
 }

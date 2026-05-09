@@ -36,7 +36,7 @@ export default function OrdersClient() {
   const [busyPaymentId, setBusyPaymentId] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [drawerOpen, setDrawerOpen] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerSubject, setDrawerSubject] = useState(null); // { kind, id }
   const [, setNowTick] = useState(0);
   const tickRef = useRef(null);
@@ -292,7 +292,10 @@ export default function OrdersClient() {
       {message ? <p className="status">{message}</p> : null}
       {error ? <p className="pill danger">{error}</p> : null}
 
-      <div className={styles.ordersGrid}>
+      <div
+        className={styles.ordersGrid}
+        data-drawer-open={drawerOpen && drawerSubject ? "true" : "false"}
+      >
         <section className="panel" id="orders-surface">
           <header className="ph">
             <h3>Fila de pedidos</h3>
@@ -329,14 +332,19 @@ export default function OrdersClient() {
           )}
         </section>
 
-        <OrderDrawer
-          order={drawerOrder}
-          payment={drawerPayment}
-          busyKey={busyPaymentId}
-          onClose={() => setDrawerOpen(false)}
-          onCancelOrder={cancelOrder}
-          onPaymentAction={runPaymentAction}
-        />
+        {drawerOpen && drawerSubject ? (
+          <OrderDrawer
+            order={drawerOrder}
+            payment={drawerPayment}
+            busyKey={busyPaymentId}
+            onClose={() => {
+              setDrawerOpen(false);
+              setDrawerSubject(null);
+            }}
+            onCancelOrder={cancelOrder}
+            onPaymentAction={runPaymentAction}
+          />
+        ) : null}
       </div>
     </TeamShell>
   );
