@@ -38,11 +38,6 @@ const ACTION_COPY = {
   backup_schedule_evidence_recorded: { label: "Backup offsite registrado", tone: "" },
 };
 
-/**
- * Phase 3 — Live activity feed. Polls /api/team/activity?since=<ts> every
- * 5 seconds, prepending new events. Stops the heartbeat when the tab is
- * hidden and rehydrates on focus.
- */
 export default function ActivityFeed({ initialEvents = [] }) {
   const [events, setEvents] = useState(() => initialEvents.slice(0, MAX_EVENTS));
   const [status, setStatus] = useState("ao vivo");
@@ -73,7 +68,7 @@ export default function ActivityFeed({ initialEvents = [] }) {
           sinceRef.current = payload.now;
         }
         setStatus("ao vivo");
-      } catch (error) {
+      } catch {
         if (!cancelled) setStatus("offline");
       }
     }
@@ -100,42 +95,38 @@ export default function ActivityFeed({ initialEvents = [] }) {
   }, []);
 
   return (
-    <section className={styles.txActivity} aria-label="Atividade recente da operacao">
-      <header className={styles.txActivityHead}>
-        <h3 className={styles.txActivityTitle}>Atividade recente</h3>
-        <span className={styles.txActivityStatus}>
-          <span
-            className={`${styles.txActivityDot}${status === "ao vivo" ? "" : " " + styles.idle}`}
-            aria-hidden
-          />
-          {status}
-        </span>
+    <aside className={styles.panel} aria-label="Atividade recente">
+      <header className={styles.head}>
+        <h3 className={styles.title}>Atividade recente</h3>
+        <span className={styles.meta}>{status === "ao vivo" ? "ultimos 30 min" : status}</span>
       </header>
       {events.length === 0 ? (
-        <p className={styles.txActivityEmpty}>Sem eventos relevantes na janela atual.</p>
+        <p className={styles.empty}>Sem eventos relevantes na janela atual.</p>
       ) : (
-        <ul className={styles.txActivityList}>
+        <ul className={styles.feed}>
           {events.map((event) => {
             const meta = ACTION_COPY[event.action] || { label: event.action, tone: "" };
             return (
-              <li className={styles.txActivityItem} key={event.id}>
-                <span
-                  className={`${styles.txActivityMarker}${meta.tone ? " " + meta.tone : ""}`}
-                  aria-hidden
-                />
-                <div className={styles.txActivityBody}>
-                  <span className={styles.txActivityAction}>{meta.label}</span>
-                  <span className={styles.txActivityDetail}>{describe(event)}</span>
+              <li key={event.id}>
+                <time dateTime={event.at}>{formatTime(event.at)}</time>
+                <div>
+                  <span className={styles.what}>
+                    {meta.label}
+                    {describeRef(event) ? (
+                      <>
+                        {" · "}
+                        <span className={styles.mono}>{describeRef(event)}</span>
+                      </>
+                    ) : null}
+                  </span>
+                  <span className={styles.who}>por {event.actor || "sistema"}</span>
                 </div>
-                <span className={styles.txActivityTime} title={event.at}>
-                  {formatTime(event.at)}
-                </span>
               </li>
             );
           })}
         </ul>
       )}
-    </section>
+    </aside>
   );
 }
 
@@ -150,18 +141,15 @@ function dedupe(list) {
   return out;
 }
 
-function describe(event) {
-  const details = event.details || {};
-  if (typeof details === "string") return details;
-  const parts = [];
-  if (details.orderId) parts.push(`pedido ${details.orderId}`);
-  if (details.paymentId) parts.push(`pix ${details.paymentId}`);
-  if (details.memberCode) parts.push(`paciente ${details.memberCode}`);
-  if (details.patientId) parts.push(`paciente ${details.patientId}`);
-  if (details.email) parts.push(details.email);
-  if (details.batchId) parts.push(`lote ${details.batchId}`);
-  if (parts.length === 0 && event.actor) parts.push(`ator ${event.actor}`);
-  return parts.join(" · ") || "—";
+function describeRef(event) {
+  const d = event.details || {};
+  if (typeof d === "string") return d;
+  if (d.orderId) return d.orderId;
+  if (d.paymentId) return d.paymentId;
+  if (d.memberCode) return d.memberCode;
+  if (d.patientId) return d.patientId;
+  if (d.batchId) return d.batchId;
+  return "";
 }
 
 function formatTime(value) {
