@@ -11,11 +11,11 @@
   font-size: var(--fs-sm);
 }
 .row {
-  padding: 10px 14px;
+  padding: var(--sp-3) var(--sp-4);
   border-bottom: 1px solid var(--line-soft);
   display: flex;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--sp-2);
   font-size: 13px;
 }
 .lbl {
@@ -26,14 +26,14 @@
   font-variant-numeric: tabular-nums;
 }
 .lineitems {
-  padding: 10px 14px;
+  padding: var(--sp-3) var(--sp-4);
 }
 .li {
   display: grid;
   grid-template-columns: 32px 1fr auto;
-  gap: 8px;
+  gap: var(--sp-2);
   align-items: center;
-  padding: 8px 0;
+  padding: var(--sp-2) 0;
   border-bottom: 1px solid var(--line-soft);
   font-size: 13px;
 }
@@ -51,9 +51,9 @@
   font: 700 11px var(--font-display);
 }
 .actionsRow {
-  padding: 14px;
+  padding: var(--sp-4);
   display: flex;
-  gap: 8px;
+  gap: var(--sp-2);
 }
 @media (max-width: 1080px) {
   .drawer {

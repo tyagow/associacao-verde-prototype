@@ -291,9 +291,12 @@ export default function PatientsClient() {
             </span>
           </header>
           {!dashboard ? (
-            <p className="muted" style={{ padding: "12px 14px" }}>
-              Carregando pacientes da equipe...
-            </p>
+            <div className="adm-stack-2" style={{ padding: "var(--sp-3) var(--sp-4)" }}>
+              <span className="adm-skeleton adm-skeleton--row" aria-hidden />
+              <span className="adm-skeleton adm-skeleton--row" aria-hidden />
+              <span className="adm-skeleton adm-skeleton--row" aria-hidden />
+              <span className="sr-only">Carregando pacientes da equipe...</span>
+            </div>
           ) : worklist.length ? (
             <PatientsRegistryTable
               rows={worklist}
@@ -301,9 +304,12 @@ export default function PatientsClient() {
               onFocus={(memberCode) => setFocusedMemberCode(memberCode)}
             />
           ) : (
-            <p className="muted" style={{ padding: "12px 14px" }}>
-              Nenhum paciente corresponde aos filtros atuais.
-            </p>
+            <div className="adm-empty-state" style={{ margin: "var(--sp-3) var(--sp-4)" }}>
+              <span className="adm-empty-state__title">Nenhum paciente nessa visao</span>
+              <span className="adm-empty-state__hint">
+                Ajuste os filtros do registro ou cadastre um novo paciente.
+              </span>
+            </div>
           )}
 
           {focusedEntry ? (
@@ -340,7 +346,7 @@ export default function PatientsClient() {
 
 function UnauthShell({ busy, error, onSubmit }) {
   return (
-    <main style={{ padding: 24, maxWidth: 480, margin: "0 auto" }}>
+    <main style={{ padding: "var(--sp-6)", maxWidth: 480, margin: "0 auto" }}>
       <h1 style={{ font: "600 22px var(--font-display)", color: "var(--ink)" }}>
         Pacientes e documentos
       </h1>
@@ -522,9 +528,12 @@ function DocumentsPanel({ documents }) {
       {documents.length ? (
         documents.map((document) => <DocumentRow key={document.id} document={document} />)
       ) : (
-        <p className="muted" style={{ padding: "12px 14px" }}>
-          Nenhum documento registrado para este paciente.
-        </p>
+        <div className="adm-empty-state" style={{ margin: "var(--sp-3) var(--sp-4)" }}>
+          <span className="adm-empty-state__title">Sem documentos por enquanto</span>
+          <span className="adm-empty-state__hint">
+            Anexe a receita ou a carteirinha pelo painel ao lado.
+          </span>
+        </div>
       )}
     </>
   );

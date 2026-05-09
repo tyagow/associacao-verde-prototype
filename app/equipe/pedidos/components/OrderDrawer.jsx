@@ -33,7 +33,15 @@ export default function OrderDrawer({
         <header className="ph">
           <h3>Detalhes</h3>
         </header>
-        <p className={styles.empty}>Selecione um pedido para ver os detalhes.</p>
+        <div
+          className="adm-empty-state"
+          style={{ border: 0, background: "transparent", minHeight: 120 }}
+        >
+          <span className="adm-empty-state__title">Sem pedido selecionado</span>
+          <span className="adm-empty-state__hint">
+            Escolha um pedido na fila para ver itens, pagamento e proximos passos.
+          </span>
+        </div>
       </aside>
     );
   }

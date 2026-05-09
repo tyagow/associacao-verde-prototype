@@ -305,9 +305,19 @@ export default function OrdersClient() {
             </span>
           </header>
           {!dashboard && !error ? (
-            <p className="muted" style={{ padding: "var(--sp-5)" }}>
-              Carregando pedidos e Pix...
-            </p>
+            <div className="adm-stack-2" style={{ padding: "var(--sp-4)" }}>
+              <span className="adm-skeleton adm-skeleton--row" aria-hidden />
+              <span className="adm-skeleton adm-skeleton--row" aria-hidden />
+              <span className="adm-skeleton adm-skeleton--row" aria-hidden />
+              <span className="sr-only">Carregando pedidos e Pix...</span>
+            </div>
+          ) : combinedRows.length === 0 ? (
+            <div className="adm-empty-state" style={{ margin: "var(--sp-3) var(--sp-4)" }}>
+              <span className="adm-empty-state__title">Nenhum pedido na fila</span>
+              <span className="adm-empty-state__hint">
+                Quando novos Pix entrarem, aparecem aqui em ordem de chegada.
+              </span>
+            </div>
           ) : (
             <Ledger>
               {combinedRows.map((row) => {
