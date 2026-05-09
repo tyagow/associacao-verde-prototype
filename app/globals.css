@@ -3984,7 +3984,9 @@ textarea {
   padding: 0;
   background: var(--paper);
   border-color: var(--line);
-  border-radius: var(--r-md);
+  /* Direction B mockup uses --r-sm (3px) for admin panels — tighter
+     dialect than the marketing/paciente --r-lg (7px). */
+  border-radius: var(--r-sm);
   /* `overflow: clip` keeps the rounded corners visually clipping the
      header.ph and table.adm without establishing a scroll container —
      so `position: sticky` on `table.adm thead th` still works (unlike
@@ -3997,8 +3999,9 @@ header.ph {
   align-items: center;
   justify-content: space-between;
   gap: var(--sp-3);
-  padding: var(--sp-3) var(--sp-4);
-  border-bottom: 1px solid var(--line-soft);
+  /* Mockup _shell.css :: `.panel header.ph { padding: 10px 14px }`. */
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
   margin: 0;
 }
 header.ph > h3 {
@@ -4023,19 +4026,23 @@ table.adm thead th {
   position: sticky;
   top: 0;
   z-index: 1;
-  background: var(--paper-warm);
+  /* Mockup _tokens.css :: thead bg is `paper`, not `paper-warm`. The
+     latter is reserved for even-row zebra so the header doesn't blend
+     into row 2. */
+  background: var(--paper);
   text-align: left;
   font-size: var(--fs-xs);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--muted);
   font-weight: 600;
-  padding: var(--sp-2) var(--sp-3);
+  /* Mockup spec is 10px 12px — sits between sp-2 (8) and sp-3 (12). */
+  padding: 10px 12px;
   border-bottom: 1px solid var(--line);
   white-space: nowrap;
 }
 table.adm tbody td {
-  padding: var(--sp-2) var(--sp-3);
+  padding: 10px 12px;
   border-bottom: 1px solid var(--line-soft);
   vertical-align: middle;
   line-height: var(--lh-snug, 1.35);

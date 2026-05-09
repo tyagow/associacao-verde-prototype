@@ -46,8 +46,7 @@
    names. With sp-2/sp-3 cell padding, col widths sum to ~590 + flex,
    leaving ~200px for the name column at standard panel widths. */
 .colCode {
-  width: 88px;
-  max-width: 110px;
+  width: 110px;
 }
 .colCode :global(.mono) {
   display: inline-block;
