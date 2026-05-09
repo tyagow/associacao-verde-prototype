@@ -14,7 +14,7 @@
 }
 
 .section {
-  padding: 12px 14px;
+  padding: var(--sp-3) var(--sp-4);
   border-bottom: 1px solid var(--line);
 }
 
@@ -35,7 +35,7 @@
   justify-content: space-between;
   font-size: 12px;
   padding: 4px 0;
-  gap: 8px;
+  gap: var(--sp-2);
 }
 
 .lbl {

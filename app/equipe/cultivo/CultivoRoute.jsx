@@ -130,7 +130,16 @@ export default function CultivoRoute() {
       {error ? <p className="pill danger">{error}</p> : null}
 
       <div className="stack">
-        <CultivoPanel batches={batches} />
+        {!dashboard ? (
+          <div className="adm-stack-2" style={{ padding: "var(--sp-4)" }}>
+            <span className="adm-skeleton adm-skeleton--row" aria-hidden />
+            <span className="adm-skeleton adm-skeleton--row" aria-hidden />
+            <span className="adm-skeleton adm-skeleton--row" aria-hidden />
+            <span className="sr-only">Carregando lotes de cultivo...</span>
+          </div>
+        ) : (
+          <CultivoPanel batches={batches} />
+        )}
         <p className="muted" style={{ fontSize: 12 }}>
           Para criar lotes, avancar semana, registrar colheita, secagem ou mover para o estoque, use
           o painel "Entrada e cultivo" em <a href="/equipe/estoque">/equipe/estoque</a>.

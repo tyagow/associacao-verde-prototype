@@ -19,7 +19,17 @@ export default function ProductLedger({ children }) {
         <span className="meta">click no produto para abrir lotes</span>
       </header>
       {isEmpty ? (
-        <p className={styles.empty}>Nenhum produto encontrado para o filtro atual.</p>
+        <div className={styles.empty}>
+          <div
+            className="adm-empty-state"
+            style={{ border: 0, background: "transparent", padding: 0 }}
+          >
+            <span className="adm-empty-state__title">Sem produtos no ledger</span>
+            <span className="adm-empty-state__hint">
+              Ajuste o filtro ou cadastre um novo produto para acompanhar o estoque.
+            </span>
+          </div>
+        </div>
       ) : (
         <table className="adm">
           <thead>

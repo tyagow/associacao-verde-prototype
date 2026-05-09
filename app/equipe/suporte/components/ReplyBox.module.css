@@ -1,22 +1,22 @@
 /* Phase 6 — Reply composer with chips + Anotar/Enviar footer. */
 
 .replybox {
-  padding: 12px 14px;
+  padding: var(--sp-3) var(--sp-4);
   border-top: 1px solid var(--line);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--sp-2);
 }
 
 .chips {
   display: flex;
-  gap: 6px;
+  gap: var(--sp-2);
   flex-wrap: wrap;
 }
 
 .chip {
   font-size: 11px;
-  padding: 3px 8px;
+  padding: var(--sp-1) var(--sp-2);
   border: 1px solid var(--line);
   border-radius: var(--r-pill);
   background: var(--paper);
@@ -39,7 +39,7 @@
   min-height: 70px;
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
-  padding: 8px 10px;
+  padding: var(--sp-2) var(--sp-3);
   font: inherit;
   font-size: 13px;
   resize: vertical;
@@ -54,7 +54,7 @@
 
 .actions {
   display: flex;
-  gap: 8px;
+  gap: var(--sp-2);
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
@@ -67,7 +67,7 @@
 
 .btns {
   display: flex;
-  gap: 8px;
+  gap: var(--sp-2);
 }
 
 .error {

@@ -237,10 +237,22 @@ export default function Workbench({ dashboard, onDashboardRefresh, error, status
               {selectedCase ? <ContextColumn item={selectedCase} /> : null}
             </div>
           ) : (
-            <p className={styles.empty}>Nenhum atendimento encontrado para o filtro atual.</p>
+            <div className={styles.empty}>
+              <div className="adm-empty-state">
+                <span className="adm-empty-state__title">Sem casos abertos no momento</span>
+                <span className="adm-empty-state__hint">
+                  Quando um paciente abrir um chamado, ele aparece aqui.
+                </span>
+              </div>
+            </div>
           )
         ) : (
-          <p className="muted">Carregando atendimentos...</p>
+          <div className="adm-stack-2" style={{ padding: "var(--sp-4)" }}>
+            <span className="adm-skeleton adm-skeleton--row" aria-hidden />
+            <span className="adm-skeleton adm-skeleton--row" aria-hidden />
+            <span className="adm-skeleton adm-skeleton--row" aria-hidden />
+            <span className="sr-only">Carregando atendimentos...</span>
+          </div>
         )}
       </div>
     </>

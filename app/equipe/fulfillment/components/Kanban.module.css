@@ -9,7 +9,7 @@
 .txKanban {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: var(--sp-3);
   align-items: stretch;
   padding-bottom: var(--sp-3);
 }
@@ -31,8 +31,8 @@
   }
   .txTabs {
     display: flex;
-    gap: 4px;
-    padding: 4px;
+    gap: var(--sp-1);
+    padding: var(--sp-1);
     background: var(--paper-warm, #f3f5f1);
     border: 1px solid var(--line);
     border-radius: var(--r-pill);
@@ -54,14 +54,14 @@
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    padding: 8px 12px;
+    padding: var(--sp-2) var(--sp-3);
     border-radius: var(--r-pill);
     cursor: pointer;
     white-space: nowrap;
     flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--sp-2);
     min-height: 36px;
   }
   .txTabActive {

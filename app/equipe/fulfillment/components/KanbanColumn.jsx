@@ -41,7 +41,14 @@ export default function KanbanColumn({ status, label, tone = "muted", orders, on
               <OrderCard key={order.id} order={order} onPrintLabel={onPrintLabel} />
             ))
           ) : (
-            <p className={styles.kcolEmpty}>Nenhum pedido nesta etapa.</p>
+            <div className={styles.kcolEmpty}>
+              <div
+                className="adm-empty-state"
+                style={{ border: 0, background: "transparent", padding: 0, minHeight: 0 }}
+              >
+                <span className="adm-empty-state__hint">Nenhum pedido nesta etapa.</span>
+              </div>
+            </div>
           )}
         </div>
       </SortableContext>

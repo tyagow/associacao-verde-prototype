@@ -2,7 +2,7 @@
 
 .empty {
   color: var(--muted);
-  padding: 24px 16px;
+  padding: var(--sp-6) var(--sp-4);
   text-align: center;
   font-size: 13px;
 }

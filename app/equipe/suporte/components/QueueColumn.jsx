@@ -21,7 +21,17 @@ export default function QueueColumn({ cases, selectedPatientId, onSelect }) {
       </header>
       <div className={styles.list}>
         {cases.length === 0 ? (
-          <p className={styles.empty}>Nenhum atendimento encontrado para o filtro atual.</p>
+          <div className={styles.empty}>
+            <div
+              className="adm-empty-state"
+              style={{ border: 0, background: "transparent", padding: 0 }}
+            >
+              <span className="adm-empty-state__title">Sem casos abertos no momento</span>
+              <span className="adm-empty-state__hint">
+                Os atendimentos novos aparecem aqui assim que chegarem.
+              </span>
+            </div>
+          </div>
         ) : null}
         {cases.map((item) => {
           const isActive = selectedPatientId === item.patient.id;
