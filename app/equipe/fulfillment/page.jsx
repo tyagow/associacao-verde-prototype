@@ -87,6 +87,18 @@ export default function FulfillmentPage() {
     [orders],
   );
 
+  const lateOrderCount = useMemo(() => {
+    const cutoffMs = 240 * 60 * 1000;
+    const now = Date.now();
+    return orders.filter((o) => {
+      if (o.status !== "paid_pending_fulfillment") return false;
+      if (!o.paidAt) return false;
+      const t = new Date(o.paidAt).getTime();
+      if (Number.isNaN(t)) return false;
+      return now - t > cutoffMs;
+    }).length;
+  }, [orders]);
+
   const counts = useMemo(() => {
     const buckets = {
       paid_pending_fulfillment: 0,
@@ -233,6 +245,11 @@ export default function FulfillmentPage() {
       ) : null}
 
       <div id="fulfillment-surface">
+        {slaFilter === "late" && lateOrderCount === 0 ? (
+          <p className="muted" data-fulfillment-late-empty>
+            Nenhum pedido pago há mais de 4h aguardando separar — fila dentro do SLA.
+          </p>
+        ) : null}
         {dashboard ? (
           <Kanban
             orders={orders}
