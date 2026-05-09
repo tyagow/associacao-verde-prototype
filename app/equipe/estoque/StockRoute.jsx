@@ -33,6 +33,7 @@ import PageHead from "../components/PageHead";
 import StatusStrip from "../components/StatusStrip";
 import ProductLedger from "./components/ProductLedger.jsx";
 import ProductRow from "./components/ProductRow.jsx";
+import { pluralWord } from "../components/pluralize.js";
 
 export default function StockRoute() {
   const [session, setSession] = useState(null);
@@ -197,9 +198,16 @@ export default function StockRoute() {
             count: totals.lowStockCount,
             tone: totals.lowStockCount > 0 ? "warn" : undefined,
           },
-          { label: "lotes rastreados", count: totals.lotCount },
           {
-            label: "cultivos em curso",
+            label: pluralWord(totals.lotCount, "lote rastreado", "lotes rastreados"),
+            count: totals.lotCount,
+          },
+          {
+            label: pluralWord(
+              batches.filter((b) => b.status !== "stocked").length,
+              "cultivo em curso",
+              "cultivos em curso",
+            ),
             count: batches.filter((b) => b.status !== "stocked").length,
             tone: "ok",
           },

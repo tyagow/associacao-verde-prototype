@@ -3992,7 +3992,6 @@ textarea {
   overflow: clip;
 }
 
-.panel > header.ph,
 header.ph {
   display: flex;
   align-items: center;
@@ -4036,7 +4035,7 @@ table.adm thead th {
   white-space: nowrap;
 }
 table.adm tbody td {
-  padding: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
   border-bottom: 1px solid var(--line-soft);
   vertical-align: middle;
   line-height: var(--lh-snug, 1.35);

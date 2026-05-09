@@ -41,24 +41,27 @@
   gap: var(--sp-4);
 }
 
-/* ===== Registry table cells ===== */
+/* ===== Registry table cells =====
+   Tightened so the flexible Paciente column gets enough room for full
+   names. With sp-2/sp-3 cell padding, col widths sum to ~590 + flex,
+   leaving ~200px for the name column at standard panel widths. */
 .colCode {
-  width: 100px;
+  width: 88px;
 }
 .colReceita {
-  width: 120px;
+  width: 112px;
 }
 .colLgpd {
-  width: 120px;
+  width: 104px;
 }
 .colStatus {
-  width: 130px;
+  width: 104px;
 }
 .colLogin {
-  width: 130px;
+  width: 96px;
 }
 .colAction {
-  width: 80px;
+  width: 68px;
 }
 
 .who {
