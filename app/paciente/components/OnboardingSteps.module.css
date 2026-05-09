@@ -2,73 +2,124 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: var(--sp-4);
-  padding: var(--sp-4) var(--sp-5);
-  background: var(--green-tint);
-  border: 1px solid var(--green);
-  border-radius: var(--r-lg);
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md, 5px);
+  box-shadow: var(--shadow-soft);
 }
 
 .steps {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--sp-4);
+  display: flex;
+  align-items: center;
+  gap: 0;
   flex: 1;
+  flex-wrap: nowrap;
+  min-width: 0;
 }
 
 .step {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--sp-2);
+  flex: 1;
   min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 6px var(--sp-3);
+  border-radius: 999px;
+  background: var(--soft);
+  border: 1px solid transparent;
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease;
+}
+
+.step:hover {
+  background: var(--green-tint);
+  border-color: color-mix(in srgb, var(--green) 30%, transparent);
+}
+
+/* Mark the first step as "current" so the strip has a clear visual anchor. */
+.step:first-child {
+  background: var(--green-tint);
+  border-color: var(--green);
+}
+
+.step:first-child .num {
+  background: var(--green);
+  color: var(--paper);
+}
+
+.connector {
+  flex: 0 0 var(--sp-3);
+  height: 1px;
+  border-top: 1px dashed var(--line-strong);
+  margin: 0 4px;
 }
 
 .num {
   flex: 0 0 auto;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border-radius: 999px;
-  background: var(--green);
-  color: var(--paper);
-  font: 600 12px/24px var(--font-ui);
+  background: var(--paper);
+  color: var(--green-deep);
+  border: 1px solid var(--green);
+  font: 700 11px/22px var(--font-ui);
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
 
 .text {
-  font: 500 13px/1.4 var(--font-ui);
+  font: 500 12px/1.35 var(--font-ui);
   color: var(--ink);
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .dismiss {
   flex: 0 0 auto;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border: 0;
   background: transparent;
-  color: var(--green);
-  font: 600 18px/1 var(--font-ui);
+  color: var(--muted);
+  font: 500 16px/1 var(--font-ui);
   cursor: pointer;
   border-radius: var(--r-sm);
 }
 
 .dismiss:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--soft);
+  color: var(--ink);
+}
+
+@media (max-width: 900px) {
+  .text {
+    white-space: normal;
+  }
 }
 
 @media (max-width: 720px) {
   .strip {
     flex-direction: column;
     align-items: stretch;
-    padding: var(--sp-3) var(--sp-4);
+    padding: var(--sp-3);
   }
   .steps {
-    grid-template-columns: 1fr;
-    gap: var(--sp-2);
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .connector {
+    display: none;
+  }
+  .step {
+    width: 100%;
   }
   .dismiss {
     position: absolute;

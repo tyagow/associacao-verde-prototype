@@ -50,6 +50,39 @@
   min-width: 0;
 }
 
+.searchSlot :global(input[type="search"]) {
+  width: 100%;
+  max-width: 380px;
+  padding: 9px 14px 9px 36px;
+  background: var(--paper-warm)
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14' fill='none'><circle cx='6' cy='6' r='4' stroke='%23687970' stroke-width='1.4'/><path d='M9 9l3 3' stroke='%23687970' stroke-width='1.4' stroke-linecap='round'/></svg>")
+    no-repeat 12px center / 14px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font: inherit;
+  font-size: var(--fs-sm, 13px);
+  color: var(--ink);
+  outline: none;
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    background-color 0.16s ease;
+}
+
+.searchSlot :global(input[type="search"]:hover) {
+  border-color: var(--line-strong);
+}
+
+.searchSlot :global(input[type="search"]:focus-visible) {
+  border-color: var(--green);
+  background-color: var(--paper);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 18%, transparent);
+}
+
+.searchSlot :global(input[type="search"])::placeholder {
+  color: var(--muted);
+}
+
 .identity {
   display: inline-flex;
   align-items: center;

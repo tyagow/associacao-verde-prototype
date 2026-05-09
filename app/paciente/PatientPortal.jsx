@@ -586,7 +586,24 @@ export default function PatientPortal() {
           />
         }
         actions={
-          <button className="ghost" type="button" onClick={logout}>
+          <button className="ghost patient-shell-logout" type="button" onClick={logout}>
+            <span aria-hidden="true" style={{ marginRight: 6, display: "inline-flex" }}>
+              <svg viewBox="0 0 14 14" width="13" height="13" fill="none">
+                <path
+                  d="M5 2H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2"
+                  stroke="currentColor"
+                  strokeWidth="1.3"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M8 4l3 3-3 3M11 7H6"
+                  stroke="currentColor"
+                  strokeWidth="1.3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
             Sair
           </button>
         }

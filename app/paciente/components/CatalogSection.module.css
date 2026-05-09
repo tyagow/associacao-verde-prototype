@@ -2,57 +2,123 @@
   display: block;
 }
 
+/* ---------------- Welcome hero ----------------
+   Replaces the prior heavy dark-green slab. Soft paper + green-tint
+   diagonal wash, subtle leaf accent, inline status facts (label/value)
+   instead of a vertical metadata pill. */
+
 .hero {
-  background: linear-gradient(135deg, var(--ink) 0%, #1a3a2a 100%);
-  color: var(--paper);
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      ellipse at 110% -30%,
+      color-mix(in srgb, var(--green-tint) 90%, white) 0%,
+      transparent 55%
+    ),
+    linear-gradient(
+      135deg,
+      var(--paper) 0%,
+      color-mix(in srgb, var(--paper) 85%, var(--green-tint)) 100%
+    );
+  border: 1px solid var(--line);
   border-radius: var(--r-lg, 7px);
-  padding: 28px 32px;
-  margin-bottom: var(--sp-5, 20px);
+  padding: var(--sp-5) var(--sp-6);
+  margin-bottom: var(--sp-6);
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: var(--sp-5, 24px);
+  gap: var(--sp-5);
   align-items: center;
+  box-shadow: var(--shadow-soft);
+}
+
+.heroLeaf {
+  position: absolute;
+  top: -10px;
+  right: 18px;
+  width: 96px;
+  height: 96px;
+  opacity: 0.12;
+  pointer-events: none;
 }
 
 .heroMain {
   min-width: 0;
-}
-
-.heroKicker {
-  color: var(--green-soft, #c7e3d2);
-  font-size: var(--fs-xs, 11px);
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  font-weight: 600;
+  position: relative;
+  z-index: 1;
 }
 
 .heroTitle {
-  margin: 6px 0 4px;
+  margin: 0 0 6px;
   font: 500 26px/1.2 var(--font-display, "Outfit", sans-serif);
-  color: var(--paper);
+  color: var(--ink);
+  letter-spacing: -0.005em;
 }
 
 .heroLead {
   margin: 0;
-  color: #c7d3cc;
-  font-size: 13px;
-  max-width: 48ch;
+  color: var(--ink-soft);
+  font-size: var(--fs-base, 14px);
+  line-height: 1.5;
+  max-width: 52ch;
 }
 
-.heroReceipt {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: var(--r-md, 5px);
-  padding: 16px 20px;
-  font-size: 12px;
-  color: #c7d3cc;
-  display: grid;
-  gap: 6px;
-  min-width: 200px;
+.heroLead b {
+  color: var(--green-deep);
+  font-weight: 700;
 }
 
-.heroReceipt b {
-  color: var(--paper);
+.heroFacts {
+  display: flex;
+  align-items: stretch;
+  gap: var(--sp-4);
+  margin: 0;
+  padding: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.heroFact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 var(--sp-3);
+  border-left: 1px solid var(--line);
+  min-width: 88px;
+}
+
+.heroFact:first-child {
+  border-left: 0;
+  padding-left: 0;
+}
+
+.heroFact dt {
+  font-size: var(--fs-xs, 11px);
   font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+
+.heroFact dd {
+  margin: 0;
+  font-size: var(--fs-sm, 13px);
+  color: var(--ink);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.3;
+}
+
+.heroDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--green);
+  flex: 0 0 auto;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 22%, transparent);
 }
 
 /* Cart-filled state: keep the hero in DOM (so #patient-summary remains
@@ -69,32 +135,35 @@
   border: 0;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 900px) {
   .hero {
     grid-template-columns: 1fr;
-    /* Welcome hero is huge by default (28px/32px padding, 26px display
-       title). On a 360px phone the dark green band ate ~30% of the
-       fold — patients want to see catalog above all else. Tighten
-       padding, drop title size one step, collapse the receipt pill. */
-    padding: var(--sp-4) var(--sp-4);
-    gap: var(--sp-3);
-    margin-bottom: var(--sp-4);
+    padding: var(--sp-4);
+    gap: var(--sp-4);
+  }
+  .heroLeaf {
+    width: 72px;
+    height: 72px;
+    opacity: 0.1;
   }
   .heroTitle {
-    font-size: 20px;
-    line-height: 1.25;
+    font-size: 21px;
   }
-  .heroLead {
-    font-size: var(--fs-sm, 12px);
+  .heroFacts {
+    flex-wrap: wrap;
+    gap: var(--sp-3);
   }
-  .heroReceipt {
-    padding: var(--sp-2) var(--sp-3);
-    grid-auto-flow: row;
-    gap: 4px;
-    font-size: var(--fs-xs, 11px);
+  .heroFact {
+    border-left: 0;
+    padding-left: 0;
+    border-top: 1px solid var(--line-soft);
+    padding-top: var(--sp-2);
     min-width: 0;
+    flex: 1 1 30%;
   }
 }
+
+/* ---------------- Section header ---------------- */
 
 .breadcrumb {
   font-size: var(--fs-sm, 12px);
@@ -108,12 +177,37 @@
   justify-content: space-between;
   gap: var(--sp-4);
   margin-bottom: var(--sp-4);
+  padding-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--line-soft);
 }
 
-.pagehead h1 {
+.pageheadHead {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.eyebrow {
+  font: 600 var(--fs-xs, 11px) / 1 var(--font-ui, "Inter", sans-serif);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--green-deep);
+}
+
+.pagehead h2 {
   margin: 0;
   font: 500 22px/1.2 var(--font-display, "Outfit", sans-serif);
   color: var(--ink);
+  letter-spacing: -0.005em;
+}
+
+.pageheadLead {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--fs-sm, 13px);
+  line-height: 1.45;
+  max-width: 60ch;
 }
 
 .clear {
@@ -128,27 +222,39 @@
   cursor: pointer;
   padding: var(--sp-1) var(--sp-2);
   border-radius: var(--r-sm, 3px);
+  flex: 0 0 auto;
 }
 
 .clear:hover {
   color: var(--ink);
 }
 
+/* ---------------- Tools (search + chips) ---------------- */
+
 .tools {
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
-  margin-bottom: var(--sp-4);
+  margin-bottom: var(--sp-5);
 }
 
 .search {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-  background: var(--soft);
-  border-radius: var(--r-sm, 3px);
-  padding: var(--sp-2) var(--sp-3);
-  border: 1px solid var(--line-soft);
+  background: var(--paper);
+  border-radius: var(--r-md, 5px);
+  padding: 10px var(--sp-3);
+  border: 1px solid var(--line);
+  transition:
+    border-color 0.16s var(--ease-out-quad, ease),
+    box-shadow 0.16s ease;
+  min-height: 44px;
+}
+
+.search:focus-within {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 18%, transparent);
 }
 
 .search input {
@@ -181,15 +287,14 @@
 
 /* Filter chips use attribute selectors so the active chip's `class` attribute
    stays exactly equal to "active" — Playwright's `to_have_class("active")`
-   does string equality, so any module-hashed extra class would fail the
-   E2E assertion at line 123 of e2e-production-app.py. */
+   does string equality. */
 .cats :global([data-catalog-filter]) {
   flex-shrink: 0;
   background: var(--paper);
   border: 1px solid var(--line);
-  padding: 9px 16px;
-  border-radius: var(--r-sm, 3px);
-  color: var(--ink);
+  padding: 8px 14px;
+  border-radius: 999px;
+  color: var(--ink-soft);
   font-weight: 500;
   font-size: var(--fs-sm, 13px);
   display: inline-flex;
@@ -197,25 +302,41 @@
   align-items: center;
   cursor: pointer;
   transition:
-    background 0.15s,
-    border-color 0.15s;
+    background 0.16s var(--ease-out-quad, ease),
+    border-color 0.16s ease,
+    color 0.16s ease,
+    transform 0.16s ease;
+  position: relative;
 }
 
 .cats :global([data-catalog-filter]:hover) {
   background: var(--soft);
+  border-color: var(--line-strong);
+  transform: translateY(-1px);
 }
 
 .cats :global([data-catalog-filter].active) {
-  background: var(--ink);
-  color: var(--paper);
-  border-color: var(--ink);
+  background: var(--green-tint);
+  color: var(--green-deep);
+  border-color: var(--green);
+  box-shadow: 0 0 0 1px var(--green);
+}
+
+.catIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: currentColor;
+  opacity: 0.8;
 }
 
 .cats :global([data-catalog-filter] .catN),
 .catN {
   font-size: var(--fs-xs, 11px);
   color: var(--muted);
-  padding: 2px 6px;
+  padding: 2px 7px;
   background: var(--soft);
   border-radius: 999px;
   font-variant-numeric: tabular-nums;
@@ -223,13 +344,23 @@
 }
 
 .cats :global([data-catalog-filter].active .catN) {
-  background: rgba(255, 255, 255, 0.15);
-  color: var(--paper);
+  background: color-mix(in srgb, var(--green) 18%, var(--paper));
+  color: var(--green-deep);
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .cats :global([data-catalog-filter]),
+  .cats :global([data-catalog-filter]:hover) {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ---------------- Grid ---------------- */
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: var(--sp-4);
 }
 
@@ -262,6 +393,8 @@
   justify-content: center;
 }
 
+/* ---------------- Product card ---------------- */
+
 .product {
   position: relative;
   background: var(--paper);
@@ -271,187 +404,252 @@
   display: flex;
   flex-direction: column;
   transition:
-    transform 0.15s,
-    box-shadow 0.15s,
-    border-color 0.15s;
+    transform 0.18s var(--ease-out-quad, cubic-bezier(0.22, 0.61, 0.36, 1)),
+    box-shadow 0.22s ease,
+    border-color 0.18s ease;
+  box-shadow: var(--shadow-soft);
 }
 
 .product:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 30px -16px rgba(13, 31, 23, 0.18);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-2);
+  border-color: color-mix(in srgb, var(--green) 30%, var(--line));
 }
 
 .productIn {
   border-color: var(--green);
-  box-shadow: 0 0 0 1px var(--green);
+  box-shadow:
+    0 0 0 1px var(--green),
+    var(--shadow-soft);
 }
 
 .productIn:hover {
   box-shadow:
     0 0 0 1px var(--green),
-    0 12px 30px -16px rgba(13, 31, 23, 0.18);
+    var(--shadow-2);
 }
 
-.badge {
+.thumbWrap {
+  position: relative;
+  isolation: isolate;
+}
+
+.badge,
+.stockChip {
   position: absolute;
   top: 10px;
   right: 10px;
-  background: var(--green);
-  color: var(--paper);
-  padding: 3px 8px;
-  border-radius: 999px;
+  z-index: 2;
   font-size: var(--fs-xs, 11px);
   font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  letter-spacing: 0.02em;
-  z-index: 1;
 }
 
-.thumb {
-  height: 140px;
-  background: linear-gradient(135deg, var(--gold-soft), var(--gold));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font: 700 28px/1 var(--font-display, "Outfit", sans-serif);
-  color: var(--gold-on);
-  letter-spacing: 0.04em;
+.badge {
+  background: var(--green);
+  color: var(--paper);
+  box-shadow: 0 2px 6px rgba(13, 31, 23, 0.18);
+}
+
+.badgeFrost {
+  background: color-mix(in srgb, var(--green) 88%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.stockChip {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--ink);
+  border: 1px solid color-mix(in srgb, white 40%, var(--line));
+}
+
+.stockChipLow {
+  color: var(--warn-ink);
+  background: color-mix(in srgb, var(--warn-soft) 86%, transparent);
+}
+
+.stockChipOut {
+  color: var(--danger-ink);
+  background: color-mix(in srgb, var(--danger-soft) 86%, transparent);
 }
 
 .body {
-  padding: var(--sp-3) 14px;
+  padding: var(--sp-3) var(--sp-4) var(--sp-4);
   display: flex;
   flex-direction: column;
-  gap: var(--sp-1);
+  gap: 6px;
   flex: 1;
 }
 
-.titleRow {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--sp-2);
+.cardEyebrow {
+  font: 600 var(--fs-xs, 11px) / 1 var(--font-ui, "Inter", sans-serif);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
 }
 
 .body h3 {
   margin: 0;
-  font: 500 15px/1.25 var(--font-display, "Outfit", sans-serif);
+  font: 600 16px/1.25 var(--font-display, "Outfit", sans-serif);
   color: var(--ink);
-  flex: 1;
   min-width: 0;
+  letter-spacing: -0.005em;
 }
 
 .productOut {
-  opacity: 0.6;
+  opacity: 0.78;
 }
 
 .productOut:hover {
   transform: none;
-  box-shadow: none;
-}
-
-.notify {
-  margin-top: var(--sp-2);
-  align-self: flex-start;
+  border-color: var(--line);
+  box-shadow: var(--shadow-soft);
 }
 
 .meta {
   color: var(--muted);
   font-size: var(--fs-sm, 12px);
   margin: 0;
-  flex: 1;
   line-height: 1.4;
 }
 
-.row {
+.priceRow {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  align-items: baseline;
+  gap: 4px;
   margin-top: var(--sp-2);
-  gap: var(--sp-2);
 }
 
 .price {
-  font: 600 16px/1 var(--font-display, "Outfit", sans-serif);
+  font: 700 18px/1 var(--font-display, "Outfit", sans-serif);
   color: var(--ink);
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.priceUnit {
+  font-size: var(--fs-xs, 11px);
+  color: var(--muted);
+  font-weight: 500;
 }
 
 .add {
-  background: var(--ink);
+  margin-top: var(--sp-3);
+  width: 100%;
+  background: var(--green);
   color: var(--paper);
   border: 0;
-  padding: 8px 14px;
-  border-radius: var(--r-sm, 3px);
+  padding: 11px 14px;
+  border-radius: var(--r-md, 5px);
   font-weight: 600;
-  font-size: var(--fs-sm, 12px);
+  font-size: var(--fs-base, 14px);
   cursor: pointer;
-  transition: background 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition:
+    background 0.16s var(--ease-out-quad, ease),
+    transform 0.16s ease,
+    box-shadow 0.18s ease;
+  letter-spacing: 0.005em;
 }
 
 .add:hover:not(:disabled) {
   background: var(--green-deep);
+  box-shadow: 0 4px 12px rgba(13, 31, 23, 0.18);
 }
 
-.add:disabled {
+.add:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.addPlus {
+  font-size: 16px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.addRestock {
+  background: var(--paper);
+  color: var(--ink-soft);
+  border: 1px solid var(--line-strong);
+}
+
+.addRestock:hover {
   background: var(--soft);
-  color: var(--muted);
-  cursor: not-allowed;
+  color: var(--ink);
+  box-shadow: none;
 }
 
 .qty {
   display: inline-flex;
-  border: 1px solid var(--line);
-  border-radius: var(--r-sm, 3px);
-  background: var(--soft);
+  margin-top: var(--sp-3);
+  border: 1px solid var(--green);
+  border-radius: var(--r-md, 5px);
+  background: var(--green-tint);
   overflow: hidden;
   align-items: center;
+  width: 100%;
 }
 
 .qty button {
   background: transparent;
   border: 0;
-  width: 30px;
-  height: 32px;
-  color: var(--ink);
-  font-weight: 600;
+  width: 38px;
+  height: 38px;
+  color: var(--green-deep);
+  font-weight: 700;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1;
+  flex: 0 0 auto;
 }
 
 .qty button:hover:not(:disabled) {
-  background: var(--paper);
+  background: color-mix(in srgb, var(--green) 18%, var(--green-tint));
 }
 
 .qty button:disabled {
   color: var(--muted);
   cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .qtyValue {
-  padding: 0 var(--sp-2);
+  flex: 1;
+  text-align: center;
   font-weight: 600;
+  color: var(--green-deep);
   font-variant-numeric: tabular-nums;
   font-size: var(--fs-sm, 13px);
-  min-width: 22px;
-  text-align: center;
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.qtySuffix {
+  font-size: 10px;
+  font-weight: 500;
+  color: color-mix(in srgb, var(--green-deep) 70%, var(--muted));
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 @media (max-width: 1024px) {
   .grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   }
 }
 
-/* Phone — denser card layout. At 360–414px the default 220px minmax
-   would force one column; allowing 150px lets two cards sit side by
-   side. The price + Adicionar row stays on one line with smaller
-   button padding; if a chip ("Esgotado", "Últimas N") + price + CTA
-   can't co-exist horizontally, badges already render absolutely
-   positioned so the row only carries price + button. */
+/* Phone — denser card, smaller thumb. */
 @media (max-width: 720px) {
   .grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -459,26 +657,30 @@
   }
   .body {
     padding: var(--sp-3);
-  }
-  .thumb {
-    height: 96px;
-    font-size: 22px;
+    gap: 4px;
   }
   .body h3 {
     font-size: 14px;
   }
+  .cardEyebrow {
+    font-size: 10px;
+  }
   .price {
-    font-size: 14px;
+    font-size: 16px;
   }
   .add {
-    padding: 6px var(--sp-2);
-    font-size: var(--fs-xs, 11px);
+    padding: 9px var(--sp-2);
+    font-size: var(--fs-sm, 12px);
+    margin-top: var(--sp-2);
   }
-  .row {
-    flex-wrap: nowrap;
+  .qty {
+    margin-top: var(--sp-2);
   }
   .qty button {
-    width: 26px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
+  }
+  .qtySuffix {
+    display: none;
   }
 }

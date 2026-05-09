@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import AddressFieldset from "./AddressFieldset";
+import CartEmptyIllustration from "./CartEmptyIllustration";
 import styles from "./CartHero.module.css";
 
 const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
@@ -102,24 +103,52 @@ export default function CartHero({
       {isEmpty ? (
         <>
           <header className={styles.head}>
+            <span className={styles.eyebrow}>Carrinho</span>
             <h3 className={styles.title}>Resumo do pedido</h3>
-            <p className={styles.lead}>Reserva so acontece quando o Pix e gerado.</p>
           </header>
           <div className={styles.emptyBlock}>
-            <div className={styles.emptyIcon} aria-hidden="true">
-              <span>&#128722;</span>
+            <div className={styles.emptyIllo} aria-hidden="true">
+              <CartEmptyIllustration size={132} />
             </div>
-            <h3 className={styles.emptyTitle}>Carrinho vazio</h3>
-            <p className={styles.emptyHelper}>Adicione itens do catalogo ao lado.</p>
+            <h3 className={styles.emptyTitle}>Seu carrinho está pronto para receber</h3>
+            <p className={styles.emptyHelper}>
+              Adicione produtos do catálogo ao lado para montar o pedido.
+            </p>
+            <p className={styles.trustNote}>
+              <svg
+                viewBox="0 0 14 14"
+                width="12"
+                height="12"
+                fill="none"
+                aria-hidden="true"
+                className={styles.trustIcon}
+              >
+                <rect
+                  x="3"
+                  y="6"
+                  width="8"
+                  height="6"
+                  rx="1"
+                  stroke="currentColor"
+                  strokeWidth="1.2"
+                />
+                <path d="M5 6V4a2 2 0 1 1 4 0v2" stroke="currentColor" strokeWidth="1.2" />
+              </svg>
+              Estoque reservado por <b>15 min</b> ao gerar o Pix.
+            </p>
           </div>
         </>
       ) : (
         <>
           <header className={styles.head}>
+            <span className={styles.eyebrow}>Carrinho</span>
             <h3 className={styles.title}>
-              Resumo do pedido <span className={styles.count}>{count} itens</span>
+              Resumo do pedido{" "}
+              <span className={styles.countBadge} aria-label={`${count} itens`}>
+                {count}
+              </span>
             </h3>
-            <p className={styles.lead}>Reserva de estoque acontece quando o Pix e gerado.</p>
+            <p className={styles.lead}>Reserva de estoque acontece quando o Pix é gerado.</p>
           </header>
 
           <ul className={styles.lines}>

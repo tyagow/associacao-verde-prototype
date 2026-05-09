@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import styles from "./OnboardingSteps.module.css";
 
 const STORAGE_KEY = "av:onboarded:firstOrder";
@@ -60,13 +60,16 @@ export default function OnboardingSteps({ visible, onDismiss }) {
       data-onboarding="firstOrder"
     >
       <ol className={styles.steps}>
-        {STEPS.map((step) => (
-          <li key={step.n} className={styles.step}>
-            <span className={styles.num} aria-hidden="true">
-              {step.n}
-            </span>
-            <span className={styles.text}>{step.label}</span>
-          </li>
+        {STEPS.map((step, idx) => (
+          <Fragment key={step.n}>
+            {idx > 0 ? <li className={styles.connector} aria-hidden="true" /> : null}
+            <li className={styles.step}>
+              <span className={styles.num} aria-hidden="true">
+                {step.n}
+              </span>
+              <span className={styles.text}>{step.label}</span>
+            </li>
+          </Fragment>
         ))}
       </ol>
       <button
