@@ -8,7 +8,7 @@ import styles from "./TeamShell.module.css";
 
 const ROLE_LABELS = {
   admin: "Administrador",
-  operations: "Operacoes",
+  operations: "Operações",
   stock: "Estoque",
   fulfillment: "Fulfillment",
   support: "Suporte",
@@ -160,7 +160,7 @@ export default function TeamShell({
           aria-label="Abrir paleta de comandos"
           onClick={() => setPaletteOpen(true)}
         >
-          <span aria-hidden style={{ color: "var(--muted)" }}>
+          <span aria-hidden className={styles.searchIcon}>
             ⌕
           </span>
           <span className={styles.searchInput}>Buscar paciente, pedido, lote, suporte…</span>
@@ -213,7 +213,10 @@ function computeBadgeCounts(dashboard) {
     command: { value: pendingPayments + blocked, tone: pendingPayments + blocked ? "warn" : "" },
     patients: { value: blocked, tone: blocked ? "danger" : "" },
     stock: { value: lowStock, tone: lowStock ? "warn" : "" },
-    cultivation: { value: cultivation, tone: cultivation ? "ok" : "" },
+    /* C7 fix: cultivation badge stays neutral while batches are merely
+       active. "ok" was misleading because an in-progress grow isn't a
+       success state — it's just work in flight. */
+    cultivation: { value: cultivation, tone: "" },
     orders: { value: pendingPayments, tone: pendingPayments ? "warn" : "" },
     fulfillment: { value: fulfillment, tone: fulfillment ? "warn" : "" },
     support: { value: support, tone: support ? "warn" : "" },

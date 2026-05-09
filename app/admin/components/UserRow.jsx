@@ -154,12 +154,12 @@ export default function UserRow({ user, onStatusChange, onPasswordReset, compact
           <td colSpan={5}>
             <div className={styles.drawer}>
               <p className={styles.drawerCopy}>
-                Reativar {user.name || user.email}? O usuario podera fazer login novamente
+                Reativar {user.name || user.email}? O usuário poderá fazer login novamente
                 imediatamente.
               </p>
               <div className={styles.drawerActions}>
                 <button type="button" className="btn btn--primary" onClick={confirmReactivate}>
-                  Confirmar reativacao
+                  Confirmar reativação
                 </button>
                 <button
                   type="button"
@@ -189,7 +189,7 @@ function initialsFor(value) {
 
 function roleLabel(role) {
   if (role === "admin") return "Admin";
-  if (role === "operations") return "Operacoes";
+  if (role === "operations") return "Operações";
   if (role === "support") return "Suporte";
   return role || "—";
 }

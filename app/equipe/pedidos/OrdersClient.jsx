@@ -144,7 +144,7 @@ export default function OrdersClient() {
       });
       form.reset();
       await loadDashboard();
-      setMessage("Pedido cancelado ou enviado para revisao de excecao.");
+      setMessage("Pedido cancelado ou enviado para revisão de exceção.");
       setDrawerOpen(false);
     } catch (nextError) {
       setError(nextError.message);
@@ -312,7 +312,7 @@ export default function OrdersClient() {
               <span className="sr-only">Carregando pedidos e Pix...</span>
             </div>
           ) : combinedRows.length === 0 ? (
-            <div className="adm-empty-state" style={{ margin: "var(--sp-3) var(--sp-4)" }}>
+            <div className="adm-empty-state adm-empty-state--inset">
               <span className="adm-empty-state__title">Nenhum pedido na fila</span>
               <span className="adm-empty-state__hint">
                 Quando novos Pix entrarem, aparecem aqui em ordem de chegada.

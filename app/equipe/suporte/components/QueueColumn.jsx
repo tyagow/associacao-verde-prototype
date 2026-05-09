@@ -22,10 +22,7 @@ export default function QueueColumn({ cases, selectedPatientId, onSelect }) {
       <div className={styles.list}>
         {cases.length === 0 ? (
           <div className={styles.empty}>
-            <div
-              className="adm-empty-state"
-              style={{ border: 0, background: "transparent", padding: 0 }}
-            >
+            <div className="adm-empty-state adm-empty-state--inset">
               <span className="adm-empty-state__title">Sem casos abertos no momento</span>
               <span className="adm-empty-state__hint">
                 Os atendimentos novos aparecem aqui assim que chegarem.

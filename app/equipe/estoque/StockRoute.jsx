@@ -384,7 +384,7 @@ function LegacyManagementDrawers({
   }
 
   return (
-    <section className="management-drawers" aria-label="Acoes de gestao de estoque">
+    <section className="management-drawers" aria-label="Ações de gestão de estoque">
       <details>
         <summary>Criar produto</summary>
         <form

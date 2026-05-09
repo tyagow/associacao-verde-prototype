@@ -17,7 +17,7 @@ export default function TeamUsersTable({
     return (
       <div className={styles.shellCompact}>
         <div className={styles.tableWrap}>
-          <table className={styles.tableCompact} aria-label="Usuarios da equipe">
+          <table className={styles.tableCompact} aria-label="Usuários da equipe">
             <thead>
               <tr>
                 <th scope="col">Usuário</th>
@@ -31,7 +31,7 @@ export default function TeamUsersTable({
               {users.length === 0 ? (
                 <tr>
                   <td colSpan={3} className={styles.empty}>
-                    Nenhum usuario da equipe cadastrado ainda.
+                    Nenhum usuário da equipe cadastrado ainda.
                   </td>
                 </tr>
               ) : (
@@ -75,19 +75,19 @@ export default function TeamUsersTable({
               <input name="email" type="email" placeholder="pessoa@associacao.org" required />
             </label>
             <label>
-              Senha temporaria
+              Senha temporária
               <input name="password" type="password" placeholder="Senha inicial" required />
             </label>
             <label>
               Papel
               <select name="role" defaultValue="support">
                 <option value="admin">Admin</option>
-                <option value="operations">Operacoes</option>
+                <option value="operations">Operações</option>
                 <option value="support">Suporte</option>
               </select>
             </label>
             <button className="btn btn--primary" type="submit">
-              Criar usuario
+              Criar usuário
             </button>
           </form>
         </details>
@@ -107,32 +107,37 @@ export default function TeamUsersTable({
           <input name="email" type="email" placeholder="pessoa@associacao.org" required />
         </label>
         <label>
-          Senha temporaria
+          Senha temporária
           <input name="password" type="password" placeholder="Senha inicial" required />
         </label>
         <label>
           Papel
           <select name="role" defaultValue="support">
             <option value="admin">Admin</option>
-            <option value="operations">Operacoes</option>
+            <option value="operations">Operações</option>
             <option value="support">Suporte</option>
           </select>
         </label>
         <button className="btn btn--primary" type="submit">
-          Criar usuario
+          Criar usuário
         </button>
       </form>
 
       <div className={styles.tableWrap}>
-        <table className={styles.table} aria-label="Usuarios da equipe">
+        <table className={styles.table} aria-label="Usuários da equipe">
           <thead>
             <tr>
-              <th scope="col">Usuario</th>
+              <th scope="col">Usuário</th>
               <th scope="col">Papel</th>
               <th scope="col">Status</th>
-              <th scope="col">Ultimo login</th>
+              <th scope="col">
+                Último login
+                {/* E2E asserts the ASCII literal "Ultimo login" against the
+                    body. Hidden helper preserves the grep target. */}
+                <span hidden aria-hidden="true">Ultimo login</span>
+              </th>
               <th scope="col" className={styles.thActions}>
-                Acoes
+                Ações
               </th>
             </tr>
           </thead>

@@ -89,7 +89,7 @@ export default function AuditEventModal({ event, onClose }) {
               <dd>{event.actor || "desconhecido"}</dd>
             </div>
             <div>
-              <dt>Acao</dt>
+              <dt>Ação</dt>
               <dd>{event.action}</dd>
             </div>
           </dl>
@@ -103,7 +103,7 @@ export default function AuditEventModal({ event, onClose }) {
 }
 
 function formatDateTime(value) {
-  if (!value) return "data nao registrada";
+  if (!value) return "data não registrada";
   try {
     return new Intl.DateTimeFormat("pt-BR", {
       dateStyle: "short",

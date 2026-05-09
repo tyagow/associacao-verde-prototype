@@ -150,7 +150,7 @@ export default function FulfillmentPage() {
   }
 
   function handlePrintLabel(order) {
-    showToast(`Etiqueta enviada para impressao (${order.id.slice(-6)}).`);
+    showToast(`Etiqueta enviada para impressão (${order.id.slice(-6)}).`);
   }
 
   const headMeta =
@@ -218,7 +218,7 @@ export default function FulfillmentPage() {
             >
               <option value="all">Todas as etapas</option>
               <option value="paid_pending_fulfillment">Pago aguardando</option>
-              <option value="separating">Em separacao</option>
+              <option value="separating">Em separação</option>
               <option value="ready_to_ship">Pronto despachar</option>
               <option value="sent">Enviado</option>
             </select>
@@ -260,7 +260,13 @@ export default function FulfillmentPage() {
             slaFilter={slaFilter}
           />
         ) : (
-          <p className="muted">Carregando fila de fulfillment...</p>
+          /* B2 fix: skeleton replaces the muted-text loader. */
+          <div aria-busy="true" aria-live="polite">
+            <span className="sr-only">Carregando fila de fulfillment…</span>
+            <div className="adm-skeleton adm-skeleton--row" />
+            <div className="adm-skeleton adm-skeleton--row" />
+            <div className="adm-skeleton adm-skeleton--row" />
+          </div>
         )}
       </div>
 

@@ -3,7 +3,7 @@
 import styles from "./PriorityQueue.module.css";
 
 /**
- * Phase 1 — Fila prioritaria table.
+ * Phase 1 — Fila prioritária table.
  *
  * Mixes payment, fulfillment, blocked-patient, low-stock and support rows
  * into one priority table per mockup b-comando.html. Caller (TeamCommand)
@@ -50,9 +50,9 @@ function pillClass(tone) {
 
 export default function PriorityQueue({ rows = [], onExport }) {
   return (
-    <section className={styles.panel} aria-label="Fila prioritaria">
+    <section className={styles.panel} aria-label="Fila prioritária">
       <header className={styles.head}>
-        <h3 className={styles.title}>Fila prioritaria</h3>
+        <h3 className={styles.title}>Fila prioritária</h3>
         {onExport ? (
           <button type="button" className="btn btn--ghost btn--sm" onClick={onExport}>
             Exportar
@@ -71,7 +71,7 @@ export default function PriorityQueue({ rows = [], onExport }) {
               <th className="num" style={{ width: 110 }}>
                 Valor
               </th>
-              <th style={{ width: 70 }} aria-label="acao" />
+              <th style={{ width: 70 }} aria-label="ação" />
             </tr>
           </thead>
           <tbody>

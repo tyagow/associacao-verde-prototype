@@ -20,10 +20,7 @@ export default function ProductLedger({ children }) {
       </header>
       {isEmpty ? (
         <div className={styles.empty}>
-          <div
-            className="adm-empty-state"
-            style={{ border: 0, background: "transparent", padding: 0 }}
-          >
+          <div className="adm-empty-state adm-empty-state--inset">
             <span className="adm-empty-state__title">Sem produtos no ledger</span>
             <span className="adm-empty-state__hint">
               Ajuste o filtro ou cadastre um novo produto para acompanhar o estoque.

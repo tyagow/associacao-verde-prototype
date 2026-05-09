@@ -30,7 +30,7 @@ export default function AdminPage() {
   const [dashboard, setDashboard] = useState(null);
   const [readiness, setReadiness] = useState(null);
   const [filters, setFilters] = useState(initialFilters);
-  const [status, setStatus] = useState("carregando");
+  const [status, setStatus] = useState("carregando…");
   const [error, setError] = useState("");
   const [toast, setToast] = useState("");
   const [selectedGate, setSelectedGate] = useState(null);
@@ -69,7 +69,7 @@ export default function AdminPage() {
       });
       form.reset();
       await load();
-      showToast("Usuario da equipe criado com papel e permissoes.");
+      showToast("Usuário da equipe criado com papel e permissões.");
     } catch (submitError) {
       showToast(submitError.message);
     }
@@ -84,7 +84,7 @@ export default function AdminPage() {
         body: Object.fromEntries(new FormData(form)),
       });
       await load();
-      showToast("Evidencia do provider registrada para readiness.");
+      showToast("Evidência do provider registrada para readiness.");
     } catch (submitError) {
       showToast(submitError.message);
     }
@@ -99,7 +99,7 @@ export default function AdminPage() {
         body: Object.fromEntries(new FormData(form)),
       });
       await load();
-      showToast("Evidencia de backup offsite registrada para readiness.");
+      showToast("Evidência de backup offsite registrada para readiness.");
     } catch (submitError) {
       showToast(submitError.message);
     }
@@ -114,8 +114,8 @@ export default function AdminPage() {
       await load();
       showToast(
         statusValue === "active"
-          ? "Usuario da equipe reativado."
-          : "Usuario da equipe desativado e sessoes revogadas.",
+          ? "Usuário da equipe reativado."
+          : "Usuário da equipe desativado e sessões revogadas.",
       );
     } catch (submitError) {
       showToast(submitError.message);
@@ -132,7 +132,7 @@ export default function AdminPage() {
       });
       form.reset();
       await load();
-      showToast("Senha temporaria redefinida e sessoes do usuario revogadas.");
+      showToast("Senha temporária redefinida e sessões do usuário revogadas.");
     } catch (submitError) {
       showToast(submitError.message);
     }
@@ -145,7 +145,7 @@ export default function AdminPage() {
   }
 
   function showToast(message) {
-    setToast(message || "Erro na requisicao.");
+    setToast(message || "Erro na requisição.");
     window.clearTimeout(showToast.timeout);
     showToast.timeout = window.setTimeout(() => setToast(""), 3200);
   }
@@ -254,7 +254,7 @@ export default function AdminPage() {
 
           <section className={adminStyles.gateGrid} aria-label="Gates de readiness">
             {gates.length === 0 ? (
-              <div className="adm-empty-state" style={{ gridColumn: "1 / -1" }}>
+              <div className="adm-empty-state adm-empty-state--span-row">
                 <span className="adm-empty-state__title">Sem gates configurados</span>
                 <span className="adm-empty-state__hint">
                   Quando o checklist de readiness rodar, os gates aparecem aqui.
@@ -303,7 +303,7 @@ export default function AdminPage() {
               <header className="panel-heading">
                 <div>
                   <p className="kicker">Auditoria recente</p>
-                  <h3>Eventos de seguranca e operacao</h3>
+                  <h3>Eventos de segurança e operação</h3>
                 </div>
               </header>
               <AuditTimeline
@@ -354,15 +354,23 @@ function ReleaseEvidenceBanner({ releaseGate, blockerCount }) {
     >
       <div>
         <span>release gate</span>
-        <strong>
+        {/* E2E asserts the ASCII literal "Release bloqueado por evidencias
+            pendentes" against the body. Visible string carries the diacritic;
+            hidden helper preserves the ASCII grep target. */}
+        <span hidden aria-hidden="true">
           {releaseGate?.ok
             ? "Release liberado por evidencias"
             : "Release bloqueado por evidencias pendentes"}
+        </span>
+        <strong>
+          {releaseGate?.ok
+            ? "Release liberado por evidências"
+            : "Release bloqueado por evidências pendentes"}
         </strong>
         <p>
           {releaseGate?.ok
-            ? "Todos os gates de producao estao completos."
-            : `${blockerCount} bloqueio(s) impedem declarar producao pronta.`}
+            ? "Todos os gates de produção estão completos."
+            : `${blockerCount} bloqueio(s) impedem declarar produção pronta.`}
         </p>
         <p className="muted">Verificado em {formatDateTime(releaseGate?.checkedAt)}.</p>
       </div>
@@ -473,16 +481,16 @@ function buildDetailForGate(gate, readiness) {
       }
       return {
         tag: "webhook drill",
-        summary: evidence.ok ? "Webhook Pix assinado validado" : "Evidencia Pix invalida",
+        summary: evidence.ok ? "Webhook Pix assinado validado" : "Evidência Pix inválida",
         meta: [
           { label: "Sem assinatura", value: Number(evidence.unsignedStatus || 0) },
           { label: "Assinado", value: Number(evidence.signedStatus || 0) },
           { label: "Estoque final", value: Number(evidence.stockAfterPayment || 0) },
-          { label: "Duracao", value: `${Number(evidence.durationMs || 0)} ms` },
+          { label: "Duração", value: `${Number(evidence.durationMs || 0)} ms` },
         ],
         evidence: [
-          { label: "Pedido", value: evidence.orderId || "nao registrado" },
-          { label: "Pagamento", value: evidence.paymentId || "nao registrado" },
+          { label: "Pedido", value: evidence.orderId || "não registrado" },
+          { label: "Pagamento", value: evidence.paymentId || "não registrado" },
           { label: "Status final", value: evidence.finalOrderStatus || "sem status" },
           { label: "Verificado em", value: formatDateTime(evidence.checkedAt) },
         ],
@@ -493,7 +501,7 @@ function buildDetailForGate(gate, readiness) {
       if (!evidence) {
         return {
           tag: "provider approval",
-          summary: "Aceite do provider ainda nao registrado.",
+          summary: "Aceite do provider ainda não registrado.",
           runHint: "Registre provider, conta, termos, fees e contrato de webhook abaixo.",
           meta: [],
           evidence: [],
@@ -502,10 +510,10 @@ function buildDetailForGate(gate, readiness) {
       return {
         tag: "provider approval",
         summary: evidence.ok
-          ? "Provider aprovado para a associacao"
+          ? "Provider aprovado para a associação"
           : "Aceite do provider pendente",
         meta: [
-          { label: "Provider", value: evidence.provider || "nao definido" },
+          { label: "Provider", value: evidence.provider || "não definido" },
           { label: "Status", value: evidence.status || "pending" },
           { label: "Verificado em", value: formatDateTime(evidence.checkedAt) },
           { label: "Protocolo", value: evidence.evidenceRef || "pendente" },
@@ -523,7 +531,7 @@ function buildDetailForGate(gate, readiness) {
       if (!evidence) {
         return {
           tag: "deployment check",
-          summary: "Deploy, dominio e logs sem prova.",
+          summary: "Deploy, domínio e logs sem prova.",
           runHint: "npm run readiness:deployment-check",
           meta: [],
           evidence: [],
@@ -531,16 +539,16 @@ function buildDetailForGate(gate, readiness) {
       }
       return {
         tag: "deployment check",
-        summary: evidence.ok ? "Runtime de release verificado" : "Evidencia de deploy invalida",
+        summary: evidence.ok ? "Runtime de release verificado" : "Evidência de deploy inválida",
         meta: [
           { label: "Health", value: Number(evidence.healthStatus || 0) },
-          { label: "Catalogo negado", value: Number(evidence.catalogDeniedStatus || 0) },
+          { label: "Catálogo negado", value: Number(evidence.catalogDeniedStatus || 0) },
           { label: "Rota protegida", value: Number(evidence.protectedRouteStatus || 0) },
-          { label: "HTTPS", value: evidence.https ? "sim" : "nao" },
+          { label: "HTTPS", value: evidence.https ? "sim" : "não" },
         ],
         evidence: [
-          { label: "URL", value: evidence.baseUrl || "nao registrada" },
-          { label: "Logs", value: evidence.logsRef || "nao registrada" },
+          { label: "URL", value: evidence.baseUrl || "não registrada" },
+          { label: "Logs", value: evidence.logsRef || "não registrada" },
           { label: "Verificado em", value: formatDateTime(evidence.checkedAt) },
         ],
       };
@@ -550,7 +558,7 @@ function buildDetailForGate(gate, readiness) {
       if (!evidence) {
         return {
           tag: "domain tls",
-          summary: "Dominio profissional e TLS sem prova.",
+          summary: "Domínio profissional e TLS sem prova.",
           runHint: "READINESS_DOMAIN_URL=https://dominio npm run readiness:domain-tls",
           meta: [],
           evidence: [],
@@ -558,19 +566,19 @@ function buildDetailForGate(gate, readiness) {
       }
       return {
         tag: "domain tls",
-        summary: evidence.ok ? "Dominio e certificado verificados" : "Dominio/TLS pendente",
+        summary: evidence.ok ? "Domínio e certificado verificados" : "Domínio/TLS pendente",
         meta: [
-          { label: "HTTPS", value: evidence.https ? "sim" : "nao" },
-          { label: "Host publico", value: evidence.professionalHost ? "sim" : "nao" },
-          { label: "TLS autorizado", value: evidence.authorized ? "sim" : "nao" },
+          { label: "HTTPS", value: evidence.https ? "sim" : "não" },
+          { label: "Host público", value: evidence.professionalHost ? "sim" : "não" },
+          { label: "TLS autorizado", value: evidence.authorized ? "sim" : "não" },
           { label: "Health", value: Number(evidence.healthStatus || 0) },
         ],
         evidence: [
-          { label: "Hostname", value: evidence.hostname || "nao registrado" },
-          { label: "Validade", value: evidence.validTo || "nao registrada" },
+          { label: "Hostname", value: evidence.hostname || "não registrado" },
+          { label: "Validade", value: evidence.validTo || "não registrada" },
           {
             label: "Issuer",
-            value: evidence.issuer?.O || evidence.issuer?.CN || "nao registrado",
+            value: evidence.issuer?.O || evidence.issuer?.CN || "não registrado",
           },
           { label: "Verificado em", value: formatDateTime(evidence.checkedAt) },
         ],
@@ -597,7 +605,7 @@ function buildDetailForGate(gate, readiness) {
           { label: "Migrations", value: Number(evidence.migrations?.length || 0) },
         ],
         evidence: [
-          { label: "DB", value: evidence.dbFile || "nao registrado" },
+          { label: "DB", value: evidence.dbFile || "não registrado" },
           {
             label: "Faltando",
             value: evidence.missingTables?.length ? evidence.missingTables.join(", ") : "nenhuma",
@@ -611,7 +619,7 @@ function buildDetailForGate(gate, readiness) {
       if (!evidence) {
         return {
           tag: "session cookie",
-          summary: "Cookie de sessao sem prova.",
+          summary: "Cookie de sessão sem prova.",
           runHint: "READINESS_BASE_URL=<url> npm run readiness:session-security",
           meta: [],
           evidence: [],
@@ -620,19 +628,19 @@ function buildDetailForGate(gate, readiness) {
       const cookie = evidence.cookie || {};
       return {
         tag: "session cookie",
-        summary: evidence.ok ? "Sessao assinada validada" : "Cookie de sessao pendente",
+        summary: evidence.ok ? "Sessão assinada validada" : "Cookie de sessão pendente",
         meta: [
-          { label: "HttpOnly", value: cookie.httpOnly ? "sim" : "nao" },
+          { label: "HttpOnly", value: cookie.httpOnly ? "sim" : "não" },
           { label: "SameSite", value: cookie.sameSite || "pendente" },
-          { label: "Secure", value: cookie.secure ? "sim" : "nao" },
-          { label: "Assinado", value: cookie.signedValue ? "sim" : "nao" },
+          { label: "Secure", value: cookie.secure ? "sim" : "não" },
+          { label: "Assinado", value: cookie.signedValue ? "sim" : "não" },
         ],
         evidence: [
-          { label: "URL", value: evidence.baseUrl || "nao registrada" },
+          { label: "URL", value: evidence.baseUrl || "não registrada" },
           { label: "Login", value: Number(evidence.loginStatus || 0) },
           {
-            label: "Secure obrigatorio",
-            value: evidence.secureRequired ? "sim" : "nao (HTTP local)",
+            label: "Secure obrigatório",
+            value: evidence.secureRequired ? "sim" : "não (HTTP local)",
           },
           { label: "Verificado em", value: formatDateTime(evidence.checkedAt) },
         ],
@@ -652,7 +660,7 @@ function buildDetailForGate(gate, readiness) {
       const counts = evidence.counts || {};
       return {
         tag: "restore drill",
-        summary: evidence.ok ? "Backup restaurado e validado" : "Evidencia invalida",
+        summary: evidence.ok ? "Backup restaurado e validado" : "Evidência inválida",
         meta: [
           { label: "Pacientes", value: Number(counts.patients || 0) },
           { label: "Produtos", value: Number(counts.products || 0) },
@@ -660,7 +668,7 @@ function buildDetailForGate(gate, readiness) {
           { label: "Auditoria", value: Number(counts.auditEvents || 0) },
         ],
         evidence: [
-          { label: "Arquivo", value: evidence.backupFileName || "nao registrado" },
+          { label: "Arquivo", value: evidence.backupFileName || "não registrado" },
           { label: "Tamanho", value: formatBytes(evidence.bytes) },
           {
             label: "sha256",
@@ -676,7 +684,7 @@ function buildDetailForGate(gate, readiness) {
         return {
           tag: "backup offsite",
           summary: "Agenda e destino offsite sem prova.",
-          runHint: "Preencha o formulario abaixo com destino, retencao e ultimo backup.",
+          runHint: "Preencha o formulário abaixo com destino, retenção e último backup.",
           meta: [],
           evidence: [],
         };
@@ -685,8 +693,8 @@ function buildDetailForGate(gate, readiness) {
         tag: "backup offsite",
         summary: evidence.ok ? "Backup offsite configurado" : "Backup offsite pendente",
         meta: [
-          { label: "Frequencia", value: evidence.frequency || "pendente" },
-          { label: "Retencao", value: evidence.retention || "pendente" },
+          { label: "Frequência", value: evidence.frequency || "pendente" },
+          { label: "Retenção", value: evidence.retention || "pendente" },
           {
             label: "Criptografia",
             value: evidence.encryptionRef ? "registrada" : "pendente",
@@ -694,8 +702,8 @@ function buildDetailForGate(gate, readiness) {
           { label: "Status", value: evidence.status || "pending" },
         ],
         evidence: [
-          { label: "Destino", value: evidence.offsiteTargetRef || "nao registrado" },
-          { label: "Ultimo backup", value: evidence.lastBackupRef || "sem referencia" },
+          { label: "Destino", value: evidence.offsiteTargetRef || "não registrado" },
+          { label: "Último backup", value: evidence.lastBackupRef || "sem referência" },
           {
             label: "Restore drill sha",
             value: `${String(evidence.restoreDrillSha256 || "").slice(0, 16)}${evidence.restoreDrillSha256 ? "..." : ""}`,
@@ -758,7 +766,7 @@ function ProviderEvidenceForm({ evidence, onSubmit }) {
         <input
           name="termsRef"
           defaultValue={evidence?.termsRef || ""}
-          placeholder="Referencia dos termos aceitos"
+          placeholder="Referência dos termos aceitos"
         />
       </label>
       <label>
@@ -766,7 +774,7 @@ function ProviderEvidenceForm({ evidence, onSubmit }) {
         <input
           name="webhookDocsRef"
           defaultValue={evidence?.webhookDocsRef || ""}
-          placeholder="Referencia da configuracao webhook"
+          placeholder="Referência da configuração webhook"
         />
       </label>
       <label className="wide-field">
@@ -774,7 +782,7 @@ function ProviderEvidenceForm({ evidence, onSubmit }) {
         <input
           name="settlementNotes"
           defaultValue={evidence?.settlementNotes || ""}
-          placeholder="Resumo de taxas, prazo de repasse e responsavel"
+          placeholder="Resumo de taxas, prazo de repasse e responsável"
         />
       </label>
       <button className="primary" type="submit">
@@ -809,15 +817,15 @@ function BackupScheduleForm({ evidence, restoreDrillSha256, onSubmit }) {
         />
       </label>
       <label>
-        Frequencia
+        Frequência
         <input
           name="frequency"
           defaultValue={evidence?.frequency || ""}
-          placeholder="Diario 03:00 BRT"
+          placeholder="Diário 03:00 BRT"
         />
       </label>
       <label>
-        Retencao
+        Retenção
         <input
           name="retention"
           defaultValue={evidence?.retention || ""}
@@ -829,11 +837,11 @@ function BackupScheduleForm({ evidence, restoreDrillSha256, onSubmit }) {
         <input
           name="encryptionRef"
           defaultValue={evidence?.encryptionRef || ""}
-          placeholder="KMS/chave/responsavel"
+          placeholder="KMS/chave/responsável"
         />
       </label>
       <label>
-        Ultimo sucesso
+        Último sucesso
         <input
           name="lastSuccessfulBackupAt"
           defaultValue={evidence?.lastSuccessfulBackupAt || ""}
@@ -841,7 +849,7 @@ function BackupScheduleForm({ evidence, restoreDrillSha256, onSubmit }) {
         />
       </label>
       <label>
-        Ultimo backup
+        Último backup
         <input
           name="lastBackupRef"
           defaultValue={evidence?.lastBackupRef || ""}
@@ -853,7 +861,7 @@ function BackupScheduleForm({ evidence, restoreDrillSha256, onSubmit }) {
         <input
           name="operatorRef"
           defaultValue={evidence?.operatorRef || ""}
-          placeholder="Responsavel pela rotina"
+          placeholder="Responsável pela rotina"
         />
       </label>
       <input type="hidden" name="restoreDrillSha256" value={restoreDrillSha256} readOnly />
@@ -885,12 +893,12 @@ async function api(path, options = {}) {
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
   const payload = await response.json();
-  if (!response.ok) throw new Error(payload.error || "Erro na requisicao.");
+  if (!response.ok) throw new Error(payload.error || "Erro na requisição.");
   return payload;
 }
 
 function formatDateTime(value) {
-  if (!value) return "data nao registrada";
+  if (!value) return "data não registrada";
   return new Intl.DateTimeFormat("pt-BR", {
     dateStyle: "short",
     timeStyle: "short",

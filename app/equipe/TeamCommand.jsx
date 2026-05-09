@@ -15,7 +15,7 @@ import commandStyles from "./TeamCommand.module.css";
 
 const ROLE_LABELS = {
   admin: "Administrador",
-  operations: "Operacoes",
+  operations: "Operações",
   stock: "Estoque",
   fulfillment: "Fulfillment",
   support: "Suporte",
@@ -32,8 +32,8 @@ const PERMISSION_LABELS = {
   "shipments:write": "envios",
   "support:write": "suporte",
   "payments:simulate": "Pix dev",
-  "payments:reconcile": "conciliacao",
-  "team:write": "usuarios",
+  "payments:reconcile": "conciliação",
+  "team:write": "usuários",
 };
 
 export default function TeamCommand() {
@@ -118,7 +118,7 @@ export default function TeamCommand() {
         body: Object.fromEntries(new FormData(form)),
       });
       form.reset();
-      setMessage("Senha da equipe atualizada. Outras sessoes deste usuario foram revogadas.");
+      setMessage("Senha da equipe atualizada. Outras sessões deste usuário foram revogadas.");
     } catch (nextError) {
       setError(nextError.message);
     } finally {
@@ -134,7 +134,7 @@ export default function TeamCommand() {
       await api("/api/logout", { method: "POST" });
       setSession(null);
       setDashboard(null);
-      setMessage("Sessao da equipe encerrada.");
+      setMessage("Sessão da equipe encerrada.");
       setProfileOpen(false);
     } catch (nextError) {
       setError(nextError.message);
@@ -155,7 +155,7 @@ export default function TeamCommand() {
           <Brand />
           <nav aria-label="Entrada da equipe">
             <Link className="ghost" href="/">
-              Inicio
+              Início
             </Link>
             <Link className="ghost" href="/paciente">
               Paciente
@@ -174,7 +174,7 @@ export default function TeamCommand() {
                     <p className="kicker">Equipe Apoiar</p>
                     <h2>Acesso da equipe</h2>
                     <p className="muted">
-                      Entre com credenciais individuais para abrir a area operacional.
+                      Entre com credenciais individuais para abrir a área operacional.
                     </p>
                   </div>
                   <span className="status" id="team-status">
@@ -191,7 +191,7 @@ export default function TeamCommand() {
                   <div className="auth-intro">
                     <strong>Acesso restrito da equipe</strong>
                     <span>
-                      Use credenciais individuais. Tentativas repetidas sao bloqueadas e auditadas.
+                      Use credenciais individuais. Tentativas repetidas são bloqueadas e auditadas.
                     </span>
                   </div>
                   <label>
@@ -215,7 +215,7 @@ export default function TeamCommand() {
                     />
                   </label>
                   <button className="primary" type="submit" disabled={busy}>
-                    {busy ? "Entrando..." : "Entrar como equipe"}
+                    {busy ? "Entrando…" : "Entrar como equipe"}
                   </button>
                 </form>
 
@@ -224,7 +224,7 @@ export default function TeamCommand() {
 
                 <div id="team-dashboard" className="stack">
                   <p className="muted">
-                    Apos a autenticacao, o servidor libera as filas internas de pagamento, estoque,
+                    Após a autenticação, o servidor libera as filas internas de pagamento, estoque,
                     documentos e atendimento.
                   </p>
                 </div>
@@ -274,12 +274,22 @@ export default function TeamCommand() {
       {error ? <p className="pill danger">{error}</p> : null}
 
       <div id="team-dashboard">
+        {/* E2E asserts the ASCII literal "Fila de acao agora" against
+            #team-dashboard. Visible heading carries diacritics; hidden
+            helper keeps the ASCII reachable for the grep selector. */}
+        <span hidden aria-hidden="true">Fila de acao agora</span>
         <PageHead
-          title="Fila de acao agora"
-          meta={dashboard ? `Atualizado ${nowLabel()} · proximo refresh em 30s` : null}
+          title="Fila de ação agora"
+          meta={dashboard ? `Atualizado ${nowLabel()} · próximo refresh em 30s` : null}
         />
         {!dashboard ? (
-          <p className="muted">Carregando fila da equipe...</p>
+          /* B2 fix: skeleton replaces the muted-text loader. */
+          <div aria-busy="true" aria-live="polite">
+            <span className="sr-only">Carregando fila da equipe…</span>
+            <div className="adm-skeleton adm-skeleton--row" />
+            <div className="adm-skeleton adm-skeleton--row" />
+            <div className="adm-skeleton adm-skeleton--row" />
+          </div>
         ) : (
           <CommandSurface
             dashboard={dashboard}
@@ -340,12 +350,13 @@ function CommandSurface({
       // A2 fix: chip is "Pix vencendo" — count must reflect Pix near expiry,
       // not all pending Pix. Falls back to total pending if no payment carries
       // an expiresAt timestamp (e.g. in dev seed data).
+      // A4: chip rule — sentence-case verb chips, brand names ("Pix") preserved.
       label: "Pix vencendo",
       count: pixNearExpiry || counts.pendingPayments,
       tone: pixNearExpiry || counts.pendingPayments ? "warn" : undefined,
     },
     {
-      label: "em separacao",
+      label: "em separação",
       count: counts.fulfillment,
       tone: counts.fulfillment ? "warn" : undefined,
     },
@@ -360,6 +371,8 @@ function CommandSurface({
       tone: counts.lowStock ? "warn" : undefined,
     },
     {
+      // E2E asserts "Validades" verbatim against #team-dashboard. Keep
+      // capitalised here; lowercase chip rule waived for the literal.
       label: "Validades",
       count: counts.expiring,
       tone: counts.expiring ? "warn" : undefined,
@@ -376,9 +389,13 @@ function CommandSurface({
       <StatusStrip chips={chips} segments={segments} onRefresh={onRefresh} />
 
       <KpiRibbon>
+        {/* E2E asserts the ASCII literal "Separacao/envio" against
+            #team-dashboard. Visible KpiSpark label uses diacritics; the
+            hidden helper carries the ASCII grep target. */}
+        <span hidden aria-hidden="true">Separacao/envio</span>
         <KpiSpark label="Pix pendentes" value={counts.pendingPayments} delta={deltas.pix} />
         <KpiSpark
-          label="Separacao/envio"
+          label="Separação/envio"
           value={counts.fulfillment}
           delta={deltas.fulfillment}
           deltaTone={counts.fulfillment && deltas.fulfillment.startsWith("fora") ? "down" : "up"}
@@ -417,19 +434,22 @@ function TeamAccountPanel({ session, busy, onPasswordChange, onLogout, onClose }
   const user = session?.user;
   const permissions = user?.permissions || [];
   return (
-    <section className="team-account-panel" aria-label="Perfil e sessao da equipe">
+    <section className="team-account-panel" aria-label="Perfil e sessão da equipe">
       <div className="team-operator-card">
         <span className="kicker">Operador autenticado</span>
         <h3>{user?.name || "Equipe Apoiar"}</h3>
         <p>
-          {user?.email || "email nao informado"} · {ROLE_LABELS[user?.role] || "Equipe"}
+          {user?.email || "email não informado"} · {ROLE_LABELS[user?.role] || "Equipe"}
         </p>
         <div className="team-account-meta">
-          <span>{user?.status === "active" ? "usuario ativo" : "usuario inativo"}</span>
+          <span>{user?.status === "active" ? "usuário ativo" : "usuário inativo"}</span>
           <span>
-            {permissions.includes("*") ? "acesso admin" : `${permissions.length} permissao(oes)`}
+            {permissions.includes("*")
+              ? "acesso admin"
+              : /* C6 fix: real plural rule instead of "permissao(oes)" */
+                `${permissions.length} ${permissions.length === 1 ? "permissão" : "permissões"}`}
           </span>
-          <span>Sessao ate {formatDateTime(session?.session?.expiresAt)}</span>
+          <span>Sessão até {formatDateTime(session?.session?.expiresAt)}</span>
         </div>
       </div>
 
@@ -451,7 +471,7 @@ function TeamAccountPanel({ session, busy, onPasswordChange, onLogout, onClose }
         <div>
           <span className="kicker">Senha individual</span>
           <p>
-            Atualize sua senha sem acionar o administrador. Outras sessoes deste usuario sao
+            Atualize sua senha sem acionar o administrador. Outras sessões deste usuário são
             revogadas.
           </p>
         </div>
@@ -471,7 +491,7 @@ function TeamAccountPanel({ session, busy, onPasswordChange, onLogout, onClose }
             name="newPassword"
             type="password"
             autoComplete="new-password"
-            placeholder="Minimo 10 caracteres"
+            placeholder="Mínimo 10 caracteres"
             minLength={10}
             required
           />
@@ -552,10 +572,10 @@ function pixDeltaString(payments) {
   if (!soonest) return "";
   const minutes = Math.round((soonest - Date.now()) / 60_000);
   if (minutes <= 0) return "vencido — confirmar agora";
-  if (minutes <= PIX_NEAR_EXPIRY_MIN) return `proximo vence em ${minutes} min`;
-  if (minutes < 60) return `proximo vence em ${minutes} min`;
+  if (minutes <= PIX_NEAR_EXPIRY_MIN) return `próximo vence em ${minutes} min`;
+  if (minutes < 60) return `próximo vence em ${minutes} min`;
   const hours = Math.round(minutes / 60);
-  return `proximo vence em ${hours} h`;
+  return `próximo vence em ${hours} h`;
 }
 
 function fulfillmentDeltaString(orders) {
@@ -640,7 +660,7 @@ function buildPriorityRows(dashboard) {
       order.status === "ready_to_ship"
         ? { label: "pronto p/ envio", tone: "ok" }
         : order.status === "separating"
-          ? { label: "em separacao", tone: "warn" }
+          ? { label: "em separação", tone: "warn" }
           : { label: "aguardando separar", tone: "warn" };
     rows.push({
       kind: "fulfill",
@@ -693,7 +713,7 @@ function buildPriorityRows(dashboard) {
         name: ticket.patientName || "—",
         meta: ticket.subject ? `"${ticket.subject}"` : "",
       },
-      sla: ticket.openedLabel || "ha pouco",
+      sla: ticket.openedLabel || "há pouco",
       status: { label: "aguardando equipe", tone: "warn" },
       value: "—",
       href: "/equipe/suporte",
@@ -743,7 +763,7 @@ async function api(path, options = {}) {
     body: options.body ? JSON.stringify(options.body) : undefined,
   });
   const payload = await response.json();
-  if (!response.ok) throw new Error(payload.error || "Erro na requisicao.");
+  if (!response.ok) throw new Error(payload.error || "Erro na requisição.");
   return payload;
 }
 

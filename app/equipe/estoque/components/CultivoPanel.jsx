@@ -21,10 +21,7 @@ export default function CultivoPanel({ batches }) {
       </header>
       {active.length === 0 ? (
         <div className={styles.empty}>
-          <div
-            className="adm-empty-state"
-            style={{ border: 0, background: "transparent", padding: 0 }}
-          >
+          <div className="adm-empty-state adm-empty-state--inset">
             <span className="adm-empty-state__title">Sem cultivos ativos</span>
             <span className="adm-empty-state__hint">
               Quando um novo batch entrar em vegetativo, ele aparece aqui.

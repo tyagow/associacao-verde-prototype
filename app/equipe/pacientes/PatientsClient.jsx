@@ -304,8 +304,8 @@ export default function PatientsClient() {
               onFocus={(memberCode) => setFocusedMemberCode(memberCode)}
             />
           ) : (
-            <div className="adm-empty-state" style={{ margin: "var(--sp-3) var(--sp-4)" }}>
-              <span className="adm-empty-state__title">Nenhum paciente nessa visao</span>
+            <div className="adm-empty-state adm-empty-state--inset">
+              <span className="adm-empty-state__title">Nenhum paciente nessa visão</span>
               <span className="adm-empty-state__hint">
                 Ajuste os filtros do registro ou cadastre um novo paciente.
               </span>
@@ -528,7 +528,7 @@ function DocumentsPanel({ documents }) {
       {documents.length ? (
         documents.map((document) => <DocumentRow key={document.id} document={document} />)
       ) : (
-        <div className="adm-empty-state" style={{ margin: "var(--sp-3) var(--sp-4)" }}>
+        <div className="adm-empty-state adm-empty-state--inset">
           <span className="adm-empty-state__title">Sem documentos por enquanto</span>
           <span className="adm-empty-state__hint">
             Anexe a receita ou a carteirinha pelo painel ao lado.

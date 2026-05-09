@@ -243,6 +243,32 @@
   max-width: 36ch;
 }
 
+/* A3 / B1 fix (audit cycle 3): make the empty-state composable so 6
+   inline-style consumers stop overriding padding/border/background. */
+.adm-empty-state--inset {
+  /* Drops the framed sunken card so the state can sit inside an existing
+     panel without double-bordering. */
+  border: 0;
+  background: transparent;
+  min-height: 0;
+  padding: var(--sp-4) var(--sp-5);
+}
+.adm-empty-state--sm {
+  padding: var(--sp-4) var(--sp-5);
+  min-height: 96px;
+  gap: var(--sp-1);
+}
+.adm-empty-state--lg {
+  padding: var(--sp-10) var(--sp-8);
+  min-height: 240px;
+  gap: var(--sp-3);
+}
+/* Use this when an empty-state must reserve a row inside a CSS grid,
+   replacing the inline style={{ gridColumn: '1 / -1' }} pattern. */
+.adm-empty-state--span-row {
+  grid-column: 1 / -1;
+}
+
 .adm-skeleton {
   display: block;
   position: relative;

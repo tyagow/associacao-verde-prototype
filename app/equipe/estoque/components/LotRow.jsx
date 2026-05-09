@@ -30,7 +30,7 @@ export default function LotRow({ lot }) {
           className="btn ghost mini"
           disabled
           aria-label="Editar lote (em breve)"
-          title="Edicao inline de lote ainda nao disponivel — use o painel Entrada e cultivo abaixo"
+          title="Edição inline de lote ainda não disponível — use o painel Entrada e cultivo abaixo"
         >
           editar
         </button>

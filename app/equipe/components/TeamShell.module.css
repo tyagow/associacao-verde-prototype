@@ -167,6 +167,9 @@
 .globalSearch:hover {
   background: var(--paper-warm);
 }
+.searchIcon {
+  color: var(--muted);
+}
 .searchInput {
   flex: 1;
   height: 100%;

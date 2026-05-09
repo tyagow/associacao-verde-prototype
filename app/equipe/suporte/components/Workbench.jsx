@@ -163,8 +163,9 @@ export default function Workbench({ dashboard, onDashboardRefresh, error, status
           { label: "abertos", count: openCount, tone: openCount ? "warn" : undefined },
           { label: "aguardando paciente", count: waitingPatient },
           { label: "resolvidos hoje", count: resolvedToday, tone: "ok" },
-          { label: "Revisão de acesso", count: reviewCount },
-          { label: "Dúvida sobre renovação", count: renewCount },
+          /* A3 fix: chip rule is sentence-case, no Title Case unless brand. */
+          { label: "revisão de acesso", count: reviewCount },
+          { label: "dúvida sobre renovação", count: renewCount },
         ]}
         segments={[
           { label: "Tudo", active: seg === "all", onClick: () => setSeg("all") },

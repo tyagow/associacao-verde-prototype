@@ -42,10 +42,7 @@ export default function KanbanColumn({ status, label, tone = "muted", orders, on
             ))
           ) : (
             <div className={styles.kcolEmpty}>
-              <div
-                className="adm-empty-state"
-                style={{ border: 0, background: "transparent", padding: 0, minHeight: 0 }}
-              >
+              <div className="adm-empty-state adm-empty-state--inset adm-empty-state--sm">
                 <span className="adm-empty-state__hint">Nenhum pedido nesta etapa.</span>
               </div>
             </div>
