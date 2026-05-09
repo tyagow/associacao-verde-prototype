@@ -210,14 +210,11 @@ export default function OrdersClient() {
       currentRoute="/equipe/pedidos"
       onLogout={() => (window.location.href = "/api/logout")}
     >
+      {/* C2 fix: refresh button lives on the StatusStrip (onRefresh) to
+          avoid the duplicated affordance flagged in the cycle-3 audit. */}
       <PageHead
         title="Pedidos e Pix"
         meta={dashboard ? `${(dashboard.orders || []).length} pedidos` : null}
-        actions={
-          <button type="button" className="btn ghost mini" onClick={loadDashboard}>
-            ↻ Atualizar
-          </button>
-        }
       />
 
       <StatusStrip

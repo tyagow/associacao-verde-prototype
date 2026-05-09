@@ -651,7 +651,7 @@ function buildDetailForGate(gate, readiness) {
       if (!evidence) {
         return {
           tag: "restore drill",
-          summary: "Sem evidencia local registrada.",
+          summary: "Sem evidência local registrada.",
           runHint: "npm run readiness:backup-drill",
           meta: [],
           evidence: [],

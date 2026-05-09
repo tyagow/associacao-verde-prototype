@@ -3979,3 +3979,53 @@ textarea {
   color: var(--text-subtle);
 }
 
+/* A5 fix (audit cycle 3): required-field affordance.
+
+   Implicit-label pattern (<label>Text<input required/></label>) — CSS can
+   target labels containing required inputs via `:has()`. We set the label
+   to position:relative and place a red asterisk pseudo-element in the
+   top-right corner so the cue is visible without rewiring every form. */
+.inline-form label:has(> input[required]),
+.inline-form label:has(> select[required]),
+.inline-form label:has(> textarea[required]),
+.adm label:has(> input[required]),
+.adm label:has(> select[required]),
+.adm label:has(> textarea[required]) {
+  position: relative;
+}
+.inline-form label:has(> input[required])::before,
+.inline-form label:has(> select[required])::before,
+.inline-form label:has(> textarea[required])::before,
+.adm label:has(> input[required])::before,
+.adm label:has(> select[required])::before,
+.adm label:has(> textarea[required])::before {
+  content: "obrigatório";
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--status-danger-text, #b54343);
+  font-weight: 600;
+  pointer-events: none;
+}
+/* :invalid styling provides the inline error feedback for required
+   inputs the operator left empty, without per-form JavaScript. */
+.inline-form input[required]:invalid:not(:placeholder-shown):not(:focus),
+.inline-form select[required]:invalid:not(:focus),
+.inline-form textarea[required]:invalid:not(:placeholder-shown):not(:focus),
+.adm input[required]:invalid:not(:placeholder-shown):not(:focus),
+.adm select[required]:invalid:not(:focus),
+.adm textarea[required]:invalid:not(:placeholder-shown):not(:focus) {
+  border-color: var(--status-danger-border, var(--danger-soft));
+}
+/* Inline error helper (paired with aria-invalid on the input) — used by
+   forms that opt into the on-blur validation pattern. */
+.field-error {
+  display: block;
+  margin-top: var(--sp-1);
+  font-size: var(--fs-sm);
+  color: var(--status-danger-text, #b54343);
+}
+

@@ -165,15 +165,9 @@ export default function FulfillmentPage() {
       currentRoute="/equipe/fulfillment"
       onLogout={handleLogout}
     >
-      <PageHead
-        title="Fulfillment e envio"
-        meta={headMeta}
-        actions={
-          <button type="button" className="btn ghost mini" onClick={loadDashboard}>
-            ↻ Atualizar
-          </button>
-        }
-      />
+      {/* C2 fix: refresh button lives on the StatusStrip (onRefresh below)
+          to avoid the duplicated affordance flagged in the cycle-3 audit. */}
+      <PageHead title="Fulfillment e envio" meta={headMeta} />
 
       <StatusStrip
         chips={[

@@ -81,7 +81,7 @@ export default function PriorityQueue({ rows = [], onExport }) {
                   <div className="emptyState">
                     <span>Nenhum pedido aguardando agora</span>
                     <span className="emptyState__hint">
-                      A fila prioritaria fica calma quando todos os pedidos correm dentro do SLA.
+                      A fila prioritária fica calma quando todos os pedidos correm dentro do SLA.
                     </span>
                   </div>
                 </td>
