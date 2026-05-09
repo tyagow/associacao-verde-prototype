@@ -44,7 +44,14 @@
 /* ===== Registry table cells =====
    Tightened so the flexible Paciente column gets enough room for full
    names. With sp-2/sp-3 cell padding, col widths sum to ~590 + flex,
-   leaving ~200px for the name column at standard panel widths. */
+   leaving ~200px for the name column at standard panel widths.
+
+   `table-layout: fixed` enforces the th width: declarations so a long
+   smoke-test memberCode like "APO-SMOKE-1778282528860" can't push
+   the Código column out to 222px and steal Paciente's flex space. */
+.fixedLayout {
+  table-layout: fixed;
+}
 .colCode {
   width: 110px;
 }

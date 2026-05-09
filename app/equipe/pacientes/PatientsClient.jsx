@@ -391,7 +391,7 @@ function UnauthShell({ busy, error, onSubmit }) {
 
 function PatientsRegistryTable({ rows, focusedMemberCode, onFocus }) {
   return (
-    <table className="adm">
+    <table className={`adm ${styles.fixedLayout}`}>
       <thead>
         <tr>
           <th className={styles.colCode}>Código</th>
