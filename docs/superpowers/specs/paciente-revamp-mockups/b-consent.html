@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>Consentimento LGPD</title>
+    <link rel="stylesheet" href="_shared.css" />
+    <link rel="stylesheet" href="_b-shell.css" />
+    <style>
+      body {
+        background: var(--paper-warm);
+      }
+      .gate-wrap {
+        max-width: 680px;
+        margin: 0 auto;
+        padding: 48px 28px 80px;
+      }
+      .progress {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 32px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .progress .step {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .progress .dot {
+        width: 18px;
+        height: 18px;
+        border-radius: 99px;
+        background: var(--paper);
+        border: 2px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--muted);
+      }
+      .progress .step.done .dot {
+        background: var(--green);
+        border-color: var(--green);
+        color: var(--paper);
+      }
+      .progress .step.now {
+        color: var(--ink);
+        font-weight: 500;
+      }
+      .progress .step.now .dot {
+        background: var(--ink);
+        border-color: var(--ink);
+        color: var(--paper);
+      }
+      .progress .line {
+        flex: 1;
+        height: 2px;
+        background: var(--line);
+        max-width: 60px;
+      }
+      .progress .step.done + .line {
+        background: var(--green);
+      }
+
+      .card {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        padding: 36px;
+        box-shadow: 0 16px 48px -24px rgba(13, 31, 23, 0.08);
+      }
+      .kicker {
+        font: 600 11px/1 var(--font-ui);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--green);
+      }
+      .card h1 {
+        margin: 10px 0 8px;
+        font: 500 26px/1.25 var(--font-display);
+        letter-spacing: -0.005em;
+      }
+      .card .lead {
+        color: var(--muted);
+        font-size: 14px;
+        margin: 0 0 28px;
+        max-width: 54ch;
+      }
+
+      .uses {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+        margin-bottom: 28px;
+      }
+      .use {
+        background: var(--paper-warm);
+        border: 1px solid var(--line-soft);
+        border-radius: var(--r-md);
+        padding: 16px;
+      }
+      .use .ic {
+        width: 32px;
+        height: 32px;
+        border-radius: 3px;
+        background: var(--green-tint);
+        color: var(--green-deep);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        margin-bottom: 10px;
+      }
+      .use h4 {
+        margin: 0 0 4px;
+        font: 500 14px/1.3 var(--font-display);
+      }
+      .use p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      details {
+        padding: 14px 16px;
+        background: var(--paper-warm);
+        border: 1px solid var(--line-soft);
+        border-radius: var(--r-sm);
+        margin-bottom: 14px;
+      }
+      summary {
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--ink);
+        list-style: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      summary::-webkit-details-marker {
+        display: none;
+      }
+      summary::after {
+        content: "+";
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1;
+      }
+      details[open] summary::after {
+        content: "−";
+      }
+      details ul {
+        margin: 12px 0 0;
+        padding-left: 20px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      details ul li {
+        margin-bottom: 4px;
+      }
+
+      .agree {
+        display: flex;
+        align-items: start;
+        gap: 12px;
+        padding: 16px;
+        background: var(--green-tint);
+        border: 1px solid var(--green-soft);
+        border-radius: var(--r-sm);
+        margin: 24px 0 16px;
+      }
+      .agree input {
+        margin-top: 2px;
+        width: 18px;
+        height: 18px;
+        accent-color: var(--green-deep);
+      }
+      .agree label {
+        font-size: 13px;
+        color: var(--ink-soft);
+        line-height: 1.5;
+      }
+      .agree label b {
+        color: var(--ink);
+        font-weight: 600;
+      }
+
+      .actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-top: 8px;
+      }
+      .actions .meta {
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .submit {
+        padding: 14px 28px;
+        background: var(--ink);
+        color: var(--paper);
+        border: 0;
+        border-radius: var(--r-sm);
+        font-weight: 600;
+        font-size: 14px;
+        letter-spacing: 0.04em;
+      }
+      .submit:hover {
+        background: var(--green-deep);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="logo">APOIAR<span>·</span>BRASIL</div>
+      <div style="flex: 1"></div>
+      <div class="actions">
+        <span class="pill-id">Helena · APO-1027</span>
+        <button>Sair</button>
+      </div>
+    </header>
+
+    <div class="gate-wrap">
+      <div class="progress">
+        <div class="step done">
+          <div class="dot">✓</div>
+          Login
+        </div>
+        <div class="line"></div>
+        <div class="step now">
+          <div class="dot">2</div>
+          Consentimento
+        </div>
+        <div class="line"></div>
+        <div class="step">
+          <div class="dot">3</div>
+          Pedido
+        </div>
+      </div>
+
+      <section class="card">
+        <span class="kicker">Privacidade e LGPD</span>
+        <h1>Autorize o uso dos seus dados</h1>
+        <p class="lead">
+          Antes de continuar, precisamos da sua autorização explícita para usar os dados do
+          cadastro. Esta é uma exigência legal (LGPD) e fica registrada com data e versão.
+        </p>
+
+        <div class="uses">
+          <div class="use">
+            <div class="ic">📋</div>
+            <h4>Elegibilidade</h4>
+            <p>Validar receita, carteirinha e código de associado.</p>
+          </div>
+          <div class="use">
+            <div class="ic">📦</div>
+            <h4>Pedidos</h4>
+            <p>Reservar estoque, gerar Pix, separar e enviar.</p>
+          </div>
+          <div class="use">
+            <div class="ic">💬</div>
+            <h4>Suporte</h4>
+            <p>Responder mensagens vinculadas ao seu cadastro.</p>
+          </div>
+          <div class="use">
+            <div class="ic">🔒</div>
+            <h4>Auditoria</h4>
+            <p>Trilha de quem acessou e quando, exigida por compliance.</p>
+          </div>
+        </div>
+
+        <details>
+          <summary>O que NÃO fazemos com seus dados</summary>
+          <ul>
+            <li>Não compartilhamos com terceiros sem ordem judicial.</li>
+            <li>Não usamos para marketing ou venda a parceiros.</li>
+            <li>Não armazenamos fora do Brasil.</li>
+            <li>Você pode pedir exclusão a qualquer momento via Suporte.</li>
+          </ul>
+        </details>
+
+        <details>
+          <summary>Quem tem acesso na associação</summary>
+          <ul>
+            <li>Equipe de fulfillment vê pedidos e endereço de entrega.</li>
+            <li>Equipe de cadastro vê receita e carteirinha.</li>
+            <li>Equipe de suporte vê mensagens e histórico de pedidos.</li>
+            <li>Diretoria não vê dados pessoais — apenas métricas agregadas.</li>
+          </ul>
+        </details>
+
+        <form>
+          <div class="agree">
+            <input type="checkbox" id="agree" />
+            <label for="agree"
+              ><b>Autorizo</b> o uso dos meus dados para os fins descritos acima, conforme a versão
+              <code style="font-family: monospace; font-size: 12px">lgpd-2026-05</code> da política
+              de privacidade.</label
+            >
+          </div>
+          <div class="actions">
+            <span class="meta">Sua autorização será registrada com data, hora e versão.</span>
+            <button type="submit" class="submit">Aceitar e continuar →</button>
+          </div>
+        </form>
+      </section>
+    </div>
+  </body>
+</html>

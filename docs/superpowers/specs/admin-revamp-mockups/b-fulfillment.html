@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>B · Fulfillment</title>
+    <link rel="stylesheet" href="_tokens.css" />
+    <link rel="stylesheet" href="_shell.css" />
+    <style>
+      .kanban {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+      }
+      .kcol {
+        background: var(--paper-warm);
+        border: 1px solid var(--line);
+        border-radius: var(--r-sm);
+        display: flex;
+        flex-direction: column;
+        min-height: 600px;
+      }
+      .kcol > header {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        background: var(--paper);
+      }
+      .kcol > header h3 {
+        margin: 0;
+        font-size: 13px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .kcol > header h3 .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+      .kcol > header .pillN {
+        font-variant-numeric: tabular-nums;
+        font-size: 11px;
+        padding: 1px 7px;
+        border-radius: var(--r-pill);
+        background: var(--ink);
+        color: var(--paper);
+      }
+      .klist {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 10px;
+      }
+      .kcard {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-sm);
+        padding: 10px 12px;
+        cursor: grab;
+        box-shadow: 0 1px 0 rgba(13, 31, 23, 0.04);
+      }
+      .kcard:hover {
+        background: var(--paper);
+        border-color: var(--line-strong);
+      }
+      .kcard .top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 4px;
+      }
+      .kcard .id {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .kcard .name {
+        font-weight: 600;
+        font-size: 13px;
+      }
+      .kcard .meta {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+      .kcard .footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 8px;
+        font-size: 11px;
+      }
+      .kcard .total {
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        color: var(--ink);
+      }
+      .kcard.urgent {
+        border-left: 3px solid var(--warn);
+      }
+      .kcard.danger {
+        border-left: 3px solid var(--danger);
+      }
+      .kcard.ok {
+        border-left: 3px solid var(--green);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sb">
+        <div class="brand"><span class="seal">A</span><span>Apoiar Brasil</span></div>
+        <nav>
+          <span class="navhead">Operação</span>
+          <a href="b-comando.html"><span>Comando</span><span class="badge warn">7</span></a>
+          <a href="b-pacientes.html"><span>Pacientes</span><span class="badge danger">2</span></a>
+          <a href="b-estoque.html"><span>Estoque</span><span class="badge warn">3</span></a>
+          <a href="b-pedidos.html"><span>Pedidos</span><span class="badge warn">5</span></a>
+          <a class="active" href="b-fulfillment.html"
+            ><span>Fulfillment</span><span class="badge warn">4</span></a
+          >
+          <a href="b-suporte.html"><span>Suporte</span><span class="badge">2</span></a>
+          <span class="navhead">Compliance</span>
+          <a href="b-admin.html"><span>Admin</span></a>
+          <a href="b-admin.html#auditoria"><span>Auditoria</span></a>
+        </nav>
+        <div class="footer"><span>tiago@…</span><span>Sair</span></div>
+      </aside>
+      <header class="tb">
+        <div class="breadcrumb">
+          <span>Equipe</span><span class="sep">/</span><strong>Fulfillment e envio</strong>
+        </div>
+        <div class="gsearch">
+          <span aria-hidden style="color: var(--muted)">⌕</span
+          ><input placeholder="Buscar pedido, paciente, transportadora…" /><span class="kbd"
+            >⌘K</span
+          >
+        </div>
+        <div class="roleChip">
+          <strong>Tiago Filter</strong><span>·</span><span>Administrador</span>
+        </div>
+      </header>
+      <main>
+        <div class="pagehead">
+          <h1>Fulfillment e envio</h1>
+          <div class="actions">
+            <span class="meta">Pagamento confirmado · webhook Pix simulado</span
+            ><button class="btn ghost mini">↻ Atualizar</button>
+          </div>
+        </div>
+
+        <div class="statusStrip">
+          <span class="countChip warn"><strong>3</strong> aguardando separar</span>
+          <span class="countChip warn"><strong>2</strong> separando</span>
+          <span class="countChip ok"><strong>2</strong> prontos p/ envio</span>
+          <span class="countChip"><strong>14</strong> enviados hoje</span>
+          <div class="seg" style="margin-left: auto">
+            <button class="on">Tudo</button>
+            <button>SLA hoje</button>
+            <button>Atrasados</button>
+          </div>
+          <select class="filterIn" data-filter="fulfillmentStatus" style="min-width: 160px">
+            <option value="all">Todos</option>
+            <option>SLA hoje</option>
+            <option>Atrasados</option>
+          </select>
+        </div>
+
+        <div class="kanban">
+          <section class="kcol">
+            <header>
+              <h3><span class="dot" style="background: var(--warn)"></span>Aguardando separar</h3>
+              <span class="pillN" style="background: var(--warn); color: #1a1408">3</span>
+            </header>
+            <div class="klist">
+              <div class="kcard urgent">
+                <div class="top">
+                  <span class="id">PED-3019</span><span class="pill warn">SLA hoje 18h</span>
+                </div>
+                <div class="name">Marina Costa</div>
+                <div class="meta">APO-1018 · 4 itens · GED Log SP</div>
+                <div class="footer">
+                  <span style="color: var(--muted)">pago 14:24</span
+                  ><span class="total">R$ 980,00</span>
+                </div>
+              </div>
+              <div class="kcard urgent">
+                <div class="top">
+                  <span class="id">PED-3018</span><span class="pill warn">SLA hoje 18h</span>
+                </div>
+                <div class="name">Roberto Alves</div>
+                <div class="meta">APO-1020 · 2 itens · Correios SP</div>
+                <div class="footer">
+                  <span style="color: var(--muted)">pago 13:58</span
+                  ><span class="total">R$ 340,00</span>
+                </div>
+              </div>
+              <div class="kcard">
+                <div class="top">
+                  <span class="id">PED-3014</span><span class="pill">SLA amanhã</span>
+                </div>
+                <div class="name">Carla Dias</div>
+                <div class="meta">APO-1022 · 1 item · Retirada</div>
+                <div class="footer">
+                  <span style="color: var(--muted)">pago ontem 22:41</span
+                  ><span class="total">R$ 180,00</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="kcol">
+            <header>
+              <h3><span class="dot" style="background: var(--warn)"></span>Em separação</h3>
+              <span class="pillN" style="background: var(--warn); color: #1a1408">2</span>
+            </header>
+            <div class="klist">
+              <div class="kcard">
+                <div class="top">
+                  <span class="id">PED-3012</span><span class="pill">João S.</span>
+                </div>
+                <div class="name">Pedro Santos</div>
+                <div class="meta">APO-1033 · 5 itens · GED Log RJ</div>
+                <div class="footer">
+                  <span style="color: var(--muted)">iniciado 13:42</span
+                  ><span class="total">R$ 1.240,00</span>
+                </div>
+              </div>
+              <div class="kcard">
+                <div class="top">
+                  <span class="id">PED-3011</span><span class="pill">Marina C.</span>
+                </div>
+                <div class="name">Lúcia Mendes</div>
+                <div class="meta">APO-1029 · 2 itens · Correios MG</div>
+                <div class="footer">
+                  <span style="color: var(--muted)">iniciado 13:18</span
+                  ><span class="total">R$ 220,00</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="kcol">
+            <header>
+              <h3><span class="dot" style="background: var(--green)"></span>Pronto p/ envio</h3>
+              <span class="pillN" style="background: var(--green); color: var(--paper)">2</span>
+            </header>
+            <div class="klist">
+              <div class="kcard ok">
+                <div class="top">
+                  <span class="id">PED-3008</span><span class="pill ok">etiqueta gerada</span>
+                </div>
+                <div class="name">Rita Sousa</div>
+                <div class="meta">APO-1034 · 1 item · GED Log SP</div>
+                <div class="footer">
+                  <span class="mono" style="color: var(--muted)">BR1234567BR</span
+                  ><span class="total">R$ 190,00</span>
+                </div>
+              </div>
+              <div class="kcard ok">
+                <div class="top">
+                  <span class="id">PED-3007</span><span class="pill ok">etiqueta gerada</span>
+                </div>
+                <div class="name">Felipe Nogueira</div>
+                <div class="meta">APO-1035 · 3 itens · Correios PR</div>
+                <div class="footer">
+                  <span class="mono" style="color: var(--muted)">BR9876543BR</span
+                  ><span class="total">R$ 540,00</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="kcol">
+            <header>
+              <h3><span class="dot" style="background: var(--muted-2)"></span>Enviados hoje</h3>
+              <span class="pillN">14</span>
+            </header>
+            <div class="klist">
+              <div class="kcard">
+                <div class="top">
+                  <span class="id">PED-3001</span><span class="pill ok">enviado</span>
+                </div>
+                <div class="name">Helena Ramos</div>
+                <div class="meta">APO-1027 · GED Log · em trânsito</div>
+                <div class="footer">
+                  <span class="mono" style="color: var(--muted)">BR1111111BR</span
+                  ><span class="total">R$ 600,00</span>
+                </div>
+              </div>
+              <div class="kcard">
+                <div class="top">
+                  <span class="id">PED-2998</span><span class="pill ok">enviado</span>
+                </div>
+                <div class="name">João Oliveira</div>
+                <div class="meta">APO-1031 · Correios · saiu p/ entrega</div>
+                <div class="footer">
+                  <span class="mono" style="color: var(--muted)">BR2222222BR</span
+                  ><span class="total">R$ 220,00</span>
+                </div>
+              </div>
+              <div class="kcard">
+                <div class="top">
+                  <span class="id">PED-2995</span><span class="pill ok">entregue</span>
+                </div>
+                <div class="name">Ana Beatriz</div>
+                <div class="meta">APO-1024 · Retirada · às 11:24</div>
+                <div class="footer">
+                  <span style="color: var(--muted)">retirado por paciente</span
+                  ><span class="total">R$ 180,00</span>
+                </div>
+              </div>
+              <div
+                style="padding: 6px 4px; text-align: center; font-size: 12px; color: var(--muted)"
+              >
+                + 11 outros enviados
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

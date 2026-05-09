@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>A · Linear Mono — Comando</title>
+    <link rel="stylesheet" href="_tokens.css" />
+    <style>
+      /* ================== A · Linear Mono ================== */
+      .shell {
+        display: grid;
+        grid-template-columns: 224px minmax(0, 1fr);
+        grid-template-rows: 48px 1fr;
+        grid-template-areas:
+          "side top"
+          "side main";
+        min-height: 100vh;
+      }
+      /* dark ink sidebar */
+      aside {
+        grid-area: side;
+        background: var(--ink);
+        color: rgba(255, 255, 255, 0.86);
+        padding: 16px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        border-right: 1px solid #0a1812;
+      }
+      aside .brand {
+        color: var(--paper);
+        font-size: 14px;
+        padding: 4px 8px;
+      }
+      aside .brand .seal {
+        background: var(--paper);
+        color: var(--ink);
+      }
+      aside nav {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+      }
+      aside .navhead {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: rgba(255, 255, 255, 0.42);
+        padding: 4px 10px 6px;
+      }
+      aside nav a {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 10px;
+        border-radius: var(--r-sm);
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.78);
+      }
+      aside nav a:hover {
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--paper);
+      }
+      aside nav a.active {
+        background: rgba(29, 140, 82, 0.18);
+        color: var(--paper);
+        box-shadow: inset 2px 0 0 var(--green);
+      }
+      aside nav a .badge {
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.78);
+        font-size: 10px;
+        padding: 1px 6px;
+        border-radius: var(--r-pill);
+        font-variant-numeric: tabular-nums;
+      }
+      aside nav a .badge.warn {
+        background: var(--warn);
+        color: #1a1408;
+      }
+      aside nav a .badge.danger {
+        background: var(--danger);
+        color: var(--paper);
+      }
+      aside .footer {
+        margin-top: auto;
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.46);
+        padding: 8px 10px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      /* topbar — quiet: breadcrumb + role pill only */
+      .topbar {
+        grid-area: top;
+        background: var(--paper);
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 24px;
+      }
+      .breadcrumb {
+        font-size: 13px;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .breadcrumb strong {
+        color: var(--ink);
+        font-weight: 600;
+      }
+      .breadcrumb .sep {
+        color: var(--muted-2);
+      }
+      .roleChip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 10px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-pill);
+        background: var(--soft);
+        font-size: 12px;
+        color: var(--ink-soft);
+      }
+      .roleChip strong {
+        color: var(--ink);
+        font-weight: 600;
+      }
+      .roleChip .kbd {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        padding: 1px 5px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-sm);
+        color: var(--muted);
+        background: var(--paper);
+      }
+
+      /* main content */
+      main {
+        grid-area: main;
+        padding: 24px 28px;
+        min-width: 0;
+      }
+      .pagehead {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 18px;
+      }
+      .pagehead h1 {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: 24px;
+        font-weight: 600;
+        letter-spacing: -0.018em;
+      }
+      .pagehead .meta {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .kpiRow {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0;
+        border: 1px solid var(--line);
+        border-radius: var(--r-md);
+        background: var(--paper);
+        margin-bottom: 24px;
+      }
+      .kpiRow .kpi {
+        padding: 16px 18px;
+        border-right: 1px solid var(--line-soft);
+      }
+      .kpiRow .kpi:last-child {
+        border-right: 0;
+      }
+
+      .panel {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-md);
+        margin-bottom: 20px;
+        overflow: hidden;
+      }
+      .panel header {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .panel header h3 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .panel header .meta {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      /* small inline tabs above the table */
+      .seg {
+        display: inline-flex;
+        gap: 0;
+        border: 1px solid var(--line);
+        border-radius: var(--r-sm);
+        overflow: hidden;
+        background: var(--paper);
+      }
+      .seg button {
+        height: 28px;
+        padding: 0 12px;
+        font: 600 12px var(--font-ui);
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+        color: var(--muted);
+        border-right: 1px solid var(--line);
+      }
+      .seg button:last-child {
+        border-right: 0;
+      }
+      .seg button.on {
+        background: var(--ink);
+        color: var(--paper);
+      }
+      .seg .num {
+        font-weight: 500;
+        opacity: 0.8;
+        margin-left: 4px;
+      }
+
+      .filterIn {
+        height: 28px;
+        padding: 0 10px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-sm);
+        font: inherit;
+        font-size: 12px;
+        min-width: 220px;
+        background: var(--paper);
+      }
+      .filterIn:focus {
+        outline: 2px solid var(--ink);
+        outline-offset: -1px;
+      }
+
+      /* identity cell */
+      .who {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .who .name {
+        font-weight: 600;
+        font-size: 13px;
+      }
+      .who .meta {
+        font-size: 11px;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside>
+        <div class="brand"><span class="seal">A</span><span>Apoiar Brasil</span></div>
+        <nav>
+          <span class="navhead">Operação</span>
+          <a class="active" href="#"><span>Comando</span><span class="badge warn">7</span></a>
+          <a href="#"><span>Pacientes</span><span class="badge danger">2</span></a>
+          <a href="#"><span>Estoque</span><span class="badge warn">3</span></a>
+          <a href="#"><span>Pedidos</span><span class="badge warn">5</span></a>
+          <a href="#"><span>Fulfillment</span><span class="badge warn">4</span></a>
+          <a href="#"><span>Suporte</span><span class="badge">2</span></a>
+
+          <span class="navhead" style="margin-top: 12px">Compliance</span>
+          <a href="#"><span>Admin</span></a>
+          <a href="#"><span>Auditoria</span></a>
+        </nav>
+        <div class="footer">
+          <span>tiago@…</span>
+          <span>Sair</span>
+        </div>
+      </aside>
+
+      <header class="topbar">
+        <div class="breadcrumb">
+          <span>Equipe</span><span class="sep">/</span><strong>Comando</strong>
+        </div>
+        <div class="roleChip">
+          <strong>Tiago Filter</strong><span>·</span><span>Administrador</span>
+          <span class="kbd">⌘K</span>
+        </div>
+      </header>
+
+      <main>
+        <div class="pagehead">
+          <h1>Fila de ação agora</h1>
+          <span class="meta">Atualizado 14:32 · auto a cada 30s</span>
+        </div>
+
+        <!-- KPI ribbon: borderless cells in one ledger card -->
+        <div class="kpiRow">
+          <div class="kpi">
+            <span class="label">Pix pendentes</span><span class="value">5</span
+            ><span class="delta">vencendo em &lt; 30 min</span>
+          </div>
+          <div class="kpi">
+            <span class="label">Em separação</span><span class="value">4</span
+            ><span class="delta">3 dentro do SLA</span>
+          </div>
+          <div class="kpi">
+            <span class="label">Bloqueados</span><span class="value">2</span
+            ><span class="delta down">+1 hoje</span>
+          </div>
+          <div class="kpi">
+            <span class="label">Estoque baixo</span><span class="value">3</span
+            ><span class="delta">limiar &lt; 5</span>
+          </div>
+          <div class="kpi">
+            <span class="label">Suporte aberto</span><span class="value">2</span
+            ><span class="delta">&lt; 24 h SLA</span>
+          </div>
+        </div>
+
+        <!-- Single Priority queue panel — flat table, hairlines only -->
+        <section class="panel">
+          <header>
+            <h3>Fila prioritária</h3>
+            <div style="display: flex; align-items: center; gap: 10px">
+              <div class="seg">
+                <button class="on">Tudo<span class="num">14</span></button>
+                <button>Pix<span class="num">5</span></button>
+                <button>Fulfillment<span class="num">4</span></button>
+                <button>Bloqueios<span class="num">2</span></button>
+                <button>Estoque<span class="num">3</span></button>
+              </div>
+              <input class="filterIn" placeholder="Filtrar por paciente, código…" />
+            </div>
+          </header>
+
+          <table class="adm">
+            <thead>
+              <tr>
+                <th style="width: 90px">Tipo</th>
+                <th style="width: 110px">ID</th>
+                <th>Paciente</th>
+                <th>Item</th>
+                <th style="width: 130px">SLA</th>
+                <th style="width: 120px">Status</th>
+                <th class="right" style="width: 120px">Valor</th>
+                <th style="width: 90px"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="pill warn">Pix</span></td>
+                <td><span class="mono">APO-1027</span></td>
+                <td>
+                  <div class="who">
+                    <span class="name">Helena Ramos</span><span class="meta">helena@…</span>
+                  </div>
+                </td>
+                <td>3 itens · CBD 200, Flor 5g</td>
+                <td><span class="num">vence em 14:32</span></td>
+                <td><span class="pill warn">aguardando pgto</span></td>
+                <td class="right num">R$ 600,00</td>
+                <td>
+                  <a href="#" style="font-size: 12px; color: var(--green-deep); font-weight: 600"
+                    >abrir →</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td><span class="pill warn">Pix</span></td>
+                <td><span class="mono">APO-1031</span></td>
+                <td>
+                  <div class="who">
+                    <span class="name">João Oliveira</span><span class="meta">joao@…</span>
+                  </div>
+                </td>
+                <td>1 item · CBD 100</td>
+                <td><span class="num">vence em 28:11</span></td>
+                <td><span class="pill warn">aguardando pgto</span></td>
+                <td class="right num">R$ 220,00</td>
+                <td>
+                  <a href="#" style="font-size: 12px; color: var(--green-deep); font-weight: 600"
+                    >abrir →</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td><span class="pill ok">Fulfill</span></td>
+                <td><span class="mono">PED-3021</span></td>
+                <td>
+                  <div class="who">
+                    <span class="name">Marina Costa</span><span class="meta">APO-1018</span>
+                  </div>
+                </td>
+                <td>4 itens · etiqueta gerada</td>
+                <td><span class="num">SLA hoje 18h</span></td>
+                <td><span class="pill ok">pronto p/ envio</span></td>
+                <td class="right num">R$ 980,00</td>
+                <td>
+                  <a href="#" style="font-size: 12px; color: var(--green-deep); font-weight: 600"
+                    >abrir →</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td><span class="pill ok">Fulfill</span></td>
+                <td><span class="mono">PED-3022</span></td>
+                <td>
+                  <div class="who">
+                    <span class="name">Roberto Alves</span><span class="meta">APO-1020</span>
+                  </div>
+                </td>
+                <td>2 itens · GED Log</td>
+                <td><span class="num">SLA amanhã 12h</span></td>
+                <td><span class="pill warn">em separação</span></td>
+                <td class="right num">R$ 340,00</td>
+                <td>
+                  <a href="#" style="font-size: 12px; color: var(--green-deep); font-weight: 600"
+                    >abrir →</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td><span class="pill danger">Bloqueio</span></td>
+                <td><span class="mono">APO-1028</span></td>
+                <td>
+                  <div class="who">
+                    <span class="name">Ana Beatriz</span><span class="meta">receita venceu</span>
+                  </div>
+                </td>
+                <td>Receita expirou em 02/04/2026</td>
+                <td><span class="num">há 6 dias</span></td>
+                <td><span class="pill danger">acesso bloqueado</span></td>
+                <td class="right num">—</td>
+                <td>
+                  <a href="#" style="font-size: 12px; color: var(--green-deep); font-weight: 600"
+                    >revisar →</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td><span class="pill warn">Estoque</span></td>
+                <td><span class="mono">PRD-014</span></td>
+                <td>
+                  <div class="who">
+                    <span class="name">CBD Óleo 200mg</span
+                    ><span class="meta">limiar &lt; 5 unidades</span>
+                  </div>
+                </td>
+                <td>3 unidades · 1 lote ativo</td>
+                <td><span class="num">próx. lote 18/05</span></td>
+                <td><span class="pill warn">estoque baixo</span></td>
+                <td class="right num">3 un.</td>
+                <td>
+                  <a href="#" style="font-size: 12px; color: var(--green-deep); font-weight: 600"
+                    >repor →</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td><span class="pill">Suporte</span></td>
+                <td><span class="mono">SUP-204</span></td>
+                <td>
+                  <div class="who">
+                    <span class="name">Helena Ramos</span><span class="meta">APO-1027</span>
+                  </div>
+                </td>
+                <td>"Pix não confirmou"</td>
+                <td><span class="num">há 2h</span></td>
+                <td><span class="pill warn">aguardando equipe</span></td>
+                <td class="right num">—</td>
+                <td>
+                  <a href="#" style="font-size: 12px; color: var(--green-deep); font-weight: 600"
+                    >responder →</a
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

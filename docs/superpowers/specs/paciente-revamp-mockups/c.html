@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>C · Operação densa</title>
+    <link rel="stylesheet" href="_shared.css" />
+    <style>
+      body {
+        background: var(--paper);
+        font-size: 13px;
+      }
+      .app {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        min-height: 100vh;
+      }
+      nav.side {
+        background: var(--ink);
+        color: var(--paper);
+        padding: 20px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+      }
+      nav.side .logo {
+        font: 700 16px/1 var(--font-display);
+        letter-spacing: 0.04em;
+        margin-bottom: 24px;
+        padding: 6px 8px;
+      }
+      nav.side .logo span {
+        color: var(--green);
+      }
+      nav.side a {
+        color: #c7d3cc;
+        text-decoration: none;
+        padding: 9px 12px;
+        border-radius: 3px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+        font-weight: 500;
+      }
+      nav.side a:hover {
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--paper);
+      }
+      nav.side a.on {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--paper);
+      }
+      nav.side a .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 99px;
+        background: var(--green-soft);
+        margin-left: auto;
+      }
+      nav.side .who {
+        margin-top: auto;
+        padding: 14px 12px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        font-size: 12px;
+        color: #c7d3cc;
+      }
+      nav.side .who b {
+        color: var(--paper);
+        font-weight: 600;
+        display: block;
+        font-size: 13px;
+      }
+      nav.side .who small {
+        color: #687970;
+      }
+
+      main {
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .statusbar {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        padding: 12px 24px;
+        background: var(--paper);
+        border-bottom: 1px solid var(--line);
+        font-size: 12px;
+      }
+      .statusbar .item {
+        display: flex;
+        gap: 6px;
+        align-items: baseline;
+      }
+      .statusbar .item label {
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-size: 10px;
+        font-weight: 600;
+      }
+      .statusbar .item b {
+        color: var(--ink);
+        font-weight: 600;
+      }
+      .statusbar .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--green-tint);
+        color: var(--green-deep);
+        padding: 3px 10px;
+        border-radius: 99px;
+        font-weight: 600;
+      }
+      .statusbar .pill::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 99px;
+        background: var(--green);
+      }
+      .statusbar .right {
+        margin-left: auto;
+        display: flex;
+        gap: 6px;
+      }
+      .statusbar .right button {
+        background: transparent;
+        border: 1px solid var(--line);
+        padding: 5px 12px;
+        border-radius: 3px;
+        color: var(--ink);
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .body {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        flex: 1;
+      }
+      .center {
+        padding: 24px;
+        border-right: 1px solid var(--line);
+      }
+      .center h1 {
+        margin: 0 0 4px;
+        font: 600 18px/1.2 var(--font-display);
+      }
+      .center p.lead {
+        margin: 0 0 18px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .toolbar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 14px;
+        align-items: center;
+      }
+      .toolbar input {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        font: inherit;
+        background: var(--paper-warm);
+      }
+      .toolbar .seg {
+        display: inline-flex;
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      .toolbar .seg button {
+        background: var(--paper);
+        border: 0;
+        padding: 7px 14px;
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 500;
+        border-right: 1px solid var(--line);
+      }
+      .toolbar .seg button:last-child {
+        border-right: 0;
+      }
+      .toolbar .seg button.on {
+        background: var(--ink);
+        color: var(--paper);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      thead th {
+        text-align: left;
+        font-weight: 600;
+        color: var(--muted);
+        text-transform: uppercase;
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--line);
+      }
+      thead th.num {
+        text-align: right;
+      }
+      tbody td {
+        padding: 14px 12px;
+        border-bottom: 1px solid var(--line-soft);
+        vertical-align: middle;
+      }
+      tbody td.num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      tbody tr:hover {
+        background: var(--paper-warm);
+      }
+      .ptag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .ptag .sq {
+        width: 28px;
+        height: 28px;
+        border-radius: 3px;
+        background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font: 700 11px/1 var(--font-display);
+        color: var(--gold-on);
+      }
+      .pname {
+        font-weight: 500;
+        color: var(--ink);
+      }
+      .pmeta {
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .qty {
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        overflow: hidden;
+        height: 30px;
+      }
+      .qty button {
+        background: var(--paper);
+        border: 0;
+        width: 28px;
+        color: var(--muted);
+      }
+      .qty button:hover {
+        background: var(--soft);
+        color: var(--ink);
+      }
+      .qty input {
+        width: 40px;
+        text-align: center;
+        border: 0;
+        border-left: 1px solid var(--line);
+        border-right: 1px solid var(--line);
+        height: 100%;
+        font: inherit;
+        background: var(--paper);
+      }
+      .add {
+        padding: 6px 14px;
+        background: var(--ink);
+        color: var(--paper);
+        border: 0;
+        border-radius: 3px;
+        font-weight: 600;
+        font-size: 12px;
+      }
+
+      aside.summary {
+        background: var(--paper-warm);
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        position: sticky;
+        top: 0;
+      }
+      aside.summary h3 {
+        margin: 0;
+        font: 600 13px/1 var(--font-ui);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+      aside.summary .empty {
+        padding: 36px 0;
+        text-align: center;
+        border: 1px dashed var(--line-strong);
+        border-radius: 3px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      aside.summary .empty b {
+        display: block;
+        color: var(--ink);
+        margin-bottom: 4px;
+        font-weight: 600;
+      }
+      aside.summary .row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      aside.summary .row.total {
+        font-size: 18px;
+        color: var(--ink);
+        font-weight: 600;
+        border-top: 1px solid var(--line);
+        padding-top: 14px;
+      }
+      aside.summary label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        font-weight: 600;
+      }
+      aside.summary select {
+        padding: 8px 10px;
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        background: var(--paper);
+        font: inherit;
+      }
+      aside.summary .cta {
+        padding: 11px;
+        background: var(--soft);
+        color: var(--muted);
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        font-weight: 600;
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        cursor: not-allowed;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <nav class="side">
+        <div class="logo">APOIAR<span>·</span>BRASIL</div>
+        <a class="on" href="#">📦 Pedido <span class="dot"></span></a>
+        <a href="#">📜 Histórico</a>
+        <a href="#">💬 Suporte</a>
+        <a href="#">⚙ Perfil</a>
+        <div class="who">
+          <b>Helena Rocha</b>
+          <small>APO-1027 · sair →</small>
+        </div>
+      </nav>
+
+      <main>
+        <div class="statusbar">
+          <span class="pill">Liberada</span>
+          <div class="item"><label>Receita</label><b>até 18/09/2026</b></div>
+          <div class="item"><label>LGPD</label><b>aceita 08/05/2026</b></div>
+          <div class="item"><label>Pedido atual</label><b>nenhum aberto</b></div>
+          <div class="item"><label>Estoque</label><b>12 SKUs</b></div>
+          <div class="right"><button>Atualizar receita</button></div>
+        </div>
+
+        <div class="body">
+          <section class="center">
+            <h1>Catálogo autorizado</h1>
+            <p class="lead">
+              Adicione itens à direita. A reserva acontece no servidor quando o Pix é gerado.
+            </p>
+
+            <div class="toolbar">
+              <input placeholder="Buscar por óleo, flor, goma, dosagem…" />
+              <div class="seg">
+                <button class="on">Todos</button><button>Óleos</button><button>Flores</button
+                ><button>Gomas</button>
+              </div>
+            </div>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Produto</th>
+                  <th>Apresentação</th>
+                  <th class="num">Estoque</th>
+                  <th class="num">Preço</th>
+                  <th>Quantidade</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="ptag">
+                      <div class="sq">CB</div>
+                      <div>
+                        <div class="pname">Óleo CBD 10%</div>
+                        <div class="pmeta">CBD-10-30ML</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Frasco 30 ml · Full Spectrum</td>
+                  <td class="num">23</td>
+                  <td class="num">R$ 180,00</td>
+                  <td>
+                    <div class="qty"><button>−</button><input value="1" /><button>+</button></div>
+                  </td>
+                  <td><button class="add">Adicionar</button></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="ptag">
+                      <div
+                        class="sq"
+                        style="
+                          background: linear-gradient(135deg, #dff0e6, #1d8c52);
+                          color: #fbfcfa;
+                        "
+                      >
+                        FS
+                      </div>
+                      <div>
+                        <div class="pname">Óleo Full Spectrum 20%</div>
+                        <div class="pmeta">FS-20-30ML</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Frasco 30 ml · Alta concentração</td>
+                  <td class="num">11</td>
+                  <td class="num">R$ 320,00</td>
+                  <td>
+                    <div class="qty"><button>−</button><input value="1" /><button>+</button></div>
+                  </td>
+                  <td><button class="add">Adicionar</button></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="ptag">
+                      <div class="sq" style="background: linear-gradient(135deg, #fff5d4, #d6b56a)">
+                        F2
+                      </div>
+                      <div>
+                        <div class="pname">Flor 24k</div>
+                        <div class="pmeta">FL-24K-5G</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Pote 5 g · Indica</td>
+                  <td class="num">6</td>
+                  <td class="num">R$ 240,00</td>
+                  <td>
+                    <div class="qty"><button>−</button><input value="1" /><button>+</button></div>
+                  </td>
+                  <td><button class="add">Adicionar</button></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="ptag">
+                      <div class="sq" style="background: linear-gradient(135deg, #fbe5e1, #d6b56a)">
+                        GM
+                      </div>
+                      <div>
+                        <div class="pname">Goma CBD 25mg</div>
+                        <div class="pmeta">GM-25-30U</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Pote 30 un · Frutas vermelhas</td>
+                  <td class="num">18</td>
+                  <td class="num">R$ 140,00</td>
+                  <td>
+                    <div class="qty"><button>−</button><input value="1" /><button>+</button></div>
+                  </td>
+                  <td><button class="add">Adicionar</button></td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="ptag">
+                      <div
+                        class="sq"
+                        style="
+                          background: linear-gradient(135deg, #dff0e6, #4a7d56);
+                          color: #fbfcfa;
+                        "
+                      >
+                        CB
+                      </div>
+                      <div>
+                        <div class="pname">Óleo CBD 5%</div>
+                        <div class="pmeta">CBD-05-30ML</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Frasco 30 ml · Iniciantes</td>
+                  <td class="num">30</td>
+                  <td class="num">R$ 110,00</td>
+                  <td>
+                    <div class="qty"><button>−</button><input value="1" /><button>+</button></div>
+                  </td>
+                  <td><button class="add">Adicionar</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <aside class="summary">
+            <h3>Resumo do pedido</h3>
+            <div class="empty">
+              <b>Vazio</b>
+              Adicione itens da tabela.
+            </div>
+            <div>
+              <label>Entrega</label>
+              <select>
+                <option>GED Log via Melhor Envio</option>
+                <option>Correios via Melhor Envio</option>
+                <option>Retirada combinada</option>
+              </select>
+            </div>
+            <div class="row"><span>Subtotal</span><span>R$ 0,00</span></div>
+            <div class="row"><span>Frete</span><span>—</span></div>
+            <div class="row total"><span>Total</span><span>R$ 0,00</span></div>
+            <button class="cta">SELECIONE PRODUTOS</button>
+          </aside>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

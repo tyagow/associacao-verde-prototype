@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>Suporte</title>
+    <link rel="stylesheet" href="_shared.css" />
+    <link rel="stylesheet" href="_b-shell.css" />
+    <style>
+      main {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 32px 28px 80px;
+      }
+      .pagehead {
+        margin-bottom: 24px;
+      }
+      .pagehead h1 {
+        margin: 0 0 4px;
+        font: 500 22px/1.2 var(--font-display);
+      }
+      .pagehead p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        max-width: 62ch;
+      }
+
+      .body {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 20px;
+      }
+
+      .form-card {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        padding: 24px;
+      }
+      .form-card h2 {
+        margin: 0 0 4px;
+        font: 500 17px/1.2 var(--font-display);
+      }
+      .form-card .sub {
+        color: var(--muted);
+        font-size: 13px;
+        margin: 0 0 18px;
+      }
+
+      .field {
+        display: block;
+        margin-bottom: 16px;
+      }
+      .field label {
+        display: block;
+        color: var(--ink);
+        font-weight: 500;
+        font-size: 13px;
+        margin-bottom: 6px;
+      }
+      .field input,
+      .field select,
+      .field textarea {
+        width: 100%;
+        padding: 11px 14px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-sm);
+        font: inherit;
+        background: var(--paper-warm);
+        color: inherit;
+      }
+      .field input:focus,
+      .field select:focus,
+      .field textarea:focus {
+        border-color: var(--ink);
+        background: var(--paper);
+        outline: none;
+      }
+      .field textarea {
+        min-height: 120px;
+        resize: vertical;
+        font-family: inherit;
+      }
+      .field .hint {
+        color: var(--muted);
+        font-size: 11px;
+        margin-top: 6px;
+      }
+
+      .quick {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+      }
+      .quick button {
+        background: var(--soft);
+        border: 1px solid var(--line);
+        padding: 8px 14px;
+        border-radius: 3px;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--ink);
+      }
+      .quick button:hover {
+        background: var(--ink);
+        color: var(--paper);
+        border-color: var(--ink);
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 200px;
+        gap: 14px;
+      }
+
+      .submit-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 8px;
+      }
+      .submit-row p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .submit-row button {
+        padding: 13px 26px;
+        background: var(--ink);
+        color: var(--paper);
+        border: 0;
+        border-radius: var(--r-sm);
+        font-weight: 600;
+        font-size: 13px;
+        letter-spacing: 0.04em;
+      }
+
+      .side {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .side-card {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        padding: 18px;
+      }
+      .side-card h3 {
+        margin: 0 0 10px;
+        font: 600 11px/1 var(--font-ui);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+      .side-card .order-mini {
+        padding: 10px 12px;
+        background: var(--soft);
+        border-radius: var(--r-sm);
+        font-size: 13px;
+      }
+      .side-card .order-mini b {
+        display: block;
+        margin-bottom: 2px;
+      }
+      .side-card .order-mini .small {
+        color: var(--muted);
+        font-size: 11px;
+        font-family: monospace;
+      }
+      .faq {
+        display: flex;
+        flex-direction: column;
+      }
+      .faq a {
+        padding: 10px 0;
+        border-bottom: 1px solid var(--line-soft);
+        text-decoration: none;
+        color: var(--ink);
+        font-size: 13px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .faq a:last-child {
+        border-bottom: 0;
+      }
+      .faq a:hover {
+        color: var(--green-deep);
+      }
+      .faq a span {
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="logo">APOIAR<span>·</span>BRASIL</div>
+      <div class="search">🔎<input placeholder="Buscar produtos do catálogo autorizado…" /></div>
+      <div class="actions">
+        <span class="pill-id">Helena · APO-1027</span>
+        <button>Sair</button>
+      </div>
+    </header>
+    <nav class="tabs">
+      <a href="b.html">Pedido</a>
+      <a href="b-historico.html">Histórico</a>
+      <a class="on" href="b-suporte.html">Suporte</a>
+      <a href="#" style="margin-left: auto">Meu perfil</a>
+    </nav>
+
+    <main>
+      <div class="pagehead">
+        <h1>Falar com a equipe</h1>
+        <p>
+          Use este canal para revisão de cadastro, problemas com Pix, renovação de receita ou
+          dúvidas sobre entrega. Resposta em até 1 dia útil.
+        </p>
+      </div>
+
+      <div class="body">
+        <section class="form-card">
+          <h2>Solicitar atendimento</h2>
+          <p class="sub">Escolha um motivo comum ou descreva o problema:</p>
+
+          <div class="quick">
+            <button>Renovar receita</button>
+            <button>Pix não confirmou</button>
+            <button>Pedido atrasado</button>
+            <button>Trocar endereço</button>
+            <button>Cancelar pedido</button>
+            <button>Outro</button>
+          </div>
+
+          <form>
+            <div class="row">
+              <div class="field">
+                <label>Assunto</label>
+                <input placeholder="Renovar receita, dúvida sobre Pix…" />
+              </div>
+              <div class="field">
+                <label>Prioridade</label>
+                <select>
+                  <option>Normal</option>
+                  <option>Alta</option>
+                  <option>Urgente</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label>Mensagem</label>
+              <textarea placeholder="Descreva o que precisa ser revisado pela equipe."></textarea>
+              <div class="hint">
+                Inclua datas, números de pedido (AV-…) e prints quando possível.
+              </div>
+            </div>
+            <div class="submit-row">
+              <p>Resposta por aqui e por e-mail. Conversa fica vinculada ao seu cadastro.</p>
+              <button type="submit">Enviar ao suporte</button>
+            </div>
+          </form>
+        </section>
+
+        <aside class="side">
+          <div class="side-card">
+            <h3>Pedido recente</h3>
+            <div class="order-mini">
+              <b>AV-2026-05-08-A · em separação</b>
+              <span class="small">2 produtos · R$ 600,00</span>
+            </div>
+            <p style="margin: 10px 0 0; font-size: 11px; color: var(--muted)">
+              A mensagem será vinculada automaticamente a este pedido.
+              <a href="#" style="color: var(--green-deep)">Trocar</a>
+            </p>
+          </div>
+          <div class="side-card">
+            <h3>Perguntas frequentes</h3>
+            <div class="faq">
+              <a href="#">Pix expirou — o que fazer? <span>↗</span></a>
+              <a href="#">Como renovar minha receita <span>↗</span></a>
+              <a href="#">Posso retirar pessoalmente? <span>↗</span></a>
+              <a href="#">Mudar forma de entrega <span>↗</span></a>
+              <a href="#">Cancelar um pedido pago <span>↗</span></a>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </body>
+</html>

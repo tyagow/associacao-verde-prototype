@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>B · Pedidos</title>
+    <link rel="stylesheet" href="_tokens.css" />
+    <link rel="stylesheet" href="_shell.css" />
+    <style>
+      .ordersGrid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 380px;
+        gap: 16px;
+        align-items: start;
+      }
+      .drawer .row {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--line-soft);
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        font-size: 13px;
+      }
+      .drawer .row .lbl {
+        color: var(--muted);
+      }
+      .drawer .row .val {
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+      }
+      .drawer .lineitems {
+        padding: 10px 14px;
+      }
+      .drawer .li {
+        display: grid;
+        grid-template-columns: 32px 1fr auto;
+        gap: 8px;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--line-soft);
+        font-size: 13px;
+      }
+      .drawer .li:last-child {
+        border-bottom: 0;
+      }
+      .thumb {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--r-sm);
+        background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+        display: grid;
+        place-items: center;
+        color: var(--gold-on);
+        font: 700 11px var(--font-display);
+      }
+      .actions-row {
+        padding: 14px;
+        display: flex;
+        gap: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sb">
+        <div class="brand"><span class="seal">A</span><span>Apoiar Brasil</span></div>
+        <nav>
+          <span class="navhead">Operação</span>
+          <a href="b-comando.html"><span>Comando</span><span class="badge warn">7</span></a>
+          <a href="b-pacientes.html"><span>Pacientes</span><span class="badge danger">2</span></a>
+          <a href="b-estoque.html"><span>Estoque</span><span class="badge warn">3</span></a>
+          <a class="active" href="b-pedidos.html"
+            ><span>Pedidos</span><span class="badge warn">5</span></a
+          >
+          <a href="b-fulfillment.html"><span>Fulfillment</span><span class="badge warn">4</span></a>
+          <a href="b-suporte.html"><span>Suporte</span><span class="badge">2</span></a>
+          <span class="navhead">Compliance</span>
+          <a href="b-admin.html"><span>Admin</span></a>
+          <a href="b-admin.html#auditoria"><span>Auditoria</span></a>
+        </nav>
+        <div class="footer"><span>tiago@…</span><span>Sair</span></div>
+      </aside>
+      <header class="tb">
+        <div class="breadcrumb">
+          <span>Equipe</span><span class="sep">/</span><strong>Pedidos e Pix</strong>
+        </div>
+        <div class="gsearch">
+          <span aria-hidden style="color: var(--muted)">⌕</span
+          ><input placeholder="Buscar pedido, Pix, paciente…" /><span class="kbd">⌘K</span>
+        </div>
+        <div class="roleChip">
+          <strong>Tiago Filter</strong><span>·</span><span>Administrador</span>
+        </div>
+      </header>
+      <main>
+        <div class="pagehead">
+          <h1>Pedidos e Pix</h1>
+          <div class="actions">
+            <span class="meta">Atualizado 14:32</span
+            ><button class="btn ghost mini">↻ Atualizar</button
+            ><button class="btn primary">+ Novo pedido</button>
+          </div>
+        </div>
+
+        <div class="statusStrip">
+          <span class="countChip warn"><strong>5</strong> Pix vencendo</span>
+          <span class="countChip"><strong>3</strong> aguardando confirmação</span>
+          <span class="countChip ok"><strong>14</strong> pagos hoje</span>
+          <span class="countChip danger"><strong>1</strong> Pix expirado</span>
+          <div class="seg" style="margin-left: auto">
+            <button class="on">Tudo<span class="num">23</span></button>
+            <button>Pix pendente<span class="num">5</span></button>
+            <button>Pago<span class="num">14</span></button>
+            <button>Expirado<span class="num">1</span></button>
+            <button>Cancelado<span class="num">3</span></button>
+          </div>
+          <select class="filterIn" data-filter="ordersStatus" style="min-width: 160px">
+            <option value="all">Todos os status</option>
+            <option value="awaiting_payment">Aguardando pagamento</option>
+            <option value="paid_pending_fulfillment">Pago — fulfillment</option>
+          </select>
+          <input class="filterIn" placeholder="Filtrar pedidos…" />
+        </div>
+
+        <div class="ordersGrid">
+          <section class="panel" id="orders-surface">
+            <header class="ph">
+              <h3>Fila de pedidos</h3>
+              <span class="meta">23 pedidos · 14 pagos · 5 Pix abertos</span>
+            </header>
+            <table class="adm">
+              <thead>
+                <tr>
+                  <th style="width: 104px">Pedido</th>
+                  <th>Paciente</th>
+                  <th style="width: 130px">Itens</th>
+                  <th style="width: 140px">SLA / Pix</th>
+                  <th style="width: 130px">Status</th>
+                  <th class="right" style="width: 110px">Total</th>
+                  <th style="width: 90px"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="mono">PED-3025</span></td>
+                  <td>
+                    <div class="who">
+                      <span class="name">Helena Ramos</span><span class="meta">APO-1027</span>
+                    </div>
+                  </td>
+                  <td>3 itens</td>
+                  <td><span class="num">vence em 14:32</span></td>
+                  <td><span class="pill warn">aguardando</span></td>
+                  <td class="right num">R$ 600,00</td>
+                  <td><button class="btn ghost mini" data-pay>Pagar</button></td>
+                </tr>
+                <tr>
+                  <td><span class="mono">PED-3026</span></td>
+                  <td>
+                    <div class="who">
+                      <span class="name">João Oliveira</span><span class="meta">APO-1031</span>
+                    </div>
+                  </td>
+                  <td>1 item</td>
+                  <td><span class="num">vence em 28:11</span></td>
+                  <td><span class="pill warn">aguardando</span></td>
+                  <td class="right num">R$ 220,00</td>
+                  <td><button class="btn ghost mini" data-pay>Pagar</button></td>
+                </tr>
+                <tr>
+                  <td><span class="mono">PED-3027</span></td>
+                  <td>
+                    <div class="who">
+                      <span class="name">Lúcia Mendes</span><span class="meta">APO-1029</span>
+                    </div>
+                  </td>
+                  <td>2 itens</td>
+                  <td><span class="num">3h 12m</span></td>
+                  <td><span class="pill warn">aguardando</span></td>
+                  <td class="right num">R$ 180,00</td>
+                  <td><button class="btn ghost mini" data-pay>Pagar</button></td>
+                </tr>
+                <tr>
+                  <td><span class="mono">PED-3019</span></td>
+                  <td>
+                    <div class="who">
+                      <span class="name">Marina Costa</span><span class="meta">APO-1018</span>
+                    </div>
+                  </td>
+                  <td>4 itens</td>
+                  <td><span class="num">pago 14:24</span></td>
+                  <td><span class="pill ok">pago — fulfillment</span></td>
+                  <td class="right num">R$ 980,00</td>
+                  <td>
+                    <a href="#" style="font-size: 12px; color: var(--green-deep); font-weight: 600"
+                      >abrir →</a
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="mono">PED-3018</span></td>
+                  <td>
+                    <div class="who">
+                      <span class="name">Roberto Alves</span><span class="meta">APO-1020</span>
+                    </div>
+                  </td>
+                  <td>2 itens</td>
+                  <td><span class="num">pago 13:58</span></td>
+                  <td><span class="pill ok">pago — fulfillment</span></td>
+                  <td class="right num">R$ 340,00</td>
+                  <td>
+                    <a href="#" style="font-size: 12px; color: var(--green-deep); font-weight: 600"
+                      >abrir →</a
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="mono">PED-3015</span></td>
+                  <td>
+                    <div class="who">
+                      <span class="name">Carla Dias</span><span class="meta">APO-1022</span>
+                    </div>
+                  </td>
+                  <td>1 item</td>
+                  <td><span class="num">expirou 11/05</span></td>
+                  <td><span class="pill danger">expirado</span></td>
+                  <td class="right num">R$ 120,00</td>
+                  <td>
+                    <a href="#" style="font-size: 12px; color: var(--green-deep); font-weight: 600"
+                      >reabrir →</a
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="mono">PED-3010</span></td>
+                  <td>
+                    <div class="who">
+                      <span class="name">Pedro Santos</span><span class="meta">APO-1033</span>
+                    </div>
+                  </td>
+                  <td>5 itens</td>
+                  <td><span class="num">enviado ontem</span></td>
+                  <td><span class="pill ok">enviado</span></td>
+                  <td class="right num">R$ 1.240,00</td>
+                  <td>
+                    <a href="#" style="font-size: 12px; color: var(--green-deep); font-weight: 600"
+                      >abrir →</a
+                    >
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <aside class="panel drawer">
+            <header class="ph">
+              <h3>PED-3025 · Helena Ramos</h3>
+              <button class="iconbtn" aria-label="fechar">×</button>
+            </header>
+            <div class="row">
+              <span class="lbl">Status</span
+              ><span class="val"><span class="pill warn">aguardando pgto</span></span>
+            </div>
+            <div class="row">
+              <span class="lbl">Pix</span><span class="val mono">av-pix-001-helena</span>
+            </div>
+            <div class="row">
+              <span class="lbl">Vencimento</span><span class="val">hoje 14:54</span>
+            </div>
+            <div class="row">
+              <span class="lbl">Entrega</span><span class="val">GED Log · SP</span>
+            </div>
+            <div class="lineitems">
+              <div class="li">
+                <div class="thumb">CB</div>
+                <div>
+                  <div style="font-weight: 600">CBD Óleo 200mg</div>
+                  <div style="color: var(--muted); font-size: 11px">2× R$ 180,00</div>
+                </div>
+                <div class="num" style="font-weight: 600">R$ 360,00</div>
+              </div>
+              <div class="li">
+                <div class="thumb">FL</div>
+                <div>
+                  <div style="font-weight: 600">Flor Sativa 5g</div>
+                  <div style="color: var(--muted); font-size: 11px">1× R$ 240,00</div>
+                </div>
+                <div class="num" style="font-weight: 600">R$ 240,00</div>
+              </div>
+            </div>
+            <div class="row">
+              <span class="lbl">Subtotal</span><span class="val num">R$ 600,00</span>
+            </div>
+            <div class="row">
+              <span class="lbl">Frete</span><span class="val">incluso no Pix</span>
+            </div>
+            <div class="row" style="border-bottom: 0">
+              <span class="lbl"><strong>Total</strong></span
+              ><span class="val num" style="font-size: 16px"><strong>R$ 600,00</strong></span>
+            </div>
+            <div class="actions-row">
+              <button class="btn primary" data-pay style="flex: 1">Confirmar Pix</button>
+              <button class="btn ghost">Cancelar</button>
+            </div>
+          </aside>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

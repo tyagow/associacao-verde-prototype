@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>Meu perfil</title>
+    <link rel="stylesheet" href="_shared.css" />
+    <link rel="stylesheet" href="_b-shell.css" />
+    <style>
+      main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 28px 80px;
+      }
+      .pagehead {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 20px;
+        align-items: center;
+        margin-bottom: 28px;
+      }
+      .avatar {
+        width: 64px;
+        height: 64px;
+        border-radius: 99px;
+        background: linear-gradient(135deg, var(--green), var(--green-deep));
+        color: var(--paper);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font: 600 22px/1 var(--font-display);
+        letter-spacing: -0.02em;
+      }
+      .pagehead h1 {
+        margin: 0 0 4px;
+        font: 500 24px/1.2 var(--font-display);
+      }
+      .pagehead .meta {
+        color: var(--muted);
+        font-size: 13px;
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .pagehead .meta b {
+        color: var(--ink);
+        font-weight: 500;
+      }
+      .pagehead .meta code {
+        font-family: monospace;
+        font-size: 12px;
+        background: var(--soft);
+        padding: 2px 8px;
+        border-radius: 4px;
+        color: var(--ink-soft);
+      }
+      .pagehead .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--green-tint);
+        color: var(--green-deep);
+        padding: 5px 12px;
+        border-radius: 99px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .pagehead .pill::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 99px;
+        background: var(--green);
+      }
+
+      .body {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 20px;
+      }
+
+      .card {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        overflow: hidden;
+      }
+      .card h2 {
+        margin: 0;
+        padding: 18px 24px;
+        border-bottom: 1px solid var(--line);
+        font: 600 12px/1 var(--font-ui);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        background: var(--paper-warm);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .card h2 .right {
+        font-size: 11px;
+        color: var(--green-deep);
+        text-transform: none;
+        letter-spacing: 0;
+        font-weight: 500;
+      }
+      .card h2 .right a {
+        color: inherit;
+        text-decoration: none;
+      }
+      .card h2 .right a:hover {
+        text-decoration: underline;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 18px;
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--line-soft);
+        align-items: center;
+      }
+      .row:last-child {
+        border-bottom: 0;
+      }
+      .row label {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      .row b {
+        font-weight: 500;
+        color: var(--ink);
+        font-size: 14px;
+      }
+      .row .pill-ok {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--green-tint);
+        color: var(--green-deep);
+        padding: 3px 10px;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .row .pill-ok::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 99px;
+        background: var(--green);
+      }
+      .row .pill-warn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--gold-soft);
+        color: var(--gold-on);
+        padding: 3px 10px;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .row .pill-warn::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 99px;
+        background: var(--warn);
+      }
+      .row .edit {
+        background: transparent;
+        border: 0;
+        color: var(--green-deep);
+        font-size: 12px;
+        font-weight: 500;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        padding: 4px 0;
+      }
+
+      .side {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .stat-card {
+        padding: 18px 22px;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+      }
+      .stat-card label {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+      .stat-card .val {
+        font: 600 22px/1 var(--font-display);
+      }
+      .stat-card .sub {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .stat-card .sub a {
+        color: var(--green-deep);
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      .timeline-mini {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        padding: 0 20px 18px;
+      }
+      .ev {
+        display: grid;
+        grid-template-columns: 14px 1fr auto;
+        gap: 12px;
+        padding: 10px 0;
+        align-items: start;
+        border-bottom: 1px solid var(--line-soft);
+      }
+      .ev:last-child {
+        border-bottom: 0;
+      }
+      .ev .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 99px;
+        background: var(--green);
+        margin-top: 6px;
+        justify-self: center;
+      }
+      .ev .dot.muted {
+        background: var(--line-strong);
+      }
+      .ev .lbl {
+        font-size: 13px;
+        color: var(--ink);
+      }
+      .ev .lbl .meta {
+        color: var(--muted);
+        font-size: 11px;
+        display: block;
+        margin-top: 2px;
+      }
+      .ev .when {
+        color: var(--muted);
+        font-size: 11px;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+
+      .lgpd {
+        background: var(--paper-warm);
+        border: 1px solid var(--line-soft);
+        border-radius: var(--r-md);
+        padding: 18px 22px;
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      .lgpd b {
+        color: var(--ink);
+        font-weight: 600;
+        display: block;
+        margin-bottom: 6px;
+        font-size: 13px;
+      }
+      .lgpd .row2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 14px;
+      }
+      .lgpd .row2 button {
+        padding: 11px;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        color: var(--ink);
+        border-radius: var(--r-sm);
+        font-weight: 500;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .lgpd .row2 button.danger {
+        color: #7c2419;
+        border-color: #ecc3bd;
+      }
+      .lgpd .row2 button.danger:hover {
+        background: #fbe5e1;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="logo">APOIAR<span>·</span>BRASIL</div>
+      <div class="search">🔎<input placeholder="Buscar produtos do catálogo autorizado…" /></div>
+      <div class="actions">
+        <span class="pill-id">Helena · APO-1027</span>
+        <button>Sair</button>
+      </div>
+    </header>
+    <nav class="tabs">
+      <a href="b.html">Pedido</a>
+      <a href="b-historico.html">Histórico</a>
+      <a href="b-suporte.html">Suporte</a>
+      <a class="on" href="b-perfil.html" style="margin-left: auto">Meu perfil</a>
+    </nav>
+
+    <main>
+      <div class="pagehead">
+        <div class="avatar">HR</div>
+        <div>
+          <h1>Helena Rocha</h1>
+          <div class="meta">
+            <code>APO-1027</code>
+            <span class="pill">Liberada</span>
+            <span>Convite <b>HELENA2026</b></span>
+            <span>·</span>
+            <span>Membro desde <b>Mai 2025</b></span>
+          </div>
+        </div>
+        <div></div>
+      </div>
+
+      <div class="body">
+        <div style="display: flex; flex-direction: column; gap: 20px">
+          <section class="card">
+            <h2>Elegibilidade</h2>
+            <div class="row">
+              <div>
+                <label>Receita médica</label
+                ><b>Válida até 18/09/2026 · Dra. Ana Lima · CRM 123456-SP</b>
+              </div>
+              <span class="pill-ok">Vigente</span>
+            </div>
+            <div class="row">
+              <div><label>Carteirinha</label><b>Válida até 18/09/2026</b></div>
+              <span class="pill-ok">Vigente</span>
+            </div>
+            <div class="row">
+              <div><label>LGPD</label><b>Versão lgpd-2026-05 · aceita 08/05/2026 20:32</b></div>
+              <span class="pill-ok">Aceita</span>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2>
+              Plano de cuidado <span class="right"><a href="#">Ver receita ↗</a></span>
+            </h2>
+            <div class="row">
+              <div><label>Médico responsável</label><b>Dra. Ana Lima · CRM 123456-SP</b></div>
+            </div>
+            <div class="row">
+              <div><label>Diagnóstico</label><b>Confidencial · CID em receita</b></div>
+            </div>
+            <div class="row">
+              <div><label>Próxima reavaliação</label><b>15/09/2026 (em 130 dias)</b></div>
+              <span class="pill-warn">Lembrete em 30 dias</span>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2>Contato e entrega</h2>
+            <div class="row">
+              <div><label>E-mail</label><b>helena.rocha@email.com</b></div>
+              <button class="edit">editar</button>
+            </div>
+            <div class="row">
+              <div><label>WhatsApp</label><b>(11) ••••-9921</b></div>
+              <button class="edit">editar</button>
+            </div>
+            <div class="row">
+              <div>
+                <label>Endereço de entrega</label
+                ><b>Rua das Flores, 123 · Apto 42 · Pinheiros · São Paulo, SP · 05422-010</b>
+              </div>
+              <button class="edit">editar</button>
+            </div>
+          </section>
+        </div>
+
+        <aside class="side">
+          <div class="stat-card">
+            <label>Pedidos no total</label>
+            <div class="val">5 pedidos</div>
+            <div class="sub">
+              R$ 2.340,00 · desde maio/2025 · <a href="b-historico.html">ver histórico ↗</a>
+            </div>
+          </div>
+
+          <section class="card">
+            <h2>Atividade recente</h2>
+            <div class="timeline-mini">
+              <div class="ev">
+                <div class="dot"></div>
+                <div class="lbl">
+                  Pix gerado <span class="meta">Pedido AV-2026-05-08-A · R$ 600,00</span>
+                </div>
+                <div class="when">há 5min</div>
+              </div>
+              <div class="ev">
+                <div class="dot"></div>
+                <div class="lbl">
+                  Login realizado <span class="meta">Navegador Chrome · São Paulo</span>
+                </div>
+                <div class="when">há 12min</div>
+              </div>
+              <div class="ev">
+                <div class="dot muted"></div>
+                <div class="lbl">Pedido enviado <span class="meta">AV-2026-04-12-A</span></div>
+                <div class="when">12 abr</div>
+              </div>
+              <div class="ev">
+                <div class="dot muted"></div>
+                <div class="lbl">
+                  Receita atualizada <span class="meta">Validade até 18/09/2026</span>
+                </div>
+                <div class="when">15 mar</div>
+              </div>
+              <div class="ev">
+                <div class="dot muted"></div>
+                <div class="lbl">LGPD aceita <span class="meta">Versão lgpd-2026-05</span></div>
+                <div class="when">08 mai</div>
+              </div>
+            </div>
+          </section>
+
+          <div class="lgpd">
+            <b>Seus direitos LGPD</b>
+            Apenas a equipe da associação acessa este cadastro. Cada acesso fica registrado na
+            trilha de auditoria. Você pode pedir cópia ou exclusão a qualquer momento.
+            <div class="row2">
+              <button>Baixar meus dados</button>
+              <button class="danger">Solicitar exclusão</button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </body>
+</html>

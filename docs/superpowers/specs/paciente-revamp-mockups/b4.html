@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>B4 · Pago / em separação</title>
+    <link rel="stylesheet" href="_shared.css" />
+    <link rel="stylesheet" href="_b-shell.css" />
+    <style>
+      main {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 32px 28px 80px;
+      }
+      .breadcrumb {
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 16px;
+      }
+      .breadcrumb b {
+        color: var(--ink-soft);
+        font-weight: 600;
+      }
+
+      .ok-hero {
+        background: linear-gradient(135deg, var(--green-tint) 0%, var(--paper) 100%);
+        border: 1px solid var(--green-soft);
+        border-radius: var(--r-lg);
+        padding: 32px;
+        margin-bottom: 24px;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 24px;
+        align-items: center;
+      }
+      .ok-hero .check {
+        width: 56px;
+        height: 56px;
+        border-radius: 99px;
+        background: var(--green);
+        color: var(--paper);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        font-weight: 700;
+      }
+      .ok-hero .kicker {
+        color: var(--green-deep);
+        font: 600 11px/1 var(--font-ui);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+      .ok-hero h1 {
+        margin: 0 0 4px;
+        font: 500 22px/1.2 var(--font-display);
+      }
+      .ok-hero p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .ok-hero .receipt {
+        background: var(--paper);
+        border: 1px solid var(--green-soft);
+        border-radius: var(--r-md);
+        padding: 14px 18px;
+        font-size: 12px;
+        display: grid;
+        gap: 4px;
+        min-width: 180px;
+      }
+      .ok-hero .receipt b {
+        font-weight: 600;
+        color: var(--ink);
+      }
+      .ok-hero .receipt .id {
+        font-family: monospace;
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      .body {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 20px;
+      }
+
+      .panel {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        padding: 24px;
+      }
+      .panel h2 {
+        margin: 0 0 4px;
+        font: 500 17px/1.2 var(--font-display);
+      }
+      .panel .sub {
+        color: var(--muted);
+        font-size: 13px;
+        margin: 0 0 18px;
+      }
+
+      .timeline {
+        display: grid;
+        gap: 0;
+      }
+      .stage {
+        display: grid;
+        grid-template-columns: 24px 1fr auto;
+        gap: 14px;
+        padding: 10px 0;
+        align-items: start;
+      }
+      .stage .dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 99px;
+        background: var(--paper);
+        border: 2px solid var(--line);
+        margin-top: 4px;
+        justify-self: center;
+        position: relative;
+      }
+      .stage:not(:last-child) .dot::after {
+        content: "";
+        position: absolute;
+        top: 14px;
+        left: 50%;
+        width: 2px;
+        height: 32px;
+        background: var(--line);
+        transform: translateX(-50%);
+      }
+      .stage.done .dot {
+        background: var(--green);
+        border-color: var(--green);
+      }
+      .stage.done .dot::after {
+        background: var(--green);
+      }
+      .stage.now .dot {
+        border-color: var(--green);
+        background: var(--paper);
+        box-shadow: 0 0 0 4px var(--green-tint);
+      }
+      .stage.now:not(:last-child) .dot::after {
+        background: var(--line);
+      }
+      .stage .lbl {
+        font-size: 14px;
+        color: var(--ink);
+        font-weight: 500;
+      }
+      .stage:not(.done):not(.now) .lbl {
+        color: var(--muted);
+        font-weight: 400;
+      }
+      .stage .when {
+        color: var(--muted);
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
+      }
+      .stage .sub {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+
+      .order-side {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .order-card {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        padding: 20px;
+      }
+      .order-card h3 {
+        margin: 0 0 10px;
+        font: 600 11px/1 var(--font-ui);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+      .item-line {
+        display: grid;
+        grid-template-columns: 32px 1fr auto;
+        gap: 10px;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--line-soft);
+        font-size: 13px;
+      }
+      .item-line:last-of-type {
+        border-bottom: 0;
+      }
+      .sq {
+        width: 32px;
+        height: 32px;
+        border-radius: 3px;
+        background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font: 700 11px/1 var(--font-display);
+        color: var(--gold-on);
+      }
+      .nm {
+        font-weight: 500;
+      }
+      .qty {
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .pr {
+        font-variant-numeric: tabular-nums;
+      }
+      .total-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 15px;
+        font-weight: 600;
+        padding-top: 12px;
+        border-top: 1px solid var(--line);
+        margin-top: 6px;
+      }
+      .ship-card {
+        padding: 16px 20px;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-md);
+        font-size: 13px;
+      }
+      .ship-card label {
+        display: block;
+        color: var(--muted);
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 4px;
+        font-weight: 600;
+      }
+      .ship-card b {
+        font-weight: 600;
+      }
+      .ship-card .track {
+        font-family: monospace;
+        font-size: 12px;
+        color: var(--green-deep);
+        background: var(--green-tint);
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="logo">APOIAR<span>·</span>BRASIL</div>
+      <div class="search">🔎<input placeholder="Buscar produtos do catálogo autorizado…" /></div>
+      <div class="actions">
+        <span class="pill-id">Helena · APO-1027</span>
+        <button>Sair</button>
+      </div>
+    </header>
+    <nav class="tabs">
+      <a class="on" href="b4.html">Pedido</a>
+      <a href="b-historico.html">Histórico</a>
+      <a href="b-suporte.html">Suporte</a>
+      <a href="#" style="margin-left: auto">Meu perfil</a>
+    </nav>
+
+    <main>
+      <div class="breadcrumb">Pedido <b>AV-2026-05-08-A</b> · pago, em separação</div>
+
+      <section class="ok-hero">
+        <div class="check">✓</div>
+        <div>
+          <div class="kicker">Pagamento confirmado</div>
+          <h1>Recebemos o seu Pix</h1>
+          <p>
+            A equipe está separando o pedido. Você receberá o código de rastreio aqui assim que o
+            envio for despachado.
+          </p>
+        </div>
+        <div class="receipt">
+          <div class="id">AV-2026-05-08-A</div>
+          <div>Pago em <b>08/05/2026 20:48</b></div>
+          <div>Total <b>R$ 600,00</b></div>
+        </div>
+      </section>
+
+      <div class="body">
+        <section class="panel">
+          <h2>Status do pedido</h2>
+          <p class="sub">Atualizamos automaticamente conforme a equipe avança.</p>
+          <div class="timeline">
+            <div class="stage done">
+              <div class="dot"></div>
+              <div class="lbl">
+                Pix gerado
+                <div class="sub">R$ 600,00 · vencimento em 15min</div>
+              </div>
+              <div class="when">20:32</div>
+            </div>
+            <div class="stage done">
+              <div class="dot"></div>
+              <div class="lbl">
+                Pagamento confirmado
+                <div class="sub">Webhook do banco recebido</div>
+              </div>
+              <div class="when">20:48</div>
+            </div>
+            <div class="stage now">
+              <div class="dot"></div>
+              <div class="lbl">
+                Em separação
+                <div class="sub">Equipe está conferindo lotes e validando carteirinha</div>
+              </div>
+              <div class="when">agora</div>
+            </div>
+            <div class="stage">
+              <div class="dot"></div>
+              <div class="lbl">Pronto para envio</div>
+              <div class="when">prev. amanhã</div>
+            </div>
+            <div class="stage">
+              <div class="dot"></div>
+              <div class="lbl">
+                Enviado
+                <div class="sub">Rastreio será enviado por aqui e e-mail</div>
+              </div>
+              <div class="when">—</div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="order-side">
+          <div class="order-card">
+            <h3>2 produtos · R$ 600,00</h3>
+            <div class="item-line">
+              <div class="sq">CB</div>
+              <div>
+                <div class="nm">Óleo CBD 10%</div>
+                <div class="qty">2 frascos</div>
+              </div>
+              <div class="pr">R$ 360</div>
+            </div>
+            <div class="item-line">
+              <div class="sq" style="background: linear-gradient(135deg, #fff5d4, #d6b56a)">F2</div>
+              <div>
+                <div class="nm">Flor 24k</div>
+                <div class="qty">1 pote</div>
+              </div>
+              <div class="pr">R$ 240</div>
+            </div>
+            <div class="total-row"><span>Total</span><span>R$ 600,00</span></div>
+          </div>
+          <div class="ship-card">
+            <label>Entrega</label>
+            <b>GED Log via Melhor Envio</b>
+            <p style="margin: 6px 0 0; color: var(--muted); font-size: 12px">
+              Rastreio aparecerá aqui: <span class="track">AV-2026-05-08-A</span>
+            </p>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>B · Pacientes</title>
+    <link rel="stylesheet" href="_tokens.css" />
+    <link rel="stylesheet" href="_shell.css" />
+    <style>
+      .twoCol {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 380px;
+        gap: 16px;
+        align-items: start;
+      }
+      .form-row {
+        padding: 10px 14px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border-bottom: 1px solid var(--line-soft);
+        font-size: 13px;
+      }
+      .form-row label {
+        min-width: 110px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .form-row input {
+        flex: 1;
+        height: 32px;
+        padding: 0 10px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-sm);
+        font: inherit;
+        font-size: 13px;
+      }
+      .doc-row {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        gap: 8px;
+        align-items: center;
+        padding: 8px 14px;
+        border-bottom: 1px solid var(--line-soft);
+        font-size: 12px;
+      }
+      .doc-row .file {
+        display: flex;
+        flex-direction: column;
+      }
+      .doc-row .name {
+        font-weight: 600;
+        font-size: 13px;
+      }
+      .doc-row .meta {
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: var(--r-pill);
+        background: linear-gradient(135deg, var(--green), var(--green-deep));
+        color: var(--paper);
+        display: inline-grid;
+        place-items: center;
+        font: 700 11px var(--font-display);
+      }
+      .who.withAv {
+        display: grid;
+        grid-template-columns: 28px 1fr;
+        gap: 8px;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sb">
+        <div class="brand"><span class="seal">A</span><span>Apoiar Brasil</span></div>
+        <nav>
+          <span class="navhead">Operação</span>
+          <a href="b-comando.html"><span>Comando</span><span class="badge warn">7</span></a>
+          <a class="active" href="b-pacientes.html"
+            ><span>Pacientes</span><span class="badge danger">2</span></a
+          >
+          <a href="b-estoque.html"><span>Estoque</span><span class="badge warn">3</span></a>
+          <a href="b-pedidos.html"><span>Pedidos</span><span class="badge warn">5</span></a>
+          <a href="b-fulfillment.html"><span>Fulfillment</span><span class="badge warn">4</span></a>
+          <a href="b-suporte.html"><span>Suporte</span><span class="badge">2</span></a>
+          <span class="navhead">Compliance</span>
+          <a href="b-admin.html"><span>Admin</span></a>
+          <a href="b-admin.html#auditoria"><span>Auditoria</span></a>
+        </nav>
+        <div class="footer"><span>tiago@…</span><span>Sair</span></div>
+      </aside>
+      <header class="tb">
+        <div class="breadcrumb">
+          <span>Equipe</span><span class="sep">/</span><strong>Pacientes e documentos</strong>
+        </div>
+        <div class="gsearch">
+          <span aria-hidden style="color: var(--muted)">⌕</span
+          ><input placeholder="Buscar paciente, código…" /><span class="kbd">⌘K</span>
+        </div>
+        <div class="roleChip">
+          <strong>Tiago Filter</strong><span>·</span><span>Administrador</span>
+        </div>
+      </header>
+      <main>
+        <div class="pagehead">
+          <h1>Pacientes e documentos</h1>
+          <div class="actions">
+            <button class="btn ghost mini">Exportar</button
+            ><button class="btn primary">+ Novo paciente</button>
+          </div>
+        </div>
+
+        <div class="statusStrip">
+          <span class="countChip"><strong>42</strong> pacientes</span>
+          <span class="countChip ok"><strong>38</strong> liberados</span>
+          <span class="countChip danger"><strong>2</strong> bloqueados</span>
+          <span class="countChip warn"><strong>4</strong> receita vence em 30d</span>
+          <div class="seg" style="margin-left: auto">
+            <button class="on">Todos</button>
+            <button>Liberados</button>
+            <button>Bloqueados</button>
+            <button>Vencendo</button>
+          </div>
+          <input
+            class="filterIn"
+            data-filter="patientsQuery"
+            placeholder="Filtrar (Helena, APO-1027…)"
+          />
+        </div>
+
+        <div class="twoCol">
+          <section class="panel" id="patients-surface">
+            <header class="ph">
+              <h3>Registro de pacientes</h3>
+              <span class="meta">42 pacientes · plano de cuidado · privacidade</span>
+            </header>
+            <table class="adm">
+              <thead>
+                <tr>
+                  <th style="width: 100px">Código</th>
+                  <th>Paciente</th>
+                  <th style="width: 120px">Receita</th>
+                  <th style="width: 120px">LGPD</th>
+                  <th style="width: 130px">Status</th>
+                  <th style="width: 130px">Último login</th>
+                  <th style="width: 80px"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="mono">APO-1027</span></td>
+                  <td>
+                    <div class="who withAv">
+                      <span class="avatar">HR</span>
+                      <div>
+                        <div class="name">Helena Ramos</div>
+                        <div class="meta">helena@…</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="num">vál. 12/10/2026</td>
+                  <td>v.2026-05</td>
+                  <td><span class="pill ok">liberada</span></td>
+                  <td class="num">hoje 14:09</td>
+                  <td>
+                    <a href="#" style="font-size: 12px; color: var(--green-deep); font-weight: 600"
+                      >abrir →</a
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="mono">APO-1028</span></td>
+                  <td>
+                    <div class="who withAv">
+                      <span class="avatar">AB</span>
+                      <div>
+                        <div class="name">Ana Beatriz</div>
+                        <div class="meta">ana@…</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="num">venc. 02/04/2026</td>
+                  <td>v.2026-05</td>
+                  <td><span class="pill danger">bloqueado</span></td>
+                  <td class="num">há 6 dias</td>
+                  <td>
+                    <a href="#" style="font-size: 12px; color: var(--green-deep); font-weight: 600"
+                      >abrir →</a
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="mono">APO-1018</span></td>
+                  <td>
+                    <div class="who withAv">
+                      <span class="avatar">MC</span>
+                      <div>
+                        <div class="name">Marina Costa</div>
+                        <div class="meta">marina@…</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="num">vál. 30/06/2026</td>
+                  <td>v.2026-05</td>
+                  <td><span class="pill ok">liberada</span></td>
+                  <td class="num">hoje 13:55</td>
+                  <td>
+                    <a href="#" style="font-size: 12px; color: var(--green-deep); font-weight: 600"
+                      >abrir →</a
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="mono">APO-1020</span></td>
+                  <td>
+                    <div class="who withAv">
+                      <span class="avatar">RA</span>
+                      <div>
+                        <div class="name">Roberto Alves</div>
+                        <div class="meta">roberto@…</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="num">vál. 22/05/2026</td>
+                  <td>v.2026-05</td>
+                  <td><span class="pill warn">vence em 14d</span></td>
+                  <td class="num">ontem 18:32</td>
+                  <td>
+                    <a href="#" style="font-size: 12px; color: var(--green-deep); font-weight: 600"
+                      >abrir →</a
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="mono">APO-1030</span></td>
+                  <td>
+                    <div class="who withAv">
+                      <span class="avatar">LP</span>
+                      <div>
+                        <div class="name">Luis Pereira</div>
+                        <div class="meta">luis@…</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="num">—</td>
+                  <td>pendente</td>
+                  <td><span class="pill danger">LGPD pendente</span></td>
+                  <td class="num">há 2 dias</td>
+                  <td>
+                    <a href="#" style="font-size: 12px; color: var(--green-deep); font-weight: 600"
+                      >abrir →</a
+                    >
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <header class="ph" style="border-top: 1px solid var(--line)">
+              <h3>Plano de cuidado · APO-1027 · Helena Ramos</h3>
+              <span class="meta">privacidade — CID em receita</span>
+            </header>
+            <div class="form-row">
+              <span style="color: var(--muted); min-width: 140px">Médico</span
+              ><span>Dra. Carla Souza · CRM-SP 12345</span>
+            </div>
+            <div class="form-row">
+              <span style="color: var(--muted); min-width: 140px">Reavaliação</span
+              ><span>17/06/2026 · <span class="pill warn">lembrete em 30d</span></span>
+            </div>
+            <div class="form-row">
+              <span style="color: var(--muted); min-width: 140px">Endereço</span
+              ><span>R. das Acácias, 200 — São Paulo/SP</span>
+            </div>
+
+            <header class="ph" style="border-top: 1px solid var(--line)">
+              <h3>Documentos · receitas e carteirinha</h3>
+              <span class="meta">3 documentos</span>
+            </header>
+            <div class="doc-row">
+              <div class="file">
+                <span class="name">receita-helena-2026-04.pdf</span
+                ><span class="meta mono">hash sha256:9f2a…0c1b · 142 KB · enviado 12/04/2026</span>
+              </div>
+              <span class="pill ok">vigente</span><button class="btn ghost mini">baixar</button>
+            </div>
+            <div class="doc-row">
+              <div class="file">
+                <span class="name">carteirinha-helena.jpg</span
+                ><span class="meta mono">hash sha256:42ef…aa0d · 412 KB · enviado 22/01/2026</span>
+              </div>
+              <span class="pill">arquivo</span><button class="btn ghost mini">baixar</button>
+            </div>
+            <div class="doc-row">
+              <div class="file">
+                <span class="name">receita-helena-2025-09.pdf</span
+                ><span class="meta mono">hash sha256:bc1d…3e72 · 138 KB · enviado 22/09/2025</span>
+              </div>
+              <span class="pill">expirada</span><button class="btn ghost mini">baixar</button>
+            </div>
+          </section>
+
+          <aside style="display: flex; flex-direction: column; gap: 16px">
+            <section class="panel" id="prescription-document-form">
+              <header class="ph"><h3>Anexar receita</h3></header>
+              <form>
+                <div class="form-row">
+                  <label for="memberCode">Código</label
+                  ><input id="memberCode" name="memberCode" placeholder="APO-1027" />
+                </div>
+                <div class="form-row">
+                  <label for="file">Arquivo PDF</label><input id="file" name="file" type="file" />
+                </div>
+                <div class="form-row">
+                  <label for="note">Nota</label
+                  ><input id="note" name="note" placeholder="Receita conferida" />
+                </div>
+                <div class="form-row">
+                  <label for="expiresAt">Vence em</label
+                  ><input id="expiresAt" name="expiresAt" type="date" />
+                </div>
+                <div style="padding: 12px 14px">
+                  <button type="submit" class="btn primary" style="width: 100%">
+                    Registrar receita
+                  </button>
+                </div>
+              </form>
+            </section>
+
+            <section class="panel" id="invite-reset-form">
+              <header class="ph"><h3>Reset de convite</h3></header>
+              <form>
+                <div class="form-row">
+                  <label>Código</label><input name="memberCode" placeholder="APO-1028" />
+                </div>
+                <div class="form-row">
+                  <label>Novo convite</label><input name="inviteCode" placeholder="JOAORESET2026" />
+                </div>
+                <div style="padding: 12px 14px">
+                  <button type="submit" class="btn ghost" style="width: 100%">
+                    Gerar novo convite
+                  </button>
+                </div>
+              </form>
+            </section>
+          </aside>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

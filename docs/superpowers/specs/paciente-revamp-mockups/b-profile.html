@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>Profile drawer</title>
+    <link rel="stylesheet" href="_shared.css" />
+    <link rel="stylesheet" href="_b-shell.css" />
+    <style>
+      /* Same shell as b.html behind, drawer on top */
+      .layout {
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        min-height: calc(100vh - 110px);
+      }
+      main {
+        padding: 28px;
+        max-width: none;
+      }
+      .placeholder-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 16px;
+        opacity: 0.45;
+      }
+      .placeholder-grid .product {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        height: 240px;
+      }
+      aside.dim {
+        background: var(--paper);
+        border-left: 1px solid var(--line);
+        padding: 28px;
+        opacity: 0.4;
+      }
+
+      /* Backdrop */
+      .backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(13, 31, 23, 0.5);
+        backdrop-filter: blur(2px);
+        z-index: 10;
+      }
+
+      /* Drawer panel */
+      .drawer {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 480px;
+        background: var(--paper);
+        box-shadow: -30px 0 60px -20px rgba(13, 31, 23, 0.25);
+        z-index: 11;
+        display: flex;
+        flex-direction: column;
+      }
+      .drawer header {
+        padding: 22px 28px;
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        border-bottom: 1px solid var(--line);
+      }
+      .drawer .kicker {
+        font: 600 11px/1 var(--font-ui);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--green);
+      }
+      .drawer h2 {
+        margin: 6px 0 0;
+        font: 500 22px/1.2 var(--font-display);
+      }
+      .drawer .close {
+        width: 34px;
+        height: 34px;
+        border-radius: 99px;
+        background: var(--soft);
+        border: 0;
+        color: var(--ink);
+        font-size: 22px;
+        line-height: 1;
+        font-weight: 300;
+      }
+      .drawer .close:hover {
+        background: var(--line);
+      }
+
+      .drawer .body {
+        overflow: auto;
+        padding: 24px 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .who {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        padding: 16px;
+        background: linear-gradient(135deg, var(--green-tint), var(--soft));
+        border-radius: var(--r-md);
+      }
+      .who .avatar {
+        width: 56px;
+        height: 56px;
+        border-radius: 99px;
+        background: linear-gradient(135deg, var(--green), var(--green-deep));
+        color: var(--paper);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font: 600 20px/1 var(--font-display);
+        letter-spacing: -0.02em;
+      }
+      .who .info b {
+        display: block;
+        font: 600 16px/1.2 var(--font-display);
+        margin-bottom: 2px;
+      }
+      .who .info span {
+        color: var(--muted);
+        font-size: 12px;
+        font-family: monospace;
+        display: block;
+        margin-bottom: 6px;
+      }
+      .who .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--green);
+        color: var(--paper);
+        padding: 3px 10px;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .who .pill::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 99px;
+        background: var(--paper);
+      }
+
+      .group {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-md);
+        overflow: hidden;
+      }
+      .group h3 {
+        margin: 0;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--line-soft);
+        font: 600 11px/1 var(--font-ui);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        background: var(--paper-warm);
+      }
+      .group .item {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 14px;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--line-soft);
+        font-size: 13px;
+        align-items: center;
+      }
+      .group .item:last-child {
+        border-bottom: 0;
+      }
+      .group .item label {
+        color: var(--muted);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 600;
+        display: block;
+        margin-bottom: 3px;
+      }
+      .group .item b {
+        font-weight: 500;
+        color: var(--ink);
+      }
+      .group .item .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 10px;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .group .item .pill.ok {
+        background: var(--green-tint);
+        color: var(--green-deep);
+      }
+      .pill.ok::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 99px;
+        background: var(--green);
+      }
+      .group .item .pill.warn {
+        background: var(--gold-soft);
+        color: var(--gold-on);
+      }
+      .pill.warn::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 99px;
+        background: var(--warn);
+      }
+      .group .item button.edit {
+        background: transparent;
+        border: 0;
+        color: var(--green-deep);
+        font-size: 12px;
+        font-weight: 500;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+
+      .care-card {
+        background: var(--paper-warm);
+        border: 1px solid var(--line-soft);
+        border-radius: var(--r-md);
+        padding: 16px 18px;
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      .care-card b {
+        color: var(--ink);
+        font-weight: 600;
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      .actions-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: auto;
+        padding-top: 8px;
+      }
+      .actions-row button {
+        padding: 11px;
+        background: transparent;
+        border: 1px solid var(--line);
+        color: var(--ink);
+        border-radius: var(--r-sm);
+        font-weight: 500;
+        font-size: 13px;
+      }
+      .actions-row button.danger {
+        color: #7c2419;
+        border-color: #ecc3bd;
+      }
+      .actions-row button.danger:hover {
+        background: #fbe5e1;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- shell behind, dimmed -->
+    <header class="topbar">
+      <div class="logo">APOIAR<span>·</span>BRASIL</div>
+      <div class="search">🔎<input placeholder="Buscar produtos do catálogo autorizado…" /></div>
+      <div class="actions">
+        <span class="pill-id">Helena · APO-1027</span>
+        <button>Sair</button>
+      </div>
+    </header>
+    <nav class="tabs">
+      <a class="on" href="#">Pedido</a>
+      <a href="#">Histórico</a>
+      <a href="#">Suporte</a>
+      <a href="#" style="margin-left: auto">Meu perfil</a>
+    </nav>
+
+    <div class="layout">
+      <main>
+        <div class="placeholder-grid">
+          <div class="product"></div>
+          <div class="product"></div>
+          <div class="product"></div>
+          <div class="product"></div>
+          <div class="product"></div>
+          <div class="product"></div>
+        </div>
+      </main>
+      <aside class="dim"></aside>
+    </div>
+
+    <!-- drawer -->
+    <div class="backdrop"></div>
+    <aside class="drawer">
+      <header>
+        <div>
+          <span class="kicker">Cadastro e elegibilidade</span>
+          <h2>Meu perfil</h2>
+        </div>
+        <button class="close">×</button>
+      </header>
+      <div class="body">
+        <div class="who">
+          <div class="avatar">HR</div>
+          <div class="info">
+            <b>Helena Rocha</b>
+            <span>APO-1027 · convite HELENA2026</span>
+            <span class="pill">Sessão privada</span>
+          </div>
+        </div>
+
+        <div class="group">
+          <h3>Elegibilidade</h3>
+          <div class="item">
+            <div><label>Receita</label><b>Válida até 18/09/2026</b></div>
+            <span class="pill ok">Vigente</span>
+          </div>
+          <div class="item">
+            <div><label>Carteirinha</label><b>Válida até 18/09/2026</b></div>
+            <span class="pill ok">Vigente</span>
+          </div>
+          <div class="item">
+            <div><label>LGPD</label><b>Versão lgpd-2026-05 · 08/05/2026 20:32</b></div>
+            <span class="pill ok">Aceita</span>
+          </div>
+        </div>
+
+        <div class="group">
+          <h3>Plano de cuidado</h3>
+          <div class="item">
+            <div><label>Médico responsável</label><b>Dra. Ana Lima · CRM 123456-SP</b></div>
+            <button class="edit">ver receita</button>
+          </div>
+          <div class="item">
+            <div><label>Diagnóstico</label><b>Confidencial · CID em receita</b></div>
+          </div>
+          <div class="item">
+            <div><label>Próxima reavaliação</label><b>15/09/2026</b></div>
+          </div>
+        </div>
+
+        <div class="group">
+          <h3>Contato e entrega</h3>
+          <div class="item">
+            <div><label>E-mail</label><b>helena.rocha@…</b></div>
+            <button class="edit">editar</button>
+          </div>
+          <div class="item">
+            <div><label>WhatsApp</label><b>(11) ••••-9921</b></div>
+            <button class="edit">editar</button>
+          </div>
+          <div class="item">
+            <div><label>Endereço de entrega</label><b>Rua das Flores, 123 · São Paulo, SP</b></div>
+            <button class="edit">editar</button>
+          </div>
+        </div>
+
+        <div class="care-card">
+          <b>Suporte e auditoria</b>
+          Apenas a equipe da associação tem acesso a este cadastro. Cada visualização fica
+          registrada na trilha de auditoria. Para sair completamente da operação, peça exclusão pelo
+          Suporte.
+        </div>
+
+        <div class="actions-row">
+          <button>Baixar meus dados (LGPD)</button>
+          <button class="danger">Solicitar exclusão</button>
+        </div>
+      </div>
+    </aside>
+  </body>
+</html>

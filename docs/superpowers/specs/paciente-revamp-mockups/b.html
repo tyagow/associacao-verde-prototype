@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>B · Storefront acolhedor</title>
+    <link rel="stylesheet" href="_shared.css" />
+    <style>
+      body {
+        background: var(--paper-warm);
+      }
+      .topbar {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        padding: 14px 28px;
+        background: var(--paper);
+        border-bottom: 1px solid var(--line);
+        position: sticky;
+        top: 0;
+        z-index: 5;
+      }
+      .logo {
+        font: 700 17px/1 var(--font-display);
+        letter-spacing: 0.04em;
+      }
+      .logo span {
+        color: var(--green);
+      }
+      .search {
+        flex: 1;
+        max-width: 520px;
+        display: flex;
+        align-items: center;
+        background: var(--soft);
+        border-radius: 3px;
+        padding: 8px 14px;
+        gap: 8px;
+      }
+      .search input {
+        flex: 1;
+        border: 0;
+        background: transparent;
+        font: inherit;
+        outline: none;
+      }
+      .actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+      }
+      .pill-id {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--green-tint);
+        color: var(--green-deep);
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .pill-id::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 99px;
+        background: var(--green);
+      }
+      .actions button {
+        background: transparent;
+        border: 0;
+        color: var(--ink);
+        padding: 8px 12px;
+        border-radius: 3px;
+        font-weight: 500;
+      }
+
+      .tabs {
+        display: flex;
+        gap: 4px;
+        padding: 8px 28px;
+        background: var(--paper);
+        border-bottom: 1px solid var(--line);
+      }
+      .tabs a {
+        padding: 10px 16px;
+        color: var(--muted);
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 13px;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+      }
+      .tabs a.on {
+        color: var(--ink);
+        border-color: var(--ink);
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        gap: 0;
+        min-height: calc(100vh - 110px);
+      }
+      main {
+        padding: 28px 28px 120px;
+        max-width: none;
+      }
+      aside {
+        background: var(--paper);
+        border-left: 1px solid var(--line);
+        padding: 28px;
+        position: sticky;
+        top: 110px;
+        align-self: start;
+        height: calc(100vh - 110px);
+        overflow: auto;
+      }
+
+      .hero {
+        background: linear-gradient(135deg, var(--ink) 0%, #1a3a2a 100%);
+        color: var(--paper);
+        border-radius: var(--r-lg);
+        padding: 28px 32px;
+        margin-bottom: 24px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 24px;
+        align-items: center;
+      }
+      .hero .kicker {
+        color: var(--green-soft);
+      }
+      .hero h1 {
+        margin: 6px 0 4px;
+        font: 500 26px/1.2 var(--font-display);
+      }
+      .hero p {
+        margin: 0;
+        color: #c7d3cc;
+        font-size: 13px;
+        max-width: 48ch;
+      }
+      .hero .receipt {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: var(--r-md);
+        padding: 16px 20px;
+        font-size: 12px;
+        color: #c7d3cc;
+        display: grid;
+        gap: 6px;
+        min-width: 200px;
+      }
+      .hero .receipt b {
+        color: var(--paper);
+        font-weight: 600;
+      }
+
+      .cats {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+      .cats button {
+        flex-shrink: 0;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        padding: 10px 18px;
+        border-radius: 3px;
+        color: var(--ink);
+        font-weight: 500;
+        font-size: 13px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .cats button.on {
+        background: var(--ink);
+        color: var(--paper);
+        border-color: var(--ink);
+      }
+      .cats button .n {
+        font-size: 11px;
+        color: var(--muted);
+        padding: 2px 6px;
+        background: var(--soft);
+        border-radius: 99px;
+      }
+      .cats button.on .n {
+        background: rgba(255, 255, 255, 0.15);
+        color: var(--paper);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 16px;
+      }
+      .product {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition:
+          transform 0.15s,
+          box-shadow 0.15s;
+      }
+      .product:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px -16px rgba(13, 31, 23, 0.18);
+      }
+      .product .img {
+        height: 140px;
+        background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font: 700 28px/1 var(--font-display);
+        color: var(--gold-on);
+      }
+      .product .body {
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        flex: 1;
+      }
+      .product h3 {
+        margin: 0;
+        font: 500 15px/1.2 var(--font-display);
+      }
+      .product .meta {
+        color: var(--muted);
+        font-size: 12px;
+        flex: 1;
+      }
+      .product .row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 6px;
+      }
+      .product .price {
+        font: 600 16px/1 var(--font-display);
+        color: var(--ink);
+      }
+      .product .add {
+        background: var(--ink);
+        color: var(--paper);
+        border: 0;
+        padding: 8px 14px;
+        border-radius: 3px;
+        font-weight: 600;
+        font-size: 12px;
+      }
+      .product .add:hover {
+        background: var(--green);
+      }
+
+      aside h3 {
+        margin: 0 0 4px;
+        font: 500 17px/1.2 var(--font-display);
+      }
+      aside .empty {
+        padding: 36px 0;
+        text-align: center;
+      }
+      aside .empty .icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 99px;
+        background: var(--soft);
+        margin: 0 auto 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+      }
+      aside .empty p {
+        color: var(--muted);
+        font-size: 13px;
+        margin: 0;
+      }
+      aside .ship {
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid var(--line-soft);
+      }
+      aside .ship label {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 6px;
+        font-weight: 600;
+      }
+      aside .ship select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-sm);
+        background: var(--paper);
+        font: inherit;
+      }
+      aside .total {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid var(--line-soft);
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+      }
+      aside .total b {
+        font: 600 22px/1 var(--font-display);
+      }
+      aside .cta {
+        width: 100%;
+        margin-top: 18px;
+        padding: 14px;
+        background: var(--gold-soft);
+        color: var(--gold-on);
+        border: 0;
+        border-radius: var(--r-md);
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: 0.04em;
+        cursor: not-allowed;
+        opacity: 0.8;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="logo">APOIAR<span>·</span>BRASIL</div>
+      <div class="search">🔎<input placeholder="Buscar produtos do catálogo autorizado…" /></div>
+      <div class="actions">
+        <span class="pill-id">Helena · APO-1027</span>
+        <button>Sair</button>
+      </div>
+    </header>
+    <nav class="tabs">
+      <a class="on" href="#">Pedido</a>
+      <a href="#">Histórico</a>
+      <a href="#">Suporte</a>
+      <a href="#" style="margin-left: auto">Meu perfil</a>
+    </nav>
+
+    <div class="layout">
+      <main>
+        <section class="hero">
+          <div>
+            <div class="kicker">Bem-vinda de volta</div>
+            <h1>Tudo certo para fazer um pedido</h1>
+            <p>Sua receita está válida e você está liberada para comprar produtos autorizados.</p>
+          </div>
+          <div class="receipt">
+            <div>Receita válida até <b>18/09/2026</b></div>
+            <div>LGPD aceita <b>08/05/2026</b></div>
+            <div>Status <b>Liberada</b></div>
+          </div>
+        </section>
+
+        <div class="cats">
+          <button class="on">Todos <span class="n">12</span></button>
+          <button>Óleos <span class="n">6</span></button>
+          <button>Flores <span class="n">4</span></button>
+          <button>Gomas <span class="n">2</span></button>
+          <button>Mais usados <span class="n">3</span></button>
+        </div>
+
+        <div class="grid">
+          <article class="product">
+            <div class="img">CB</div>
+            <div class="body">
+              <h3>Óleo CBD 10%</h3>
+              <p class="meta">Frasco 30 ml · Full Spectrum<br />23 em estoque</p>
+              <div class="row">
+                <span class="price">R$ 180</span><button class="add">Adicionar</button>
+              </div>
+            </div>
+          </article>
+          <article class="product">
+            <div
+              class="img"
+              style="background: linear-gradient(135deg, #dff0e6, #1d8c52); color: #fbfcfa"
+            >
+              FS
+            </div>
+            <div class="body">
+              <h3>Óleo Full Spectrum 20%</h3>
+              <p class="meta">Frasco 30 ml · Alta concentração<br />11 em estoque</p>
+              <div class="row">
+                <span class="price">R$ 320</span><button class="add">Adicionar</button>
+              </div>
+            </div>
+          </article>
+          <article class="product">
+            <div class="img" style="background: linear-gradient(135deg, #fff5d4, #d6b56a)">F2</div>
+            <div class="body">
+              <h3>Flor 24k</h3>
+              <p class="meta">Pote 5 g · Indica<br />6 em estoque</p>
+              <div class="row">
+                <span class="price">R$ 240</span><button class="add">Adicionar</button>
+              </div>
+            </div>
+          </article>
+          <article class="product">
+            <div class="img" style="background: linear-gradient(135deg, #fbe5e1, #d6b56a)">GM</div>
+            <div class="body">
+              <h3>Goma CBD 25mg</h3>
+              <p class="meta">Pote 30 unidades · Frutas vermelhas<br />18 em estoque</p>
+              <div class="row">
+                <span class="price">R$ 140</span><button class="add">Adicionar</button>
+              </div>
+            </div>
+          </article>
+          <article class="product">
+            <div
+              class="img"
+              style="background: linear-gradient(135deg, #dff0e6, #4a7d56); color: #fbfcfa"
+            >
+              CB
+            </div>
+            <div class="body">
+              <h3>Óleo CBD 5%</h3>
+              <p class="meta">Frasco 30 ml · Iniciantes<br />30 em estoque</p>
+              <div class="row">
+                <span class="price">R$ 110</span><button class="add">Adicionar</button>
+              </div>
+            </div>
+          </article>
+          <article class="product">
+            <div
+              class="img"
+              style="background: linear-gradient(135deg, #fff5d4, #b89313); color: #1a1408"
+            >
+              FL
+            </div>
+            <div class="body">
+              <h3>Flor Sativa Lemon</h3>
+              <p class="meta">Pote 5 g · Sativa<br />4 em estoque</p>
+              <div class="row">
+                <span class="price">R$ 220</span><button class="add">Adicionar</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </main>
+
+      <aside>
+        <h3>Resumo do pedido</h3>
+        <p class="muted" style="margin: 0; font-size: 12px">
+          Reserva só acontece quando o Pix é gerado.
+        </p>
+        <div class="empty">
+          <div class="icon">🛒</div>
+          <p>
+            <b style="color: var(--ink)">Carrinho vazio</b><br />Adicione itens do catálogo ao lado.
+          </p>
+        </div>
+        <div class="ship">
+          <label>Entrega</label>
+          <select>
+            <option>GED Log via Melhor Envio</option>
+            <option>Correios via Melhor Envio</option>
+            <option>Retirada combinada</option>
+          </select>
+        </div>
+        <div class="total"><span class="muted">Total</span><b>R$ 0,00</b></div>
+        <button class="cta">SELECIONE PRODUTOS</button>
+      </aside>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>Acesso bloqueado</title>
+    <link rel="stylesheet" href="_shared.css" />
+    <link rel="stylesheet" href="_b-shell.css" />
+    <style>
+      body {
+        background: var(--paper-warm);
+      }
+      .wrap {
+        max-width: 780px;
+        margin: 0 auto;
+        padding: 48px 28px 80px;
+      }
+
+      .alert {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 18px;
+        align-items: start;
+        background: #fbe5e1;
+        border: 1px solid #ecc3bd;
+        border-radius: var(--r-lg);
+        padding: 22px 26px;
+        margin-bottom: 24px;
+      }
+      .alert .ic {
+        width: 42px;
+        height: 42px;
+        border-radius: 99px;
+        background: #b03a2e;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        font-weight: 700;
+      }
+      .alert h1 {
+        margin: 0 0 4px;
+        font: 600 18px/1.2 var(--font-display);
+        color: #7c2419;
+      }
+      .alert p {
+        margin: 0;
+        color: #7c2419;
+        font-size: 14px;
+      }
+
+      .panel {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        padding: 32px;
+        margin-bottom: 18px;
+      }
+      .panel h2 {
+        margin: 0 0 6px;
+        font: 500 18px/1.2 var(--font-display);
+      }
+      .panel p.lead {
+        margin: 0 0 18px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .checks {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 24px;
+      }
+      .checks li {
+        display: grid;
+        grid-template-columns: 24px 1fr;
+        gap: 12px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--line-soft);
+        align-items: start;
+      }
+      .checks li:last-child {
+        border-bottom: 0;
+      }
+      .checks li::before {
+        content: "";
+        width: 18px;
+        height: 18px;
+        border: 2px solid var(--line-strong);
+        border-radius: 5px;
+        margin-top: 2px;
+      }
+      .checks li b {
+        display: block;
+        color: var(--ink);
+        font-weight: 500;
+        margin-bottom: 2px;
+        font-size: 14px;
+      }
+      .checks li span {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+      .field {
+        display: block;
+        margin-bottom: 14px;
+      }
+      .field label {
+        display: block;
+        color: var(--ink);
+        font-weight: 500;
+        font-size: 13px;
+        margin-bottom: 6px;
+      }
+      .field input,
+      .field textarea {
+        width: 100%;
+        padding: 11px 14px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-sm);
+        font: inherit;
+        background: var(--paper-warm);
+      }
+      .field input:focus,
+      .field textarea:focus {
+        border-color: var(--ink);
+        background: var(--paper);
+        outline: none;
+      }
+      .field textarea {
+        min-height: 100px;
+        resize: vertical;
+        font-family: inherit;
+      }
+
+      .submit-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 8px;
+        padding-top: 18px;
+        border-top: 1px solid var(--line-soft);
+      }
+      .submit-row p {
+        margin: 0;
+        font-size: 11px;
+        color: var(--muted);
+        max-width: 36ch;
+      }
+      .submit {
+        padding: 13px 24px;
+        background: var(--ink);
+        color: var(--paper);
+        border: 0;
+        border-radius: var(--r-sm);
+        font-weight: 600;
+        font-size: 13px;
+        letter-spacing: 0.04em;
+      }
+
+      .out-link {
+        text-align: center;
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 12px;
+      }
+      .out-link a {
+        color: var(--green-deep);
+        text-decoration: none;
+        font-weight: 500;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="logo">APOIAR<span>·</span>BRASIL</div>
+      <div style="flex: 1"></div>
+      <div class="actions">
+        <span class="pill-id" style="background: #fbe5e1; color: #7c2419">⚠ Acesso bloqueado</span>
+        <button>Sair</button>
+      </div>
+    </header>
+
+    <div class="wrap">
+      <div class="alert">
+        <div class="ic">!</div>
+        <div>
+          <h1>Acesso não liberado</h1>
+          <p>
+            Sua receita venceu em <b>02/04/2026</b>. O sistema bloqueia novos pedidos até a equipe
+            revisar a documentação.
+          </p>
+        </div>
+      </div>
+
+      <section class="panel">
+        <h2>O que você pode fazer agora</h2>
+        <p class="lead">
+          Antes de pedir revisão, confira os pontos abaixo — assim seu chamado é resolvido mais
+          rápido.
+        </p>
+        <ul class="checks">
+          <li>
+            <div>
+              <b>Confira se a receita e a carteirinha estão vigentes</b
+              ><span
+                >Receitas vencem em 6 meses. Documentos digitalizados com qualidade ajudam a equipe
+                a aprovar mais rápido.</span
+              >
+            </div>
+          </li>
+          <li>
+            <div>
+              <b>Use o mesmo código de associado informado pela equipe</b
+              ><span
+                >Se você tem mais de um cadastro, use o código que apareceu no convite
+                original.</span
+              >
+            </div>
+          </li>
+          <li>
+            <div>
+              <b>Atualize seus documentos antes de tentar comprar de novo</b
+              ><span>Comprar com receita vencida é o motivo #1 de bloqueio.</span>
+            </div>
+          </li>
+        </ul>
+
+        <h2 style="margin-top: 8px">Pedir revisão</h2>
+        <p class="lead">Envie a mensagem abaixo. Vamos responder em até 1 dia útil.</p>
+
+        <form>
+          <div class="row">
+            <div class="field"><label>Código de associado</label><input value="APO-1027" /></div>
+            <div class="field"><label>Convite privado</label><input value="HELENA2026" /></div>
+          </div>
+          <div class="field">
+            <label>Mensagem para suporte</label>
+            <textarea>Preciso revisar meu acesso: Sua receita venceu em 02/04/2026.</textarea>
+          </div>
+          <div class="submit-row">
+            <p>
+              A equipe responde por aqui e por e-mail. Sua mensagem fica vinculada ao seu cadastro.
+            </p>
+            <button type="submit" class="submit">Enviar revisão</button>
+          </div>
+        </form>
+      </section>
+
+      <p class="out-link">Quer apenas sair? <a href="#">Voltar para o login</a></p>
+    </div>
+  </body>
+</html>

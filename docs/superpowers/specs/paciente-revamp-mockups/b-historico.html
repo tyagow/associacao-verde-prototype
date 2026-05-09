@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>Histórico</title>
+    <link rel="stylesheet" href="_shared.css" />
+    <link rel="stylesheet" href="_b-shell.css" />
+    <style>
+      main {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 32px 28px 80px;
+      }
+      .pagehead {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        margin-bottom: 24px;
+      }
+      .pagehead h1 {
+        margin: 0 0 4px;
+        font: 500 22px/1.2 var(--font-display);
+      }
+      .pagehead p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .filters {
+        display: flex;
+        gap: 8px;
+      }
+      .filters .seg {
+        display: inline-flex;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        overflow: hidden;
+        padding: 3px;
+      }
+      .filters .seg button {
+        background: transparent;
+        border: 0;
+        padding: 7px 14px;
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 500;
+        border-radius: 3px;
+      }
+      .filters .seg button.on {
+        background: var(--ink);
+        color: var(--paper);
+      }
+
+      .row {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        padding: 18px 22px;
+        margin-bottom: 10px;
+        display: grid;
+        grid-template-columns: auto 1fr auto auto;
+        gap: 18px;
+        align-items: center;
+      }
+      .row .id {
+        font-family: monospace;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .row .nm {
+        font-weight: 600;
+        font: 500 15px/1.2 var(--font-display);
+      }
+      .row .meta {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 3px;
+      }
+      .row .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .row .pill::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 99px;
+      }
+      .pill.warn {
+        background: var(--gold-soft);
+        color: var(--gold-on);
+      }
+      .pill.warn::before {
+        background: var(--warn);
+      }
+      .pill.ok {
+        background: var(--green-tint);
+        color: var(--green-deep);
+      }
+      .pill.ok::before {
+        background: var(--green);
+      }
+      .pill.danger {
+        background: var(--danger-soft);
+        color: #7c2419;
+      }
+      .pill.danger::before {
+        background: var(--danger, #b03a2e);
+      }
+      .pill.muted {
+        background: var(--soft);
+        color: var(--muted);
+      }
+      .pill.muted::before {
+        background: var(--muted);
+      }
+      .row .pr {
+        font: 600 17px/1 var(--font-display);
+        font-variant-numeric: tabular-nums;
+      }
+      .row .chev {
+        color: var(--muted);
+        background: transparent;
+        border: 0;
+        font-size: 18px;
+        padding: 8px;
+      }
+
+      .row.open {
+        background: var(--paper);
+        box-shadow: 0 8px 24px -16px rgba(13, 31, 23, 0.12);
+        border-color: var(--line-strong);
+      }
+      .row.open .body {
+        display: block;
+      }
+      .body {
+        display: none;
+        grid-column: 1/-1;
+        padding-top: 14px;
+        margin-top: 14px;
+        border-top: 1px solid var(--line-soft);
+      }
+      .body .items {
+        display: grid;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--muted);
+        margin: 0 0 10px;
+        padding: 0;
+        list-style: none;
+      }
+      .body .items li {
+        display: flex;
+        justify-content: space-between;
+      }
+      .body .meta-row {
+        display: flex;
+        gap: 18px;
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 8px;
+      }
+      .body .meta-row b {
+        color: var(--ink);
+        font-weight: 500;
+      }
+      .body .actions {
+        margin-top: 14px;
+        display: flex;
+        gap: 8px;
+      }
+      .body .actions a {
+        padding: 8px 14px;
+        background: var(--ink);
+        color: var(--paper);
+        border-radius: 3px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 12px;
+      }
+      .body .actions button {
+        padding: 8px 14px;
+        background: transparent;
+        border: 1px solid var(--line);
+        color: var(--ink);
+        border-radius: 3px;
+        font-weight: 500;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="logo">APOIAR<span>·</span>BRASIL</div>
+      <div class="search">🔎<input placeholder="Buscar pedido por ID ou produto…" /></div>
+      <div class="actions">
+        <span class="pill-id">Helena · APO-1027</span>
+        <button>Sair</button>
+      </div>
+    </header>
+    <nav class="tabs">
+      <a href="b.html">Pedido</a>
+      <a class="on" href="b-historico.html">Histórico</a>
+      <a href="b-suporte.html">Suporte</a>
+      <a href="#" style="margin-left: auto">Meu perfil</a>
+    </nav>
+
+    <main>
+      <div class="pagehead">
+        <div>
+          <h1>Histórico de pedidos</h1>
+          <p>5 pedidos · totalizado R$ 2.340,00 desde maio/2025</p>
+        </div>
+        <div class="filters">
+          <div class="seg">
+            <button class="on">Todos · 5</button>
+            <button>Ativos · 1</button>
+            <button>Concluídos · 3</button>
+            <button>Expirados · 1</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="row open">
+        <div class="id">AV-2026-05-08-A</div>
+        <div>
+          <div class="nm">2 produtos · Óleo CBD 10%, Flor 24k</div>
+          <div class="meta">08/05/2026 · GED Log</div>
+        </div>
+        <span class="pill warn">Em separação</span>
+        <div class="pr">R$ 600,00</div>
+        <button class="chev">▾</button>
+        <div class="body">
+          <ul class="items">
+            <li><span>2 frascos · Óleo CBD 10%</span><span>R$ 360,00</span></li>
+            <li><span>1 pote · Flor 24k</span><span>R$ 240,00</span></li>
+          </ul>
+          <div class="meta-row">
+            <span>Pago: <b>08/05/2026 20:48</b></span>
+            <span>Entrega: <b>GED Log via Melhor Envio</b></span>
+            <span>Rastreio: <b>aguardando</b></span>
+          </div>
+          <div class="actions">
+            <a href="b4.html">Ver pedido</a>
+            <button>Falar com suporte</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="id">AV-2026-04-12-A</div>
+        <div>
+          <div class="nm">1 produto · Goma CBD 25mg</div>
+          <div class="meta">12/04/2026 · Correios</div>
+        </div>
+        <span class="pill ok">Enviado</span>
+        <div class="pr">R$ 140,00</div>
+        <button class="chev">▾</button>
+      </div>
+
+      <div class="row">
+        <div class="id">AV-2026-03-02-A</div>
+        <div>
+          <div class="nm">3 produtos · Óleo Full Spectrum 20%, …</div>
+          <div class="meta">02/03/2026 · GED Log</div>
+        </div>
+        <span class="pill ok">Enviado</span>
+        <div class="pr">R$ 720,00</div>
+        <button class="chev">▾</button>
+      </div>
+
+      <div class="row">
+        <div class="id">AV-2026-02-18-B</div>
+        <div>
+          <div class="nm">1 produto · Óleo CBD 5%</div>
+          <div class="meta">18/02/2026 · Pix expirou</div>
+        </div>
+        <span class="pill danger">Pix expirado</span>
+        <div class="pr">R$ 110,00</div>
+        <button class="chev">▾</button>
+      </div>
+
+      <div class="row">
+        <div class="id">AV-2025-11-08-C</div>
+        <div>
+          <div class="nm">2 produtos · Óleo CBD 10%, Goma CBD 25mg</div>
+          <div class="meta">08/11/2025 · Retirada combinada</div>
+        </div>
+        <span class="pill ok">Enviado</span>
+        <div class="pr">R$ 320,00</div>
+        <button class="chev">▾</button>
+      </div>
+    </main>
+  </body>
+</html>

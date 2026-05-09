@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>B · Admin</title>
+    <link rel="stylesheet" href="_tokens.css" />
+    <link rel="stylesheet" href="_shell.css" />
+    <style>
+      .gateGrid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+      .gateCard {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-sm);
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .gateCard h4 {
+        margin: 0;
+        font-size: 13px;
+        font-weight: 600;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+      }
+      .gateCard p {
+        margin: 0;
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+      .gateCard .cmd {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        background: var(--soft);
+        padding: 6px 8px;
+        border-radius: var(--r-sm);
+        color: var(--ink-soft);
+      }
+      .gateCard footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: auto;
+      }
+
+      .twoCol {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 360px;
+        gap: 16px;
+        align-items: start;
+      }
+      .timeline {
+        padding: 0;
+      }
+      .tev {
+        display: grid;
+        grid-template-columns: 80px 18px 1fr;
+        gap: 8px;
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--line-soft);
+        align-items: start;
+      }
+      .tev time {
+        font-size: 11px;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+        padding-top: 2px;
+      }
+      .tev .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--muted-2);
+        margin: 4px 0 0 4px;
+      }
+      .tev.ok .dot {
+        background: var(--green);
+      }
+      .tev.warn .dot {
+        background: var(--warn);
+      }
+      .tev.danger .dot {
+        background: var(--danger);
+      }
+      .tev .body {
+        font-size: 13px;
+      }
+      .tev .body .what {
+        font-weight: 600;
+      }
+      .tev .body .meta {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sb">
+        <div class="brand"><span class="seal">A</span><span>Apoiar Brasil</span></div>
+        <nav>
+          <span class="navhead">Operação</span>
+          <a href="b-comando.html"><span>Comando</span><span class="badge warn">7</span></a>
+          <a href="b-pacientes.html"><span>Pacientes</span><span class="badge danger">2</span></a>
+          <a href="b-estoque.html"><span>Estoque</span><span class="badge warn">3</span></a>
+          <a href="b-pedidos.html"><span>Pedidos</span><span class="badge warn">5</span></a>
+          <a href="b-fulfillment.html"><span>Fulfillment</span><span class="badge warn">4</span></a>
+          <a href="b-suporte.html"><span>Suporte</span><span class="badge">2</span></a>
+          <span class="navhead">Compliance</span>
+          <a class="active" href="b-admin.html"><span>Admin</span></a>
+          <a class="active" href="b-admin.html#auditoria"><span>Auditoria</span></a>
+        </nav>
+        <div class="footer"><span>tiago@…</span><span>Sair</span></div>
+      </aside>
+      <header class="tb">
+        <div class="breadcrumb">
+          <span>Compliance</span><span class="sep">/</span><strong>Admin e compliance</strong>
+        </div>
+        <div class="gsearch">
+          <span aria-hidden style="color: var(--muted)">⌕</span
+          ><input placeholder="Buscar gate, evento, usuário…" /><span class="kbd">⌘K</span>
+        </div>
+        <div class="roleChip">
+          <strong>Tiago Filter</strong><span>·</span><span>Administrador</span>
+        </div>
+      </header>
+      <main>
+        <div class="pagehead">
+          <h1>Admin e compliance</h1>
+          <div class="actions">
+            <span class="meta">Readiness do ambiente · 1 release bloqueado</span
+            ><button class="btn ghost mini">↻ Atualizar</button>
+          </div>
+        </div>
+
+        <div class="statusStrip">
+          <span class="countChip warn"
+            ><strong>1</strong> release bloqueado por evidências pendentes</span
+          >
+          <span class="countChip"><strong>8</strong> gates configurados</span>
+          <span class="countChip ok"><strong>6</strong> verdes</span>
+          <span class="countChip warn"><strong>2</strong> amarelos</span>
+          <div class="seg" style="margin-left: auto">
+            <button class="on">Gates</button>
+            <button>Auditoria</button>
+            <button>Usuários</button>
+          </div>
+          <select class="filterIn" data-filter="adminStatus" style="min-width: 140px">
+            <option value="all">Todos</option>
+            <option value="payment">Pagamentos</option>
+            <option value="security">Segurança</option>
+            <option value="ops">Ops</option>
+          </select>
+        </div>
+
+        <h2
+          style="
+            margin: 6px 0 10px;
+            font-family: var(--font-display);
+            font-size: 16px;
+            font-weight: 600;
+          "
+        >
+          Release gates · Readiness do ambiente
+        </h2>
+        <div class="gateGrid">
+          <article class="gateCard">
+            <h4>Pix provider <span class="pill ok">verde</span></h4>
+            <p>Webhook Pix assinado validado. Aceite do provider registrado.</p>
+            <div class="cmd">npm run readiness:pix</div>
+            <footer>
+              <span>provider approval · 12/05 14:02</span
+              ><button class="btn ghost mini">Re-rodar</button>
+            </footer>
+          </article>
+          <article class="gateCard">
+            <h4>Webhook Pix <span class="pill ok">verde</span></h4>
+            <p>Drill de assinatura HMAC último OK. Webhook drill validado.</p>
+            <div class="cmd">npm run drill:webhook</div>
+            <footer>
+              <span>webhook drill · 12/05 14:00</span
+              ><button class="btn ghost mini">Re-rodar</button>
+            </footer>
+          </article>
+          <article class="gateCard">
+            <h4>Aceite do provider <span class="pill ok">verde</span></h4>
+            <p>Termos do PSP assinados. Renovação anual em 22/12/2026.</p>
+            <div class="cmd">—</div>
+            <footer>
+              <span>provider approval · arquivo</span
+              ><button class="btn ghost mini">Ver doc</button>
+            </footer>
+          </article>
+          <article class="gateCard">
+            <h4>Deploy/domain/logs <span class="pill warn">amarelo</span></h4>
+            <p>deployment check OK. Logs de produção parcialmente indexados.</p>
+            <div class="cmd">npm run deployment-check</div>
+            <footer>
+              <span>1 evidência pendente</span><button class="btn primary mini">Anexar</button>
+            </footer>
+          </article>
+          <article class="gateCard">
+            <h4>Domínio/TLS <span class="pill ok">verde</span></h4>
+            <p>domain tls A+ no SSLLabs. Renovação 22/09/2026.</p>
+            <div class="cmd">npm run domain-tls</div>
+            <footer>
+              <span>domain tls · 12/05</span><button class="btn ghost mini">Re-rodar</button>
+            </footer>
+          </article>
+          <article class="gateCard">
+            <h4>Schema DB <span class="pill ok">verde</span></h4>
+            <p>schema db migrations OK. Diff vs main = 0.</p>
+            <div class="cmd">npm run schema:check</div>
+            <footer>
+              <span>schema db · 12/05 13:55</span><button class="btn ghost mini">Re-rodar</button>
+            </footer>
+          </article>
+          <article class="gateCard">
+            <h4>Sessão/cookie <span class="pill ok">verde</span></h4>
+            <p>session cookie __Host- prefix em produção. SameSite=lax.</p>
+            <div class="cmd">npm run session:audit</div>
+            <footer>
+              <span>session cookie · 12/05 13:42</span
+              ><button class="btn ghost mini">Re-rodar</button>
+            </footer>
+          </article>
+          <article class="gateCard">
+            <h4>Backup/restore <span class="pill warn">amarelo</span></h4>
+            <p>restore drill atrasado. Backup offsite OK (S3 cross-region).</p>
+            <div class="cmd">npm run drill:restore</div>
+            <footer>
+              <span>restore drill · há 14 dias</span><button class="btn primary mini">Rodar</button>
+            </footer>
+          </article>
+          <article class="gateCard">
+            <h4>Backup offsite <span class="pill ok">verde</span></h4>
+            <p>backup offsite snapshot 12/05 04:00. checksum OK.</p>
+            <div class="cmd">npm run backup:verify</div>
+            <footer>
+              <span>backup offsite · 12/05</span><button class="btn ghost mini">Re-rodar</button>
+            </footer>
+          </article>
+        </div>
+
+        <div class="twoCol" id="auditoria">
+          <section class="panel">
+            <header class="ph">
+              <h3>Auditoria recente</h3>
+              <span class="meta">eventos · últimos 30 min · agrupado</span>
+            </header>
+            <div class="timeline">
+              <div class="tev ok">
+                <time>14:31</time><span class="dot"></span>
+                <div class="body">
+                  <div class="what">Webhook Pix confirmado</div>
+                  <div class="meta">payment · APO-1019 · ip 10.0.0.42 · ua=stripe-webhook</div>
+                </div>
+              </div>
+              <div class="tev ok">
+                <time>14:24</time><span class="dot"></span>
+                <div class="body">
+                  <div class="what">Receita carregada</div>
+                  <div class="meta">documents · APO-1027 · por marina@equipe · sha256:9f2a…</div>
+                </div>
+              </div>
+              <div class="tev warn">
+                <time>14:18</time><span class="dot"></span>
+                <div class="body">
+                  <div class="what">Convite reset</div>
+                  <div class="meta">team · APO-1028 · por tiago@ · novo convite JOAORESET2026</div>
+                </div>
+              </div>
+              <div class="tev ok">
+                <time>14:09</time><span class="dot"></span>
+                <div class="body">
+                  <div class="what">Lote criado · CBD 100mg · 24 un.</div>
+                  <div class="meta">stock · LOT-2026-05-A · por joao@equipe</div>
+                </div>
+              </div>
+              <div class="tev ok">
+                <time>13:58</time><span class="dot"></span>
+                <div class="body">
+                  <div class="what">Pedido enviado · PED-3019</div>
+                  <div class="meta">fulfillment · GED Log SP · por sistema</div>
+                </div>
+              </div>
+              <div class="tev warn">
+                <time>13:42</time><span class="dot"></span>
+                <div class="body">
+                  <div class="what">Suporte respondido · SUP-203</div>
+                  <div class="meta">support · APO-1018 · por marina@equipe</div>
+                </div>
+              </div>
+              <div class="tev danger">
+                <time>13:18</time><span class="dot"></span>
+                <div class="body">
+                  <div class="what">Tentativa de login falhou × 3</div>
+                  <div class="meta">
+                    security · ip 200.10.20.30 · ua=mozilla · bloqueio temporário 15min
+                  </div>
+                </div>
+              </div>
+              <div class="tev ok">
+                <time>13:00</time><span class="dot"></span>
+                <div class="body">
+                  <div class="what">Backup snapshot</div>
+                  <div class="meta">infra · S3 cross-region · 412 MB · checksum OK</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <aside class="panel">
+            <header class="ph">
+              <h3>Usuários da equipe</h3>
+              <span class="meta">5 usuários · 3 papéis</span>
+            </header>
+            <table class="adm">
+              <thead>
+                <tr>
+                  <th>Usuário</th>
+                  <th>Papel</th>
+                  <th class="right">Último</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="who">
+                      <span class="name">Tiago Filter</span><span class="meta">tiago@…</span>
+                    </div>
+                  </td>
+                  <td><span class="pill ok">admin</span></td>
+                  <td class="right num">agora</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="who">
+                      <span class="name">Marina C.</span><span class="meta">marina@…</span>
+                    </div>
+                  </td>
+                  <td><span class="pill">support</span></td>
+                  <td class="right num">14:24</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="who">
+                      <span class="name">João S.</span><span class="meta">joao@…</span>
+                    </div>
+                  </td>
+                  <td><span class="pill">stock</span></td>
+                  <td class="right num">14:09</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="who">
+                      <span class="name">Pedro R.</span><span class="meta">pedro@…</span>
+                    </div>
+                  </td>
+                  <td><span class="pill">fulfillment</span></td>
+                  <td class="right num">13:58</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="who">
+                      <span class="name">Cláudia L.</span><span class="meta">claudia@…</span>
+                    </div>
+                  </td>
+                  <td><span class="pill">ops</span></td>
+                  <td class="right num">ontem</td>
+                </tr>
+              </tbody>
+            </table>
+            <div
+              style="padding: 10px 14px; display: flex; gap: 8px; border-top: 1px solid var(--line)"
+            >
+              <button class="btn ghost mini" style="flex: 1">Trocar papel</button>
+              <button class="btn primary mini" style="flex: 1">+ Convidar</button>
+            </div>
+          </aside>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

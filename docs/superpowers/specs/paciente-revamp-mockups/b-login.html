@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>Login</title>
+    <link rel="stylesheet" href="_shared.css" />
+    <style>
+      body {
+        background: var(--paper-warm);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      .top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 32px;
+        border-bottom: 1px solid var(--line);
+        background: var(--paper);
+      }
+      .top .logo {
+        font: 700 17px/1 var(--font-display);
+        letter-spacing: 0.04em;
+      }
+      .top .logo span {
+        color: var(--green);
+      }
+      .top a {
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 13px;
+      }
+      .top a:hover {
+        color: var(--ink);
+      }
+
+      main {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+      }
+
+      .pitch {
+        padding: 60px 64px;
+        background: linear-gradient(160deg, var(--ink) 0%, #1a3a2a 60%, #2a5a3f 100%);
+        color: var(--paper);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+      }
+      .pitch::after {
+        content: "";
+        position: absolute;
+        right: -100px;
+        bottom: -100px;
+        width: 380px;
+        height: 380px;
+        background: radial-gradient(circle, rgba(214, 181, 106, 0.15) 0%, transparent 70%);
+        border-radius: 50%;
+      }
+      .pitch .kicker {
+        font: 600 11px/1 var(--font-ui);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--green-soft);
+        opacity: 0.8;
+      }
+      .pitch h1 {
+        margin: 14px 0 18px;
+        font: 500 36px/1.15 var(--font-display);
+        letter-spacing: -0.01em;
+        max-width: 14ch;
+      }
+      .pitch p {
+        margin: 0;
+        color: #c7d3cc;
+        font-size: 15px;
+        max-width: 38ch;
+        line-height: 1.6;
+      }
+      .pitch ul {
+        list-style: none;
+        padding: 0;
+        margin: 36px 0 0;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .pitch li {
+        display: grid;
+        grid-template-columns: 24px 1fr;
+        gap: 12px;
+        font-size: 13px;
+        color: #c7d3cc;
+        align-items: start;
+      }
+      .pitch li::before {
+        content: "✓";
+        color: var(--green);
+        font-weight: 700;
+        font-size: 14px;
+        line-height: 1.4;
+      }
+      .pitch li b {
+        color: var(--paper);
+        font-weight: 600;
+        display: block;
+        margin-bottom: 2px;
+        font-size: 14px;
+      }
+      .pitch .footer {
+        font-size: 11px;
+        color: #687970;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        padding-top: 18px;
+        display: flex;
+        gap: 18px;
+        position: relative;
+        z-index: 2;
+      }
+
+      .form-wrap {
+        padding: 60px 64px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--paper-warm);
+      }
+      .card {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        padding: 36px 36px 32px;
+        width: 100%;
+        max-width: 420px;
+        box-shadow: 0 16px 48px -24px rgba(13, 31, 23, 0.1);
+      }
+      .card h2 {
+        margin: 0 0 4px;
+        font: 500 22px/1.2 var(--font-display);
+      }
+      .card .lead {
+        margin: 0 0 24px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .field {
+        display: block;
+        margin-bottom: 16px;
+      }
+      .field label {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        color: var(--ink);
+        font-weight: 500;
+        font-size: 13px;
+        margin-bottom: 6px;
+      }
+      .field label .hint {
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 400;
+      }
+      .field input {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-sm);
+        font: inherit;
+        background: var(--paper-warm);
+        color: inherit;
+      }
+      .field input:focus {
+        border-color: var(--ink);
+        background: var(--paper);
+        outline: none;
+      }
+      .field input::placeholder {
+        color: #a8b3ad;
+        font-family: monospace;
+        font-size: 13px;
+      }
+
+      .submit {
+        width: 100%;
+        padding: 14px;
+        background: var(--ink);
+        color: var(--paper);
+        border: 0;
+        border-radius: var(--r-sm);
+        font-weight: 600;
+        font-size: 14px;
+        letter-spacing: 0.04em;
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+      .submit:hover {
+        background: var(--green-deep);
+      }
+
+      .bot {
+        margin-top: 20px;
+        padding-top: 18px;
+        border-top: 1px solid var(--line-soft);
+        font-size: 12px;
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .bot a {
+        color: var(--green-deep);
+        text-decoration: none;
+        font-weight: 500;
+      }
+      .bot a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="top">
+      <div class="logo">APOIAR<span>·</span>BRASIL</div>
+      <a href="#">Suporte da associação ↗</a>
+    </header>
+
+    <main>
+      <section class="pitch">
+        <div>
+          <span class="kicker">Portal do Paciente</span>
+          <h1>Sua receita, seus pedidos, em um só lugar</h1>
+          <p>
+            Acesse o catálogo autorizado pela associação, gere Pix com reserva de estoque e
+            acompanhe a entrega — tudo com cadastro privado.
+          </p>
+          <ul>
+            <li>
+              <div><b>Estoque reservado quando o Pix é gerado</b>Sem cobrança em duplicidade.</div>
+            </li>
+            <li>
+              <div>
+                <b>Receita e carteirinha sempre visíveis</b>Você sabe quando renovar antes que
+                vença.
+              </div>
+            </li>
+            <li>
+              <div>
+                <b>Histórico privado e auditado</b>Apenas a equipe da associação tem acesso.
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="footer">
+          <span>© Apoiar Brasil 2026</span>
+          <span>·</span>
+          <span>LGPD-compliant</span>
+          <span>·</span>
+          <span>Operação privada</span>
+        </div>
+      </section>
+
+      <section class="form-wrap">
+        <div class="card">
+          <h2>Entrar com segurança</h2>
+          <p class="lead">Use o código de associado e o convite privado enviados pela equipe.</p>
+
+          <form>
+            <div class="field">
+              <label>Código de associado</label>
+              <input name="memberCode" placeholder="APO-1027" autocomplete="username" />
+            </div>
+            <div class="field">
+              <label>Convite privado <span class="hint">enviado por e-mail/WhatsApp</span></label>
+              <input name="inviteCode" placeholder="HELENA2026" autocomplete="one-time-code" />
+            </div>
+            <button type="submit" class="submit">Entrar →</button>
+          </form>
+
+          <div class="bot">
+            <span>Não recebeu seu convite?</span>
+            <a href="#">Falar com a equipe</a>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

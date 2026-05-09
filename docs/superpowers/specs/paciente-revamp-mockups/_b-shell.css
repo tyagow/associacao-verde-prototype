@@ -1,0 +1,99 @@
+/* Shared B shell — used by b.html, b2/b3/b4, b-historico, b-suporte */
+body {
+  background: var(--paper-warm);
+  font-size: 14px;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 14px 28px;
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+.logo {
+  font: 700 17px/1 var(--font-display);
+  letter-spacing: 0.04em;
+}
+.logo span {
+  color: var(--green);
+}
+.search {
+  flex: 1;
+  max-width: 520px;
+  display: flex;
+  align-items: center;
+  background: var(--soft);
+  border-radius: 999px;
+  padding: 8px 14px;
+  gap: 8px;
+}
+.search input {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  outline: none;
+}
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+}
+.pill-id {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--green-tint);
+  color: var(--green-deep);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.pill-id::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 99px;
+  background: var(--green);
+}
+.pill-id.warn {
+  background: var(--gold-soft);
+  color: var(--gold-on);
+}
+.pill-id.warn::before {
+  background: var(--warn);
+}
+.actions button {
+  background: transparent;
+  border: 0;
+  color: var(--ink);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px 28px;
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+}
+.tabs a {
+  padding: 10px 16px;
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 13px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.tabs a.on {
+  color: var(--ink);
+  border-color: var(--ink);
+}

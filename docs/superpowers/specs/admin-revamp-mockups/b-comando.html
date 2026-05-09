@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>B · Stripe Workbench — Comando</title>
+    <link rel="stylesheet" href="_tokens.css" />
+    <style>
+      /* ================== B · Stripe Workbench ================== */
+      .shell {
+        display: grid;
+        grid-template-columns: 232px minmax(0, 1fr);
+        grid-template-rows: 52px 1fr;
+        grid-template-areas:
+          "side top"
+          "side main";
+        min-height: 100vh;
+      }
+      /* light cream sidebar */
+      aside {
+        grid-area: side;
+        background: var(--paper-warm);
+        border-right: 1px solid var(--line);
+        padding: 14px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+      aside .brand {
+        padding: 6px 8px;
+      }
+      aside nav {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+      }
+      aside .navhead {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        padding: 8px 10px 4px;
+      }
+      aside nav a {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 7px 10px;
+        border-radius: var(--r-sm);
+        font-size: 13px;
+        color: var(--ink-soft);
+      }
+      aside nav a:hover {
+        background: var(--soft);
+        color: var(--ink);
+      }
+      aside nav a.active {
+        background: var(--ink);
+        color: var(--paper);
+      }
+      aside nav a.active .badge {
+        background: rgba(255, 255, 255, 0.18);
+        color: var(--paper);
+      }
+      aside nav a .badge {
+        background: var(--soft-2);
+        color: var(--muted);
+        font-size: 10px;
+        padding: 1px 6px;
+        border-radius: var(--r-pill);
+        font-variant-numeric: tabular-nums;
+        border: 1px solid var(--line);
+      }
+      aside nav a .badge.warn {
+        background: var(--warn-soft);
+        color: var(--warn-ink);
+        border-color: transparent;
+      }
+      aside nav a .badge.danger {
+        background: var(--danger-soft);
+        color: #7c2419;
+        border-color: var(--danger-line);
+      }
+      aside .footer {
+        margin-top: auto;
+        font-size: 11px;
+        color: var(--muted);
+        padding: 8px 10px;
+        border-top: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+      }
+
+      /* topbar — global search + role pill */
+      .topbar {
+        grid-area: top;
+        background: var(--paper);
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 0 24px;
+      }
+      .breadcrumb {
+        font-size: 13px;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 220px;
+      }
+      .breadcrumb strong {
+        color: var(--ink);
+        font-weight: 600;
+      }
+      .breadcrumb .sep {
+        color: var(--muted-2);
+      }
+      .gsearch {
+        flex: 1;
+        max-width: 480px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--soft);
+        border: 1px solid var(--line);
+        border-radius: var(--r-sm);
+        padding: 0 10px;
+        height: 30px;
+      }
+      .gsearch input {
+        flex: 1;
+        height: 100%;
+        background: transparent;
+        border: 0;
+        outline: 0;
+        font: inherit;
+        font-size: 12px;
+        color: var(--ink);
+      }
+      .gsearch .kbd {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        padding: 1px 5px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-sm);
+        color: var(--muted);
+        background: var(--paper);
+      }
+      .roleChip {
+        margin-left: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 10px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-pill);
+        background: var(--paper);
+        font-size: 12px;
+        color: var(--ink-soft);
+      }
+      .roleChip strong {
+        color: var(--ink);
+        font-weight: 600;
+      }
+
+      /* main */
+      main {
+        grid-area: main;
+        padding: 22px 28px 32px;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+      .pagehead {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 14px;
+      }
+      .pagehead h1 {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: 24px;
+        font-weight: 600;
+        letter-spacing: -0.018em;
+      }
+      .pagehead .meta {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      /* status strip — count chips + search + segmented + atualizar */
+      .statusStrip {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 8px 12px;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-sm);
+        margin-bottom: 16px;
+      }
+      .countChip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 10px;
+        border-radius: var(--r-pill);
+        background: var(--soft);
+        color: var(--ink-soft);
+        font-size: 12px;
+        font-weight: 500;
+      }
+      .countChip strong {
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+      }
+      .countChip.warn {
+        background: var(--warn-soft);
+        color: var(--warn-ink);
+      }
+      .countChip.danger {
+        background: var(--danger-soft);
+        color: #7c2419;
+      }
+      .countChip.ok {
+        background: var(--green-tint);
+        color: var(--green-deep);
+      }
+      .seg {
+        display: inline-flex;
+        gap: 0;
+        border: 1px solid var(--line);
+        border-radius: var(--r-sm);
+        overflow: hidden;
+        background: var(--paper);
+      }
+      .seg button {
+        height: 28px;
+        padding: 0 12px;
+        font: 600 12px var(--font-ui);
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+        color: var(--muted);
+        border-right: 1px solid var(--line);
+      }
+      .seg button:last-child {
+        border-right: 0;
+      }
+      .seg button.on {
+        background: var(--ink);
+        color: var(--paper);
+      }
+      .filterIn {
+        margin-left: auto;
+        height: 28px;
+        padding: 0 10px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-sm);
+        font: inherit;
+        font-size: 12px;
+        min-width: 240px;
+        background: var(--paper);
+      }
+
+      /* KPI ribbon */
+      .kpiRow {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0;
+        border: 1px solid var(--line);
+        border-radius: var(--r-sm);
+        background: var(--paper);
+        margin-bottom: 16px;
+      }
+      .kpiRow .kpi {
+        padding: 14px 18px;
+        border-right: 1px solid var(--line-soft);
+      }
+      .kpiRow .kpi:last-child {
+        border-right: 0;
+      }
+
+      /* two-column body */
+      .body {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 360px;
+        gap: 16px;
+        align-items: start;
+      }
+
+      .panel {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-sm);
+        overflow: hidden;
+      }
+      .panel header {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .panel header h3 {
+        margin: 0;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .panel header .meta {
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      /* zebra rows */
+      table.adm tbody tr:nth-child(even) td {
+        background: var(--paper-warm);
+      }
+      table.adm tbody tr:hover td {
+        background: var(--soft);
+      }
+
+      /* activity feed entries */
+      .feed {
+        padding: 6px 0;
+      }
+      .feed li {
+        list-style: none;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--line-soft);
+        display: grid;
+        grid-template-columns: 60px 1fr;
+        gap: 8px;
+      }
+      .feed li:last-child {
+        border-bottom: 0;
+      }
+      .feed time {
+        font-size: 11px;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+      }
+      .feed .what {
+        font-size: 13px;
+        color: var(--ink);
+      }
+      .feed .who {
+        font-size: 11px;
+        color: var(--muted);
+      }
+
+      .who {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .who .name {
+        font-weight: 600;
+        font-size: 13px;
+      }
+      .who .meta {
+        font-size: 11px;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside>
+        <div class="brand"><span class="seal">A</span><span>Apoiar Brasil</span></div>
+        <nav>
+          <span class="navhead">Operação</span>
+          <a class="active" href="#"><span>Comando</span><span class="badge warn">7</span></a>
+          <a href="#"><span>Pacientes</span><span class="badge danger">2</span></a>
+          <a href="#"><span>Estoque</span><span class="badge warn">3</span></a>
+          <a href="#"><span>Pedidos</span><span class="badge warn">5</span></a>
+          <a href="#"><span>Fulfillment</span><span class="badge warn">4</span></a>
+          <a href="#"><span>Suporte</span><span class="badge">2</span></a>
+          <span class="navhead">Compliance</span>
+          <a href="#"><span>Admin</span></a>
+          <a href="#"><span>Auditoria</span></a>
+        </nav>
+        <div class="footer"><span>tiago@…</span><span>Sair</span></div>
+      </aside>
+
+      <header class="topbar">
+        <div class="breadcrumb">
+          <span>Equipe</span><span class="sep">/</span><strong>Comando</strong>
+        </div>
+        <div class="gsearch">
+          <span aria-hidden style="color: var(--muted)">⌕</span>
+          <input placeholder="Buscar paciente, pedido, lote, suporte…" />
+          <span class="kbd">⌘K</span>
+        </div>
+        <div class="roleChip">
+          <strong>Tiago Filter</strong><span>·</span><span>Administrador</span>
+        </div>
+      </header>
+
+      <main>
+        <div class="pagehead">
+          <h1>Fila de ação agora</h1>
+          <span class="meta">Atualizado 14:32 · próximo refresh em 18s</span>
+        </div>
+
+        <div class="statusStrip">
+          <span class="countChip warn"><strong>5</strong> Pix vencendo</span>
+          <span class="countChip warn"><strong>4</strong> em separação</span>
+          <span class="countChip danger"><strong>2</strong> bloqueados</span>
+          <span class="countChip"><strong>3</strong> estoque baixo</span>
+          <span class="countChip ok"><strong>2</strong> suporte aberto</span>
+          <div class="seg" style="margin-left: auto">
+            <button class="on">Tudo</button>
+            <button>Hoje</button>
+            <button>SLA</button>
+          </div>
+          <button class="btn ghost mini">↻ Atualizar</button>
+        </div>
+
+        <div class="kpiRow">
+          <div class="kpi">
+            <span class="label">Pix pendentes</span><span class="value">5</span
+            ><span class="delta">vencendo &lt; 30 min</span>
+          </div>
+          <div class="kpi">
+            <span class="label">Em separação</span><span class="value">4</span
+            ><span class="delta up">3 dentro do SLA</span>
+          </div>
+          <div class="kpi">
+            <span class="label">Bloqueados</span><span class="value">2</span
+            ><span class="delta down">+1 hoje</span>
+          </div>
+          <div class="kpi">
+            <span class="label">Estoque baixo</span><span class="value">3</span
+            ><span class="delta">limiar &lt; 5</span>
+          </div>
+          <div class="kpi">
+            <span class="label">Suporte aberto</span><span class="value">2</span
+            ><span class="delta">SLA &lt; 24h</span>
+          </div>
+        </div>
+
+        <div class="body">
+          <section class="panel">
+            <header>
+              <h3>Fila prioritária</h3>
+              <div style="display: flex; gap: 8px; align-items: center">
+                <input
+                  class="filterIn"
+                  style="margin: 0; min-width: 200px"
+                  placeholder="Filtrar fila…"
+                />
+                <button class="btn ghost mini">Exportar</button>
+              </div>
+            </header>
+            <table class="adm">
+              <thead>
+                <tr>
+                  <th style="width: 80px">Tipo</th>
+                  <th style="width: 104px">ID</th>
+                  <th>Paciente</th>
+                  <th style="width: 130px">SLA</th>
+                  <th style="width: 130px">Status</th>
+                  <th class="right" style="width: 110px">Valor</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="pill warn">Pix</span></td>
+                  <td><span class="mono">APO-1027</span></td>
+                  <td>
+                    <div class="who">
+                      <span class="name">Helena Ramos</span><span class="meta">3 itens</span>
+                    </div>
+                  </td>
+                  <td><span class="num">vence 14:32</span></td>
+                  <td><span class="pill warn">aguardando</span></td>
+                  <td class="right num">R$ 600,00</td>
+                </tr>
+                <tr>
+                  <td><span class="pill warn">Pix</span></td>
+                  <td><span class="mono">APO-1031</span></td>
+                  <td>
+                    <div class="who">
+                      <span class="name">João Oliveira</span><span class="meta">1 item</span>
+                    </div>
+                  </td>
+                  <td><span class="num">vence 28:11</span></td>
+                  <td><span class="pill warn">aguardando</span></td>
+                  <td class="right num">R$ 220,00</td>
+                </tr>
+                <tr>
+                  <td><span class="pill ok">Fulfill</span></td>
+                  <td><span class="mono">PED-3021</span></td>
+                  <td>
+                    <div class="who">
+                      <span class="name">Marina Costa</span><span class="meta">APO-1018</span>
+                    </div>
+                  </td>
+                  <td><span class="num">SLA hoje 18h</span></td>
+                  <td><span class="pill ok">pronto p/ envio</span></td>
+                  <td class="right num">R$ 980,00</td>
+                </tr>
+                <tr>
+                  <td><span class="pill ok">Fulfill</span></td>
+                  <td><span class="mono">PED-3022</span></td>
+                  <td>
+                    <div class="who">
+                      <span class="name">Roberto Alves</span><span class="meta">APO-1020</span>
+                    </div>
+                  </td>
+                  <td><span class="num">SLA amanhã</span></td>
+                  <td><span class="pill warn">em separação</span></td>
+                  <td class="right num">R$ 340,00</td>
+                </tr>
+                <tr>
+                  <td><span class="pill danger">Bloqueio</span></td>
+                  <td><span class="mono">APO-1028</span></td>
+                  <td>
+                    <div class="who">
+                      <span class="name">Ana Beatriz</span><span class="meta">receita venceu</span>
+                    </div>
+                  </td>
+                  <td><span class="num">há 6 dias</span></td>
+                  <td><span class="pill danger">bloqueado</span></td>
+                  <td class="right num">—</td>
+                </tr>
+                <tr>
+                  <td><span class="pill warn">Estoque</span></td>
+                  <td><span class="mono">PRD-014</span></td>
+                  <td>
+                    <div class="who">
+                      <span class="name">CBD Óleo 200mg</span><span class="meta">3 unidades</span>
+                    </div>
+                  </td>
+                  <td><span class="num">próx. lote 18/05</span></td>
+                  <td><span class="pill warn">baixo</span></td>
+                  <td class="right num">3 un.</td>
+                </tr>
+                <tr>
+                  <td><span class="pill">Suporte</span></td>
+                  <td><span class="mono">SUP-204</span></td>
+                  <td>
+                    <div class="who">
+                      <span class="name">Helena Ramos</span
+                      ><span class="meta">"Pix não confirmou"</span>
+                    </div>
+                  </td>
+                  <td><span class="num">há 2h</span></td>
+                  <td><span class="pill warn">aguardando equipe</span></td>
+                  <td class="right num">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <aside class="panel" aria-label="Atividade recente">
+            <header>
+              <h3>Atividade recente</h3>
+              <span class="meta">últimos 30 min</span>
+            </header>
+            <ul class="feed">
+              <li>
+                <time>14:31</time>
+                <div>
+                  <span class="what"
+                    >Webhook Pix confirmado · <span class="mono">APO-1019</span></span
+                  ><br /><span class="who">por sistema</span>
+                </div>
+              </li>
+              <li>
+                <time>14:24</time>
+                <div>
+                  <span class="what">Receita carregada · <span class="mono">APO-1027</span></span
+                  ><br /><span class="who">por marina@equipe</span>
+                </div>
+              </li>
+              <li>
+                <time>14:18</time>
+                <div>
+                  <span class="what">Convite reset · <span class="mono">APO-1028</span></span
+                  ><br /><span class="who">por tiago@</span>
+                </div>
+              </li>
+              <li>
+                <time>14:09</time>
+                <div>
+                  <span class="what">Lote criado · CBD 100mg · 24 un.</span><br /><span class="who"
+                    >por joao@equipe</span
+                  >
+                </div>
+              </li>
+              <li>
+                <time>13:58</time>
+                <div>
+                  <span class="what">Pedido enviado · <span class="mono">PED-3019</span></span
+                  ><br /><span class="who">por sistema · GED Log</span>
+                </div>
+              </li>
+              <li>
+                <time>13:42</time>
+                <div>
+                  <span class="what">Suporte respondido · <span class="mono">SUP-203</span></span
+                  ><br /><span class="who">por marina@equipe</span>
+                </div>
+              </li>
+            </ul>
+          </aside>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>Admin Revamp · Direção B (Stripe Workbench)</title>
+    <link rel="stylesheet" href="_tokens.css" />
+    <style>
+      body {
+        padding: 32px 40px;
+        max-width: 1280px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-family: var(--font-display);
+        font-size: 28px;
+        font-weight: 600;
+        letter-spacing: -0.018em;
+        margin: 0 0 4px;
+      }
+      .lead {
+        color: var(--muted);
+        font-size: 14px;
+        margin: 0 0 24px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+      .item {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-md);
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        text-decoration: none;
+        color: var(--ink);
+      }
+      .item:hover {
+        border-color: var(--line-strong);
+        background: var(--paper-warm);
+      }
+      .item .tag {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+      .item h2 {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: 17px;
+        font-weight: 600;
+      }
+      .item p {
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--ink-soft);
+      }
+      .other {
+        margin-top: 24px;
+        padding: 12px 14px;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-sm);
+        font-size: 12px;
+      }
+      .other a {
+        color: var(--green-deep);
+        font-weight: 600;
+        margin-right: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Admin / Equipe — direção B (Stripe Workbench)</h1>
+    <p class="lead">
+      Sidebar claro, status strip em todas as telas, tabelas com zebra leve. Raios 3/5/7 globais.
+      Mesma paleta do paciente, dialeto utilitário (denso, sem heróis, sem gradientes).
+    </p>
+
+    <div class="row">
+      <a class="item" href="b-comando.html">
+        <span class="tag">/equipe</span>
+        <h2>Comando</h2>
+        <p>Dashboard · KPI ribbon (5) + fila prioritária + atividade recente em coluna direita.</p>
+      </a>
+      <a class="item" href="b-pacientes.html">
+        <span class="tag">/equipe/pacientes</span>
+        <h2>Pacientes &amp; documentos</h2>
+        <p>Registry com plano de cuidado, ledger de receitas (sha hash), reset de convite.</p>
+      </a>
+      <a class="item" href="b-estoque.html">
+        <span class="tag">/equipe/estoque</span>
+        <h2>Estoque &amp; cultivo</h2>
+        <p>Ledger de produtos com lots inline · cultivo separado em painel inferior.</p>
+      </a>
+      <a class="item" href="b-pedidos.html">
+        <span class="tag">/equipe/pedidos</span>
+        <h2>Pedidos &amp; Pix</h2>
+        <p>Fila de pedidos · drawer lateral (PED detalhado) · ações Pix inline.</p>
+      </a>
+      <a class="item" href="b-fulfillment.html">
+        <span class="tag">/equipe/fulfillment</span>
+        <h2>Fulfillment</h2>
+        <p>Kanban 4 colunas · Aguardando / Separando / Pronto / Enviados (drag-and-drop visual).</p>
+      </a>
+      <a class="item" href="b-suporte.html">
+        <span class="tag">/equipe/suporte</span>
+        <h2>Suporte ao paciente</h2>
+        <p>
+          Workbench 3 colunas · fila + thread + contexto (paciente, pedido recente, casos
+          anteriores).
+        </p>
+      </a>
+      <a class="item" href="b-admin.html">
+        <span class="tag">/admin</span>
+        <h2>Admin &amp; compliance</h2>
+        <p>
+          Release gates (9 cards) · auditoria timeline · usuários da equipe · readiness do ambiente.
+        </p>
+      </a>
+    </div>
+
+    <div class="other">
+      <strong>Outras direções (referência):</strong>
+      <a href="a-comando.html">A · Linear Mono</a>
+      <a href="c-comando.html">C · Retool Cockpit</a>
+      <a href="compare.html">Compare lado a lado</a>
+    </div>
+  </body>
+</html>

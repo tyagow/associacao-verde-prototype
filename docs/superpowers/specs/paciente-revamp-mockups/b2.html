@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>B2 · Carrinho com itens</title>
+    <link rel="stylesheet" href="_shared.css" />
+    <link rel="stylesheet" href="_b-shell.css" />
+    <style>
+      .layout {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        min-height: calc(100vh - 110px);
+      }
+      main {
+        padding: 28px 28px 28px;
+        max-width: none;
+      }
+      aside {
+        background: var(--paper);
+        border-left: 1px solid var(--line);
+        padding: 24px;
+        position: sticky;
+        top: 110px;
+        align-self: start;
+        height: calc(100vh - 110px);
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .breadcrumb {
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 18px;
+      }
+      .pagehead {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        margin-bottom: 18px;
+      }
+      .pagehead h1 {
+        margin: 0;
+        font: 500 22px/1.2 var(--font-display);
+      }
+      .pagehead .clear {
+        background: transparent;
+        border: 0;
+        color: var(--muted);
+        font-weight: 500;
+        font-size: 13px;
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 3px;
+      }
+
+      .cats {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 18px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+      .cats button {
+        flex-shrink: 0;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        padding: 9px 16px;
+        border-radius: 3px;
+        color: var(--ink);
+        font-weight: 500;
+        font-size: 13px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .cats button.on {
+        background: var(--ink);
+        color: var(--paper);
+        border-color: var(--ink);
+      }
+      .cats button .n {
+        font-size: 11px;
+        color: var(--muted);
+        padding: 2px 6px;
+        background: var(--soft);
+        border-radius: 99px;
+      }
+      .cats button.on .n {
+        background: rgba(255, 255, 255, 0.15);
+        color: var(--paper);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 16px;
+      }
+      .product {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+      .product .img {
+        height: 140px;
+        background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font: 700 28px/1 var(--font-display);
+        color: var(--gold-on);
+      }
+      .product .body {
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        flex: 1;
+      }
+      .product h3 {
+        margin: 0;
+        font: 500 15px/1.2 var(--font-display);
+      }
+      .product .meta {
+        color: var(--muted);
+        font-size: 12px;
+        flex: 1;
+      }
+      .product .row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 6px;
+      }
+      .product .price {
+        font: 600 16px/1 var(--font-display);
+        color: var(--ink);
+      }
+      .product .add {
+        background: var(--ink);
+        color: var(--paper);
+        border: 0;
+        padding: 8px 14px;
+        border-radius: 3px;
+        font-weight: 600;
+        font-size: 12px;
+      }
+      .product.in-cart {
+        border-color: var(--green);
+        box-shadow: 0 0 0 1px var(--green);
+      }
+      .product .badge-incart {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: var(--green);
+        color: var(--paper);
+        padding: 3px 8px;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .product .qty-mini {
+        display: inline-flex;
+        border: 1px solid var(--line);
+        border-radius: 3px;
+        background: var(--soft);
+        overflow: hidden;
+        align-items: center;
+      }
+      .product .qty-mini button {
+        background: transparent;
+        border: 0;
+        width: 30px;
+        height: 32px;
+        color: var(--ink);
+        font-weight: 600;
+      }
+      .product .qty-mini span {
+        padding: 0 8px;
+        font-weight: 600;
+      }
+
+      /* aside */
+      aside h3 {
+        margin: 0;
+        font: 500 17px/1.2 var(--font-display);
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+      }
+      aside h3 .count {
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 500;
+      }
+      aside .lead {
+        color: var(--muted);
+        font-size: 12px;
+        margin: -6px 0 0;
+      }
+      aside .line {
+        display: grid;
+        grid-template-columns: 36px 1fr auto;
+        gap: 12px;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--line-soft);
+        align-items: center;
+      }
+      aside .line:last-of-type {
+        border-bottom: 0;
+      }
+      aside .line .sq {
+        width: 36px;
+        height: 36px;
+        border-radius: 3px;
+        background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font: 700 12px/1 var(--font-display);
+        color: var(--gold-on);
+      }
+      aside .line .nm {
+        font-weight: 500;
+        font-size: 13px;
+        line-height: 1.3;
+      }
+      aside .line .mt {
+        color: var(--muted);
+        font-size: 11px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 3px;
+      }
+      aside .line .mt button {
+        background: transparent;
+        border: 0;
+        color: var(--muted);
+        font-size: 11px;
+        padding: 0;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+      aside .line .pr {
+        font: 600 13px/1 var(--font-display);
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      aside .ship {
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+      }
+      aside .ship label {
+        display: block;
+        color: var(--muted);
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 6px;
+        font-weight: 600;
+      }
+      aside .ship select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-sm);
+        background: var(--paper);
+        font: inherit;
+      }
+      aside .totals {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+      }
+      aside .totals .r {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+      }
+      aside .totals .r.t {
+        font-size: 18px;
+        color: var(--ink);
+        font-weight: 600;
+      }
+      aside .totals .r.t b {
+        font: 700 22px/1 var(--font-display);
+      }
+      aside .cta {
+        padding: 14px;
+        background: var(--ink);
+        color: var(--paper);
+        border: 0;
+        border-radius: var(--r-md);
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: 0.04em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      aside .cta:hover {
+        background: var(--green-deep);
+      }
+      aside .cta .arrow {
+        transition: transform 0.15s;
+      }
+      aside .cta:hover .arrow {
+        transform: translateX(2px);
+      }
+      aside .reassure {
+        font-size: 11px;
+        color: var(--muted);
+        text-align: center;
+        margin: 0;
+        line-height: 1.5;
+      }
+      aside .reassure b {
+        color: var(--ink);
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="logo">APOIAR<span>·</span>BRASIL</div>
+      <div class="search">🔎<input placeholder="Buscar produtos do catálogo autorizado…" /></div>
+      <div class="actions">
+        <span class="pill-id">Helena · APO-1027</span>
+        <button>Sair</button>
+      </div>
+    </header>
+    <nav class="tabs">
+      <a class="on" href="b.html">Pedido</a>
+      <a href="b-historico.html">Histórico</a>
+      <a href="b-suporte.html">Suporte</a>
+      <a href="#" style="margin-left: auto">Meu perfil</a>
+    </nav>
+
+    <div class="layout">
+      <main>
+        <div class="breadcrumb">
+          Pedido em construção · A reserva acontece quando o Pix é gerado
+        </div>
+        <div class="pagehead">
+          <h1>Catálogo autorizado</h1>
+          <button class="clear">Limpar carrinho</button>
+        </div>
+
+        <div class="cats">
+          <button class="on">Todos <span class="n">12</span></button>
+          <button>Óleos <span class="n">6</span></button>
+          <button>Flores <span class="n">4</span></button>
+          <button>Gomas <span class="n">2</span></button>
+          <button>Mais usados <span class="n">3</span></button>
+        </div>
+
+        <div class="grid">
+          <article class="product in-cart">
+            <span class="badge-incart">✓ 2 no carrinho</span>
+            <div class="img">CB</div>
+            <div class="body">
+              <h3>Óleo CBD 10%</h3>
+              <p class="meta">Frasco 30 ml · Full Spectrum<br />23 em estoque</p>
+              <div class="row">
+                <span class="price">R$ 180</span>
+                <div class="qty-mini"><button>−</button><span>2</span><button>+</button></div>
+              </div>
+            </div>
+          </article>
+          <article class="product in-cart">
+            <span class="badge-incart">✓ 1 no carrinho</span>
+            <div class="img" style="background: linear-gradient(135deg, #fff5d4, #d6b56a)">F2</div>
+            <div class="body">
+              <h3>Flor 24k</h3>
+              <p class="meta">Pote 5 g · Indica<br />6 em estoque</p>
+              <div class="row">
+                <span class="price">R$ 240</span>
+                <div class="qty-mini"><button>−</button><span>1</span><button>+</button></div>
+              </div>
+            </div>
+          </article>
+          <article class="product">
+            <div
+              class="img"
+              style="background: linear-gradient(135deg, #dff0e6, #1d8c52); color: #fbfcfa"
+            >
+              FS
+            </div>
+            <div class="body">
+              <h3>Óleo Full Spectrum 20%</h3>
+              <p class="meta">Frasco 30 ml · Alta concentração<br />11 em estoque</p>
+              <div class="row">
+                <span class="price">R$ 320</span><button class="add">Adicionar</button>
+              </div>
+            </div>
+          </article>
+          <article class="product">
+            <div class="img" style="background: linear-gradient(135deg, #fbe5e1, #d6b56a)">GM</div>
+            <div class="body">
+              <h3>Goma CBD 25mg</h3>
+              <p class="meta">Pote 30 unidades · Frutas vermelhas<br />18 em estoque</p>
+              <div class="row">
+                <span class="price">R$ 140</span><button class="add">Adicionar</button>
+              </div>
+            </div>
+          </article>
+          <article class="product">
+            <div
+              class="img"
+              style="background: linear-gradient(135deg, #dff0e6, #4a7d56); color: #fbfcfa"
+            >
+              CB
+            </div>
+            <div class="body">
+              <h3>Óleo CBD 5%</h3>
+              <p class="meta">Frasco 30 ml · Iniciantes<br />30 em estoque</p>
+              <div class="row">
+                <span class="price">R$ 110</span><button class="add">Adicionar</button>
+              </div>
+            </div>
+          </article>
+          <article class="product">
+            <div
+              class="img"
+              style="background: linear-gradient(135deg, #fff5d4, #b89313); color: #1a1408"
+            >
+              FL
+            </div>
+            <div class="body">
+              <h3>Flor Sativa Lemon</h3>
+              <p class="meta">Pote 5 g · Sativa<br />4 em estoque</p>
+              <div class="row">
+                <span class="price">R$ 220</span><button class="add">Adicionar</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </main>
+
+      <aside>
+        <h3>Resumo do pedido <span class="count">3 itens</span></h3>
+        <p class="lead">Reserva de estoque acontece quando o Pix é gerado.</p>
+        <div>
+          <div class="line">
+            <div class="sq">CB</div>
+            <div>
+              <div class="nm">Óleo CBD 10%</div>
+              <div class="mt">2× R$ 180,00 · <button>remover</button></div>
+            </div>
+            <div class="pr">R$ 360,00</div>
+          </div>
+          <div class="line">
+            <div class="sq" style="background: linear-gradient(135deg, #fff5d4, #d6b56a)">F2</div>
+            <div>
+              <div class="nm">Flor 24k</div>
+              <div class="mt">1× R$ 240,00 · <button>remover</button></div>
+            </div>
+            <div class="pr">R$ 240,00</div>
+          </div>
+        </div>
+        <div class="ship">
+          <label>Entrega</label>
+          <select>
+            <option>GED Log via Melhor Envio</option>
+            <option>Correios via Melhor Envio</option>
+            <option>Retirada combinada</option>
+          </select>
+        </div>
+        <div class="totals">
+          <div class="r"><span>Subtotal</span><span>R$ 600,00</span></div>
+          <div class="r"><span>Frete</span><span>calculado no Pix</span></div>
+          <div class="r t"><span>Total estimado</span><b>R$ 600,00</b></div>
+        </div>
+        <a href="b3.html"
+          ><button class="cta">Gerar Pix <span class="arrow">→</span></button></a
+        >
+        <p class="reassure">
+          Ao gerar Pix, <b>o estoque é reservado</b> até o vencimento do pagamento. Sem cobrança em
+          duplicidade.
+        </p>
+      </aside>
+    </div>
+  </body>
+</html>

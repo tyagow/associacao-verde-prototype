@@ -1,0 +1,56 @@
+/* shared tokens lifted from app/globals.css */
+:root {
+  --paper: #fbfcfa;
+  --paper-warm: #f7f9f6;
+  --paper-cool: #f3f7f4;
+  --soft: #f1f6f3;
+  --ink: #0d1f17;
+  --ink-soft: #1f3329;
+  --muted: #687970;
+  --line: #e3ebe6;
+  --line-soft: #ecf1ee;
+  --line-strong: #c7d3cc;
+  --green: #1d8c52;
+  --green-deep: #135b35;
+  --green-soft: #c7e2d2;
+  --green-tint: #dff0e6;
+  --gold: #d6b56a;
+  --gold-soft: #fff5d4;
+  --gold-on: #1a1408;
+  --warn: #d6a91a;
+  --good: #1d8c52;
+  --r-sm: 3px;
+  --r-md: 5px;
+  --r-lg: 7px;
+  --font-ui: "Inter", -apple-system, system-ui, sans-serif;
+  --font-display: "Outfit", "Inter", system-ui, sans-serif;
+}
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  background: var(--paper-cool);
+  color: var(--ink);
+  font: 14px/1.5 var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+button {
+  font: inherit;
+  cursor: pointer;
+}
+a {
+  color: var(--green-deep);
+}
+.kicker {
+  font: 600 11px/1 var(--font-ui);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--green);
+}
+.muted {
+  color: var(--muted);
+}

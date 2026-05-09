@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>B · Suporte</title>
+    <link rel="stylesheet" href="_tokens.css" />
+    <link rel="stylesheet" href="_shell.css" />
+    <style>
+      .workbench {
+        display: grid;
+        grid-template-columns: 320px minmax(0, 1fr) 320px;
+        gap: 12px;
+        align-items: stretch;
+        min-height: 720px;
+      }
+      .qcol {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-sm);
+        display: flex;
+        flex-direction: column;
+      }
+      .qcol > header {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .qcol > header h3 {
+        margin: 0;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .qlist {
+        display: flex;
+        flex-direction: column;
+      }
+      .qitem {
+        display: grid;
+        grid-template-columns: 28px 1fr;
+        gap: 10px;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--line-soft);
+        cursor: pointer;
+      }
+      .qitem:hover {
+        background: var(--paper-warm);
+      }
+      .qitem.active {
+        background: var(--green-tint);
+        border-left: 3px solid var(--green);
+        padding-left: 11px;
+      }
+      .qitem .av {
+        width: 28px;
+        height: 28px;
+        border-radius: var(--r-pill);
+        background: linear-gradient(135deg, var(--green), var(--green-deep));
+        color: var(--paper);
+        display: grid;
+        place-items: center;
+        font: 700 11px var(--font-display);
+      }
+      .qitem .name {
+        font-weight: 600;
+        font-size: 13px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .qitem .name time {
+        font-size: 11px;
+        color: var(--muted);
+        font-weight: 400;
+      }
+      .qitem .subj {
+        font-size: 12px;
+        color: var(--ink-soft);
+      }
+      .qitem .preview {
+        font-size: 11px;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .case {
+        display: flex;
+        flex-direction: column;
+      }
+      .case .header {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      .case .header h2 {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: 18px;
+        font-weight: 600;
+      }
+      .case .header .meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .thread {
+        flex: 1;
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        overflow: auto;
+      }
+      .msg {
+        max-width: 78%;
+        padding: 10px 12px;
+        border-radius: var(--r-md);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .msg.from-pat {
+        background: var(--paper-warm);
+        border: 1px solid var(--line);
+        align-self: flex-start;
+        border-top-left-radius: var(--r-sm);
+      }
+      .msg.from-eq {
+        background: var(--ink);
+        color: var(--paper);
+        align-self: flex-end;
+        border-top-right-radius: var(--r-sm);
+      }
+      .msg .who {
+        font-size: 11px;
+        opacity: 0.7;
+        margin-bottom: 4px;
+        font-weight: 600;
+      }
+      .replybox {
+        padding: 12px 14px;
+        border-top: 1px solid var(--line);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .replybox textarea {
+        width: 100%;
+        min-height: 70px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-sm);
+        padding: 8px 10px;
+        font: inherit;
+        font-size: 13px;
+        resize: vertical;
+      }
+      .replybox .actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .replybox .chips {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .chip {
+        font-size: 11px;
+        padding: 3px 8px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-pill);
+        background: var(--paper);
+        color: var(--ink-soft);
+        cursor: pointer;
+      }
+      .chip:hover {
+        background: var(--paper-warm);
+      }
+
+      .ctx {
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .ctx .section {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--line);
+      }
+      .ctx .section h4 {
+        margin: 0 0 8px;
+        font-size: 11px;
+        text-transform: uppercase;
+        color: var(--muted);
+        letter-spacing: 0.08em;
+      }
+      .ctx .row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        padding: 4px 0;
+      }
+      .ctx .row .lbl {
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sb">
+        <div class="brand"><span class="seal">A</span><span>Apoiar Brasil</span></div>
+        <nav>
+          <span class="navhead">Operação</span>
+          <a href="b-comando.html"><span>Comando</span><span class="badge warn">7</span></a>
+          <a href="b-pacientes.html"><span>Pacientes</span><span class="badge danger">2</span></a>
+          <a href="b-estoque.html"><span>Estoque</span><span class="badge warn">3</span></a>
+          <a href="b-pedidos.html"><span>Pedidos</span><span class="badge warn">5</span></a>
+          <a href="b-fulfillment.html"><span>Fulfillment</span><span class="badge warn">4</span></a>
+          <a class="active" href="b-suporte.html"
+            ><span>Suporte</span><span class="badge">2</span></a
+          >
+          <span class="navhead">Compliance</span>
+          <a href="b-admin.html"><span>Admin</span></a>
+          <a href="b-admin.html#auditoria"><span>Auditoria</span></a>
+        </nav>
+        <div class="footer"><span>tiago@…</span><span>Sair</span></div>
+      </aside>
+      <header class="tb">
+        <div class="breadcrumb">
+          <span>Equipe</span><span class="sep">/</span><strong>Suporte ao paciente</strong>
+        </div>
+        <div class="gsearch">
+          <span aria-hidden style="color: var(--muted)">⌕</span
+          ><input placeholder="Buscar caso, paciente…" /><span class="kbd">⌘K</span>
+        </div>
+        <div class="roleChip">
+          <strong>Tiago Filter</strong><span>·</span><span>Administrador</span>
+        </div>
+      </header>
+      <main id="support-surface">
+        <div class="pagehead">
+          <h1>Suporte ao paciente</h1>
+          <div class="actions">
+            <span class="meta">2 abertos · SLA 24h · último login: hoje 14:32</span>
+          </div>
+        </div>
+
+        <div class="statusStrip">
+          <span class="countChip warn"><strong>2</strong> abertos</span>
+          <span class="countChip"><strong>1</strong> aguardando paciente</span>
+          <span class="countChip ok"><strong>14</strong> resolvidos hoje</span>
+          <span class="countChip"><strong>1</strong> Revisão de acesso</span>
+          <span class="countChip"><strong>1</strong> Dúvida sobre renovação</span>
+          <div class="seg" style="margin-left: auto">
+            <button class="on">Tudo</button>
+            <button>Meus</button>
+            <button>SLA &lt; 4h</button>
+          </div>
+          <select class="filterIn" data-filter="supportQuery">
+            <option>Todos</option>
+            <option>Helena</option>
+          </select>
+        </div>
+
+        <div class="workbench">
+          <!-- Queue column -->
+          <section class="qcol">
+            <header>
+              <h3>Casos · Reserva</h3>
+              <span class="pill warn">2 abertos</span>
+            </header>
+            <div class="qlist">
+              <div class="qitem active">
+                <div class="av">HR</div>
+                <div>
+                  <div class="name">Helena Ramos <time>14:18</time></div>
+                  <div class="subj">Pix não confirmou</div>
+                  <div class="preview">"Fiz o Pix há 20 minutos e o pedido ainda…"</div>
+                </div>
+              </div>
+              <div class="qitem">
+                <div class="av">AB</div>
+                <div>
+                  <div class="name">Ana Beatriz <time>13:42</time></div>
+                  <div class="subj">Revisão de acesso</div>
+                  <div class="preview">"Recebi mensagem de bloqueio mas tenho receita…"</div>
+                </div>
+              </div>
+              <div class="qitem">
+                <div class="av">JO</div>
+                <div>
+                  <div class="name">João Oliveira <time>ontem</time></div>
+                  <div class="subj">Dúvida sobre renovação</div>
+                  <div class="preview">"Como renovo a receita?"</div>
+                </div>
+              </div>
+              <div class="qitem">
+                <div class="av">MC</div>
+                <div>
+                  <div class="name">Marina Costa <time>ontem</time></div>
+                  <div class="subj">Trocar endereço</div>
+                  <div class="preview">"Mudei de bairro, posso atualizar?"</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Case panel -->
+          <section class="qcol case">
+            <div class="header">
+              <div>
+                <h2>Pix não confirmou</h2>
+                <div style="font-size: 12px; color: var(--muted)">
+                  Helena Ramos · <span class="mono">APO-1027</span> · caso
+                  <span class="mono">SUP-204</span>
+                </div>
+              </div>
+              <div class="meta">
+                <span class="pill warn">aguardando equipe</span>
+                <span>aberto há 2h</span>
+                <button class="btn ghost mini">marcar resolvido</button>
+              </div>
+            </div>
+            <div class="thread">
+              <div class="msg from-pat">
+                <div class="who">Helena · 14:18</div>
+                Fiz o Pix há 20 minutos e o pedido ainda mostra "aguardando pagamento". Já confirmei
+                no app do banco que saiu daqui.
+              </div>
+              <div class="msg from-eq">
+                <div class="who">Marina (equipe) · 14:24</div>
+                Olá Helena! Recebemos sua mensagem. Vou verificar o status do Pix e te respondo em
+                alguns minutos.
+              </div>
+              <div class="msg from-pat">
+                <div class="who">Helena · 14:27</div>
+                Obrigada! Posso enviar o comprovante se ajudar.
+              </div>
+            </div>
+            <div class="replybox">
+              <div class="chips">
+                <span class="chip">+ Verificando webhook</span>
+                <span class="chip">+ Pix confirmado</span>
+                <span class="chip">+ Pedir comprovante</span>
+                <span class="chip">+ Encaminhar p/ financeiro</span>
+              </div>
+              <textarea placeholder="Resposta para Helena (Markdown ok)…"></textarea>
+              <div class="actions">
+                <span style="font-size: 11px; color: var(--muted)"
+                  >visível ao paciente · auditoria registra envio</span
+                >
+                <div style="display: flex; gap: 8px">
+                  <button class="btn ghost">Anotar</button
+                  ><button class="btn primary">Enviar →</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Context column -->
+          <aside class="qcol ctx">
+            <div class="section">
+              <h4>Paciente</h4>
+              <div class="row">
+                <span class="lbl">Nome</span><span><strong>Helena Ramos</strong></span>
+              </div>
+              <div class="row">
+                <span class="lbl">Código</span><span class="mono">APO-1027</span>
+              </div>
+              <div class="row">
+                <span class="lbl">Status</span><span class="pill ok">liberada</span>
+              </div>
+              <div class="row">
+                <span class="lbl">Último login</span><span class="num">hoje 14:09</span>
+              </div>
+            </div>
+            <div class="section">
+              <h4>Pedido recente</h4>
+              <div class="row">
+                <span class="lbl">PED-3025</span><span class="num">R$ 600,00</span>
+              </div>
+              <div class="row">
+                <span class="lbl">Status</span><span class="pill warn">Pix aguardando</span>
+              </div>
+              <div class="row">
+                <span class="lbl">Vencimento</span><span class="num">14:54</span>
+              </div>
+              <a
+                href="b-pedidos.html"
+                style="font-size: 12px; color: var(--green-deep); font-weight: 600"
+                >abrir pedido →</a
+              >
+            </div>
+            <div class="section">
+              <h4>Documentos</h4>
+              <div class="row">
+                <span class="lbl">Receita</span><span class="num">vál. 12/10/2026</span>
+              </div>
+              <div class="row"><span class="lbl">LGPD</span><span class="num">v.2026-05</span></div>
+              <div style="margin-top: 6px; font-size: 11px; color: var(--muted)">
+                3 documento(s) registrados
+              </div>
+            </div>
+            <div class="section">
+              <h4>Casos anteriores</h4>
+              <div style="font-size: 12px; color: var(--ink-soft)">
+                SUP-188 · "Trocar endereço" · resolvido 22/03
+              </div>
+              <div style="font-size: 12px; color: var(--ink-soft); margin-top: 6px">
+                SUP-141 · "Dúvida sobre Pix" · resolvido 04/02
+              </div>
+            </div>
+          </aside>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

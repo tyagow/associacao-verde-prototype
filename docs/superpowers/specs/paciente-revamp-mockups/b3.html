@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>B3 · Pix aberto</title>
+    <link rel="stylesheet" href="_shared.css" />
+    <link rel="stylesheet" href="_b-shell.css" />
+    <style>
+      main {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 32px 28px 80px;
+      }
+      .breadcrumb {
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 16px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .breadcrumb b {
+        color: var(--ink-soft);
+        font-weight: 600;
+      }
+
+      .pix-hero {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        overflow: hidden;
+      }
+      .pix-hero header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 24px;
+        background: var(--gold-soft);
+        border-bottom: 1px solid var(--gold);
+      }
+      .pix-hero header .pulse {
+        width: 10px;
+        height: 10px;
+        border-radius: 99px;
+        background: var(--warn);
+        box-shadow: 0 0 0 0 rgba(214, 169, 26, 0.5);
+        animation: pulse 1.6s ease-out infinite;
+      }
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(214, 169, 26, 0.5);
+        }
+        80% {
+          box-shadow: 0 0 0 12px rgba(214, 169, 26, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(214, 169, 26, 0);
+        }
+      }
+      .pix-hero header b {
+        color: var(--gold-on);
+        font-weight: 700;
+        font-size: 13px;
+      }
+      .pix-hero header .order-id {
+        margin-left: auto;
+        color: var(--gold-on);
+        opacity: 0.7;
+        font-family: monospace;
+        font-size: 12px;
+      }
+
+      .pix-grid {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 0;
+      }
+      .pix-left {
+        padding: 32px;
+        border-right: 1px solid var(--line);
+      }
+      .pix-right {
+        padding: 32px;
+        background: var(--paper-warm);
+      }
+
+      .amount {
+        font: 600 44px/1 var(--font-display);
+        letter-spacing: -0.01em;
+      }
+      .amount sup {
+        font: 600 14px/1 var(--font-ui);
+        color: var(--muted);
+        margin-left: 4px;
+        vertical-align: super;
+      }
+      .amount-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 18px;
+      }
+      .countdown {
+        text-align: right;
+      }
+      .countdown small {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 600;
+      }
+      .countdown b {
+        font: 600 28px/1 var(--font-display);
+        color: var(--ink);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .meta-row {
+        display: flex;
+        gap: 24px;
+        padding: 14px 0;
+        border-top: 1px solid var(--line-soft);
+        border-bottom: 1px solid var(--line-soft);
+        margin-bottom: 24px;
+      }
+      .meta-row .item {
+        flex: 1;
+      }
+      .meta-row .item label {
+        display: block;
+        color: var(--muted);
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      .meta-row .item b {
+        font-weight: 600;
+        font-size: 13px;
+      }
+
+      .qr-section {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 24px;
+        align-items: start;
+      }
+      .qr {
+        width: 200px;
+        height: 200px;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-md);
+        padding: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .qr svg {
+        width: 100%;
+        height: 100%;
+      }
+      .qr-text h3 {
+        margin: 0 0 6px;
+        font: 500 16px/1.2 var(--font-display);
+      }
+      .qr-text p {
+        margin: 0 0 14px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .copy {
+        display: flex;
+        gap: 0;
+        margin-bottom: 14px;
+      }
+      .copy input {
+        flex: 1;
+        border: 1px solid var(--line);
+        border-right: 0;
+        padding: 10px 12px;
+        border-radius: var(--r-sm) 0 0 var(--r-sm);
+        font: 12px/1.2 monospace;
+        background: var(--paper);
+        color: var(--muted);
+        overflow: hidden;
+      }
+      .copy button {
+        background: var(--ink);
+        color: var(--paper);
+        border: 0;
+        padding: 0 18px;
+        border-radius: 0 var(--r-sm) var(--r-sm) 0;
+        font-weight: 600;
+        font-size: 13px;
+      }
+      .actions-row {
+        display: flex;
+        gap: 8px;
+      }
+      .btn-primary {
+        background: var(--green);
+        color: var(--paper);
+        border: 0;
+        padding: 11px 18px;
+        border-radius: var(--r-sm);
+        font-weight: 600;
+        font-size: 13px;
+      }
+      .btn-secondary {
+        background: transparent;
+        border: 1px solid var(--line);
+        color: var(--ink);
+        padding: 11px 18px;
+        border-radius: var(--r-sm);
+        font-weight: 500;
+        font-size: 13px;
+      }
+
+      /* right column: items + timeline */
+      .right-h {
+        font: 600 11px/1 var(--font-ui);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        margin: 0 0 12px;
+      }
+      .item-line {
+        display: grid;
+        grid-template-columns: 32px 1fr auto;
+        gap: 10px;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--line-soft);
+        font-size: 13px;
+      }
+      .item-line:last-of-type {
+        border-bottom: 0;
+      }
+      .item-line .sq {
+        width: 32px;
+        height: 32px;
+        border-radius: 3px;
+        background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font: 700 11px/1 var(--font-display);
+        color: var(--gold-on);
+      }
+      .item-line .nm {
+        font-weight: 500;
+      }
+      .item-line .qty {
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .item-line .pr {
+        font-variant-numeric: tabular-nums;
+        font-weight: 500;
+      }
+      .right-total {
+        display: flex;
+        justify-content: space-between;
+        font-size: 15px;
+        font-weight: 600;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+        margin-top: 8px;
+      }
+      .right-total b {
+        font: 700 17px/1 var(--font-display);
+      }
+
+      .timeline {
+        margin-top: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+      .stage {
+        display: grid;
+        grid-template-columns: 24px 1fr;
+        gap: 10px;
+        padding: 8px 0;
+      }
+      .stage .dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 99px;
+        background: var(--paper);
+        border: 2px solid var(--line);
+        margin-top: 3px;
+        justify-self: center;
+        position: relative;
+      }
+      .stage:not(:last-child) .dot::after {
+        content: "";
+        position: absolute;
+        top: 14px;
+        left: 50%;
+        width: 2px;
+        height: 32px;
+        background: var(--line);
+        transform: translateX(-50%);
+      }
+      .stage.done .dot {
+        background: var(--green);
+        border-color: var(--green);
+      }
+      .stage.done .dot::after {
+        background: var(--green);
+      }
+      .stage.now .dot {
+        border-color: var(--warn);
+        background: var(--warn);
+        box-shadow: 0 0 0 4px var(--gold-soft);
+      }
+      .stage .lbl {
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .stage.done .lbl,
+      .stage.now .lbl {
+        color: var(--ink);
+        font-weight: 500;
+      }
+      .stage.now .lbl b {
+        display: block;
+        font-size: 11px;
+        color: var(--warn);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-top: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="logo">APOIAR<span>·</span>BRASIL</div>
+      <div class="search">🔎<input placeholder="Buscar produtos do catálogo autorizado…" /></div>
+      <div class="actions">
+        <span class="pill-id warn">Helena · Pix pendente</span>
+        <button>Sair</button>
+      </div>
+    </header>
+    <nav class="tabs">
+      <a class="on" href="b3.html">Pedido</a>
+      <a href="b-historico.html">Histórico</a>
+      <a href="b-suporte.html">Suporte</a>
+      <a href="#" style="margin-left: auto">Meu perfil</a>
+    </nav>
+
+    <main>
+      <div class="breadcrumb">Pedido <b>AV-2026-05-08-A</b> · aguardando seu pagamento Pix</div>
+
+      <section class="pix-hero">
+        <header>
+          <span class="pulse"></span>
+          <b>Pix gerado · estoque reservado até o vencimento</b>
+          <span class="order-id">AV-2026-05-08-A</span>
+        </header>
+
+        <div class="pix-grid">
+          <div class="pix-left">
+            <div class="amount-row">
+              <div>
+                <div
+                  style="
+                    color: var(--muted);
+                    font-size: 11px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.06em;
+                    font-weight: 600;
+                    margin-bottom: 4px;
+                  "
+                >
+                  Total a pagar
+                </div>
+                <div class="amount">R$ 600,00<sup>BRL</sup></div>
+              </div>
+              <div class="countdown"><small>Vence em</small><b>14:32</b></div>
+            </div>
+
+            <div class="meta-row">
+              <div class="item"><label>Método</label><b>Pix copia-e-cola</b></div>
+              <div class="item"><label>Vencimento</label><b>08/05/2026 21:02</b></div>
+              <div class="item"><label>Entrega</label><b>GED Log</b></div>
+            </div>
+
+            <div class="qr-section">
+              <div class="qr">
+                <!-- decorative QR placeholder -->
+                <svg
+                  viewBox="0 0 100 100"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-label="QR Code Pix"
+                >
+                  <rect width="100" height="100" fill="#fff" />
+                  <g fill="#0d1f17">
+                    <rect x="6" y="6" width="22" height="22" />
+                    <rect x="11" y="11" width="12" height="12" fill="#fff" />
+                    <rect x="14" y="14" width="6" height="6" />
+                    <rect x="72" y="6" width="22" height="22" />
+                    <rect x="77" y="11" width="12" height="12" fill="#fff" />
+                    <rect x="80" y="14" width="6" height="6" />
+                    <rect x="6" y="72" width="22" height="22" />
+                    <rect x="11" y="77" width="12" height="12" fill="#fff" />
+                    <rect x="14" y="80" width="6" height="6" />
+                    <rect x="34" y="6" width="4" height="4" />
+                    <rect x="42" y="6" width="4" height="4" />
+                    <rect x="50" y="6" width="4" height="4" />
+                    <rect x="58" y="6" width="4" height="4" />
+                    <rect x="34" y="14" width="4" height="4" />
+                    <rect x="46" y="14" width="4" height="4" />
+                    <rect x="54" y="14" width="4" height="4" />
+                    <rect x="38" y="22" width="4" height="4" />
+                    <rect x="50" y="22" width="4" height="4" />
+                    <rect x="62" y="22" width="4" height="4" />
+                    <rect x="34" y="30" width="4" height="4" />
+                    <rect x="42" y="30" width="4" height="4" />
+                    <rect x="58" y="30" width="4" height="4" />
+                    <rect x="6" y="34" width="4" height="4" />
+                    <rect x="14" y="34" width="4" height="4" />
+                    <rect x="26" y="34" width="4" height="4" />
+                    <rect x="38" y="34" width="4" height="4" />
+                    <rect x="50" y="34" width="4" height="4" />
+                    <rect x="66" y="34" width="4" height="4" />
+                    <rect x="78" y="34" width="4" height="4" />
+                    <rect x="90" y="34" width="4" height="4" />
+                    <rect x="10" y="42" width="4" height="4" />
+                    <rect x="22" y="42" width="4" height="4" />
+                    <rect x="34" y="42" width="4" height="4" />
+                    <rect x="46" y="42" width="4" height="4" />
+                    <rect x="58" y="42" width="4" height="4" />
+                    <rect x="70" y="42" width="4" height="4" />
+                    <rect x="82" y="42" width="4" height="4" />
+                    <rect x="6" y="50" width="4" height="4" />
+                    <rect x="18" y="50" width="4" height="4" />
+                    <rect x="30" y="50" width="4" height="4" />
+                    <rect x="42" y="50" width="4" height="4" />
+                    <rect x="54" y="50" width="4" height="4" />
+                    <rect x="66" y="50" width="4" height="4" />
+                    <rect x="78" y="50" width="4" height="4" />
+                    <rect x="86" y="50" width="4" height="4" />
+                    <rect x="14" y="58" width="4" height="4" />
+                    <rect x="26" y="58" width="4" height="4" />
+                    <rect x="38" y="58" width="4" height="4" />
+                    <rect x="50" y="58" width="4" height="4" />
+                    <rect x="62" y="58" width="4" height="4" />
+                    <rect x="74" y="58" width="4" height="4" />
+                    <rect x="34" y="66" width="4" height="4" />
+                    <rect x="46" y="66" width="4" height="4" />
+                    <rect x="58" y="66" width="4" height="4" />
+                    <rect x="66" y="66" width="4" height="4" />
+                    <rect x="78" y="66" width="4" height="4" />
+                    <rect x="86" y="66" width="4" height="4" />
+                    <rect x="34" y="74" width="4" height="4" />
+                    <rect x="42" y="74" width="4" height="4" />
+                    <rect x="54" y="74" width="4" height="4" />
+                    <rect x="62" y="74" width="4" height="4" />
+                    <rect x="74" y="74" width="4" height="4" />
+                    <rect x="82" y="74" width="4" height="4" />
+                    <rect x="90" y="74" width="4" height="4" />
+                    <rect x="38" y="82" width="4" height="4" />
+                    <rect x="50" y="82" width="4" height="4" />
+                    <rect x="62" y="82" width="4" height="4" />
+                    <rect x="78" y="82" width="4" height="4" />
+                    <rect x="86" y="82" width="4" height="4" />
+                    <rect x="34" y="90" width="4" height="4" />
+                    <rect x="42" y="90" width="4" height="4" />
+                    <rect x="54" y="90" width="4" height="4" />
+                    <rect x="66" y="90" width="4" height="4" />
+                    <rect x="74" y="90" width="4" height="4" />
+                    <rect x="86" y="90" width="4" height="4" />
+                  </g>
+                </svg>
+              </div>
+              <div class="qr-text">
+                <h3>Aponte a câmera do seu app do banco</h3>
+                <p>
+                  Ou copie o código abaixo e cole na opção <b>Pix copia-e-cola</b> do seu banco.
+                </p>
+                <div class="copy">
+                  <input
+                    value="00020126850014BR.GOV.BCB.PIX2563pix.av/0c/9f3e2b1d-AV-2026-05-08-A52040000530398654060600005802BR5912APOIAR BRASIL6009SAO PAULO62070503***6304A1B2"
+                    readonly
+                  />
+                  <button>Copiar</button>
+                </div>
+                <div class="actions-row">
+                  <button class="btn-primary">Já paguei, atualizar</button>
+                  <button class="btn-secondary">Cancelar pedido</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pix-right">
+            <h4 class="right-h">2 produtos reservados</h4>
+            <div class="item-line">
+              <div class="sq">CB</div>
+              <div>
+                <div class="nm">Óleo CBD 10%</div>
+                <div class="qty">2 frascos</div>
+              </div>
+              <div class="pr">R$ 360,00</div>
+            </div>
+            <div class="item-line">
+              <div class="sq" style="background: linear-gradient(135deg, #fff5d4, #d6b56a)">F2</div>
+              <div>
+                <div class="nm">Flor 24k</div>
+                <div class="qty">1 pote</div>
+              </div>
+              <div class="pr">R$ 240,00</div>
+            </div>
+            <div class="right-total"><span>Total</span><b>R$ 600,00</b></div>
+
+            <div class="timeline">
+              <h4 class="right-h" style="margin-top: 0">Linha do tempo</h4>
+              <div class="stage done">
+                <div class="dot"></div>
+                <div class="lbl">Pix gerado</div>
+              </div>
+              <div class="stage now">
+                <div class="dot"></div>
+                <div class="lbl">Aguardando pagamento <b>14:32 restantes</b></div>
+              </div>
+              <div class="stage">
+                <div class="dot"></div>
+                <div class="lbl">Pagamento confirmado</div>
+              </div>
+              <div class="stage">
+                <div class="dot"></div>
+                <div class="lbl">Em separação</div>
+              </div>
+              <div class="stage">
+                <div class="dot"></div>
+                <div class="lbl">Enviado</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

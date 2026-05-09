@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>B · Estoque</title>
+    <link rel="stylesheet" href="_tokens.css" />
+    <link rel="stylesheet" href="_shell.css" />
+    <style>
+      .lots {
+        background: var(--paper-warm);
+        padding: 8px 14px 14px;
+        border-top: 1px solid var(--line-soft);
+      }
+      .lots h4 {
+        margin: 6px 0 8px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+      }
+      .editable {
+        border: 1px dashed transparent;
+        padding: 2px 6px;
+        border-radius: var(--r-sm);
+        cursor: text;
+      }
+      .editable:hover {
+        border-color: var(--line-strong);
+        background: var(--paper);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sb">
+        <div class="brand"><span class="seal">A</span><span>Apoiar Brasil</span></div>
+        <nav>
+          <span class="navhead">Operação</span>
+          <a href="b-comando.html"><span>Comando</span><span class="badge warn">7</span></a>
+          <a href="b-pacientes.html"><span>Pacientes</span><span class="badge danger">2</span></a>
+          <a class="active" href="b-estoque.html"
+            ><span>Estoque</span><span class="badge warn">3</span></a
+          >
+          <a href="b-pedidos.html"><span>Pedidos</span><span class="badge warn">5</span></a>
+          <a href="b-fulfillment.html"><span>Fulfillment</span><span class="badge warn">4</span></a>
+          <a href="b-suporte.html"><span>Suporte</span><span class="badge">2</span></a>
+          <span class="navhead">Compliance</span>
+          <a href="b-admin.html"><span>Admin</span></a>
+          <a href="b-admin.html#auditoria"><span>Auditoria</span></a>
+        </nav>
+        <div class="footer"><span>tiago@…</span><span>Sair</span></div>
+      </aside>
+      <header class="tb">
+        <div class="breadcrumb">
+          <span>Equipe</span><span class="sep">/</span><strong>Estoque e cultivo</strong>
+        </div>
+        <div class="gsearch">
+          <span aria-hidden style="color: var(--muted)">⌕</span
+          ><input placeholder="Buscar produto, lote, cultivo…" /><span class="kbd">⌘K</span>
+        </div>
+        <div class="roleChip">
+          <strong>Tiago Filter</strong><span>·</span><span>Administrador</span>
+        </div>
+      </header>
+      <main>
+        <div class="pagehead">
+          <h1>Produtos, estoque e cultivo</h1>
+          <div class="actions">
+            <button class="btn ghost mini">+ Lote</button
+            ><button class="btn primary">+ Produto</button>
+          </div>
+        </div>
+
+        <div class="statusStrip">
+          <span class="countChip"><strong>14</strong> produtos</span>
+          <span class="countChip warn"><strong>3</strong> abaixo do limiar</span>
+          <span class="countChip"><strong>21</strong> lotes ativos</span>
+          <span class="countChip ok"><strong>4</strong> cultivos em curso</span>
+          <div class="seg" style="margin-left: auto">
+            <button class="on">Todos<span class="num">14</span></button>
+            <button>Baixo<span class="num">3</span></button>
+            <button>OK<span class="num">11</span></button>
+          </div>
+          <select class="filterIn" data-filter="stockStatus">
+            <option>Todos os status</option>
+            <option>Baixo</option>
+            <option>OK</option>
+          </select>
+          <input
+            class="filterIn"
+            data-filter="stockQuery"
+            placeholder="Filtrar produtos (CBD, Flor…)"
+          />
+        </div>
+
+        <section class="panel" style="margin-bottom: 18px">
+          <header class="ph">
+            <h3>Ledger de produtos</h3>
+            <span class="meta">click no produto para abrir lotes</span>
+          </header>
+          <table class="adm">
+            <thead>
+              <tr>
+                <th style="width: 100px">SKU</th>
+                <th>Produto</th>
+                <th style="width: 110px">Categoria</th>
+                <th class="right" style="width: 80px">Estoque</th>
+                <th class="right" style="width: 80px">Reservado</th>
+                <th class="right" style="width: 80px">Lotes</th>
+                <th style="width: 120px">Limiar</th>
+                <th style="width: 110px">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="mono">PRD-014</span></td>
+                <td>
+                  <div class="who">
+                    <span class="name">CBD Óleo 200mg</span
+                    ><span class="meta">15ml · uso oral</span>
+                  </div>
+                </td>
+                <td><span class="editable">Óleo</span></td>
+                <td class="right num">3</td>
+                <td class="right num">2</td>
+                <td class="right num">1</td>
+                <td><span class="editable num">≤ 5</span></td>
+                <td><span class="pill warn">baixo</span></td>
+              </tr>
+              <tr>
+                <td><span class="mono">PRD-021</span></td>
+                <td>
+                  <div class="who">
+                    <span class="name">Flor Sativa 5g</span><span class="meta">flor seca</span>
+                  </div>
+                </td>
+                <td><span class="editable">Flor</span></td>
+                <td class="right num">4</td>
+                <td class="right num">0</td>
+                <td class="right num">0</td>
+                <td><span class="editable num">≤ 5</span></td>
+                <td><span class="pill warn">baixo</span></td>
+              </tr>
+              <tr>
+                <td><span class="mono">PRD-031</span></td>
+                <td>
+                  <div class="who">
+                    <span class="name">Goma 25mg</span><span class="meta">caixa 30 un.</span>
+                  </div>
+                </td>
+                <td><span class="editable">Goma</span></td>
+                <td class="right num">2</td>
+                <td class="right num">0</td>
+                <td class="right num">0</td>
+                <td><span class="editable num">≤ 4</span></td>
+                <td><span class="pill warn">baixo</span></td>
+              </tr>
+            </tbody>
+            <tbody>
+              <tr style="background: var(--paper)">
+                <td colspan="8" class="lots">
+                  <h4>Lotes ativos · CBD Óleo 200mg</h4>
+                  <table class="adm" style="margin: 0">
+                    <thead>
+                      <tr>
+                        <th>Lote</th>
+                        <th>Quantidade</th>
+                        <th>Validade</th>
+                        <th>Origem</th>
+                        <th>Reservado</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><span class="mono">LOT-2026-04-A</span></td>
+                        <td class="num">3</td>
+                        <td class="num">31/07/2026</td>
+                        <td>Cultivo CV-04</td>
+                        <td class="num">2</td>
+                        <td><button class="btn ghost mini">editar</button></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            </tbody>
+            <tbody>
+              <tr>
+                <td><span class="mono">PRD-008</span></td>
+                <td>
+                  <div class="who">
+                    <span class="name">CBD Óleo 100mg</span
+                    ><span class="meta">15ml · uso oral</span>
+                  </div>
+                </td>
+                <td>Óleo</td>
+                <td class="right num">28</td>
+                <td class="right num">3</td>
+                <td class="right num">2</td>
+                <td class="num">≤ 5</td>
+                <td><span class="pill ok">OK</span></td>
+              </tr>
+              <tr>
+                <td><span class="mono">PRD-002</span></td>
+                <td>
+                  <div class="who">
+                    <span class="name">CBD Full Spectrum 1500mg</span
+                    ><span class="meta">30ml · uso oral</span>
+                  </div>
+                </td>
+                <td>Óleo</td>
+                <td class="right num">12</td>
+                <td class="right num">1</td>
+                <td class="right num">1</td>
+                <td class="num">≤ 3</td>
+                <td><span class="pill ok">OK</span></td>
+              </tr>
+              <tr>
+                <td><span class="mono">PRD-019</span></td>
+                <td>
+                  <div class="who">
+                    <span class="name">Flor Indica 5g</span><span class="meta">flor seca</span>
+                  </div>
+                </td>
+                <td>Flor</td>
+                <td class="right num">9</td>
+                <td class="right num">0</td>
+                <td class="right num">1</td>
+                <td class="num">≤ 3</td>
+                <td><span class="pill ok">OK</span></td>
+              </tr>
+              <tr>
+                <td><span class="mono">PRD-027</span></td>
+                <td>
+                  <div class="who">
+                    <span class="name">Goma 50mg</span><span class="meta">caixa 30 un.</span>
+                  </div>
+                </td>
+                <td>Goma</td>
+                <td class="right num">15</td>
+                <td class="right num">2</td>
+                <td class="right num">1</td>
+                <td class="num">≤ 4</td>
+                <td><span class="pill ok">OK</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="panel">
+          <header class="ph">
+            <h3>Cultivo em curso</h3>
+            <span class="meta">4 batches · próx. colheita 18/05</span>
+          </header>
+          <table class="adm">
+            <thead>
+              <tr>
+                <th style="width: 120px">Batch</th>
+                <th>Strain</th>
+                <th style="width: 130px">Plantio</th>
+                <th style="width: 130px">Estimativa</th>
+                <th class="right" style="width: 90px">Plantas</th>
+                <th class="right" style="width: 120px">Estim. (g)</th>
+                <th style="width: 120px">Stage</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="mono">CV-04</span></td>
+                <td>Sativa Verde 1</td>
+                <td class="num">15/02/2026</td>
+                <td class="num">18/05/2026</td>
+                <td class="right num">12</td>
+                <td class="right num">240</td>
+                <td><span class="pill warn">flora</span></td>
+              </tr>
+              <tr>
+                <td><span class="mono">CV-05</span></td>
+                <td>Indica Calma 2</td>
+                <td class="num">02/03/2026</td>
+                <td class="num">02/06/2026</td>
+                <td class="right num">10</td>
+                <td class="right num">200</td>
+                <td><span class="pill warn">flora</span></td>
+              </tr>
+              <tr>
+                <td><span class="mono">CV-06</span></td>
+                <td>Sativa Verde 1</td>
+                <td class="num">20/03/2026</td>
+                <td class="num">20/06/2026</td>
+                <td class="right num">14</td>
+                <td class="right num">280</td>
+                <td><span class="pill">veg</span></td>
+              </tr>
+              <tr>
+                <td><span class="mono">CV-07</span></td>
+                <td>Híbrido 3</td>
+                <td class="num">10/04/2026</td>
+                <td class="num">10/07/2026</td>
+                <td class="right num">8</td>
+                <td class="right num">160</td>
+                <td><span class="pill">muda</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

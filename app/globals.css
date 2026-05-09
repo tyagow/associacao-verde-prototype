@@ -3742,3 +3742,214 @@ textarea {
   table td,
   table th { word-break: break-word; }
 }
+
+/* =====================================================================
+   === Phase 14 — Primitive consolidation (operator workbench) ===
+   ----------------------------------------------------------------------
+   Promotes the recurring component recipes (pill tones, ghost button,
+   data table, toolbar, drawer, code block, skeleton, empty state,
+   left-accented surface) to global classes so individual modules stop
+   reinventing them. Spec: docs/superpowers/specs/2026-05-09-admin-design-system.md
+   ===================================================================== */
+
+/* ---- pill tones extension: info + neutral ----
+   Today the codebase abuses .pill.warn for "in progress"; spec routes that
+   to a new info tone. Neutral is the muted/draft fallback. */
+.pill--info {
+  background: var(--status-info-bg);
+  color: var(--status-info-text);
+  border-color: var(--status-info-border);
+}
+.pill--info::before { background: var(--status-info-dot); }
+.pill--neutral {
+  background: var(--status-neutral-bg);
+  color: var(--status-neutral-text);
+  border-color: var(--border-subtle);
+}
+.pill--neutral::before { background: var(--status-neutral-dot); }
+
+/* ---- button vocabulary extension: mini + icon ----
+   .btn / .btn--primary / .btn--ghost / .btn--danger already exist. These
+   add the two missing sizes the spec demands. */
+.btn--mini {
+  height: 24px;
+  padding: 0 var(--sp-2);
+  font-size: var(--fs-xs);
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-link);
+}
+.btn--mini:hover {
+  background: var(--surface-hover);
+  border-color: transparent;
+  color: var(--text-link-hover);
+}
+.btn--icon {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-muted);
+  border-radius: var(--r-sm);
+}
+.btn--icon:hover {
+  background: var(--surface-hover);
+  border-color: transparent;
+  color: var(--text);
+}
+
+/* ---- left-accented surface variants (gates, kanban cards, alerts) ----
+   Three modules duplicate "border-left: 3px solid <status>" today. */
+.surface--bordered-left-ok     { border-left: 3px solid var(--status-success-dot); }
+.surface--bordered-left-warn   { border-left: 3px solid var(--status-warn-dot); }
+.surface--bordered-left-danger { border-left: 3px solid var(--status-danger-dot); }
+.surface--bordered-left-info   { border-left: 3px solid var(--status-info-dot); }
+.surface--bordered-left-neutral{ border-left: 3px solid var(--status-neutral-dot); }
+
+/* ---- dataTable: canonical table ----
+   Replaces per-component table+thead+tbody recipes. Use as
+   <table class="dataTable">. Numerics: add .num to the <td>. */
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-ui);
+  color: var(--text);
+}
+.dataTable thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface-sunken);
+  text-align: left;
+  font-size: var(--fs-xs);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+  color: var(--text-subtle);
+  font-weight: 600;
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--border);
+}
+.dataTable tbody td {
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--border-subtle);
+  vertical-align: middle;
+  line-height: var(--lh-snug);
+}
+.dataTable tbody tr:hover td { background: var(--surface-hover); }
+.dataTable td.num,
+.dataTable th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+.dataTable td.mono,
+.dataTable th.mono {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+/* ---- toolbar: filter / action row above a panel ----
+   Standardised gap, alignment. Replaces per-module statusStrip remixes. */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+.toolbar > .toolbar__spacer { flex: 1 1 auto; }
+
+/* ---- codeBlock: monospace command snippet ----
+   Used by GateCard.cmd, GateDetail.run today via duplicates. */
+.codeBlock {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  background: var(--surface-sunken);
+  color: var(--text-muted);
+  padding: var(--sp-2);
+  border-radius: var(--r-sm);
+  word-break: break-word;
+  border: 1px solid var(--border-subtle);
+}
+
+/* ---- drawer: right-side detail rail (replaces read-only modals) ---- */
+.drawer {
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: min(480px, 100vw);
+  background: var(--surface-elevated);
+  border-left: 1px solid var(--border);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  z-index: 90;
+  box-shadow: var(--shadow-2);
+}
+.drawer__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-5);
+  border-bottom: 1px solid var(--border);
+}
+.drawer__head h3 {
+  margin: 0;
+  font-size: var(--fs-h3);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  color: var(--text);
+}
+.drawer__body {
+  padding: var(--sp-5);
+  overflow-y: auto;
+  display: grid;
+  gap: var(--sp-4);
+}
+.drawer__footer {
+  padding: var(--sp-3) var(--sp-5);
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: var(--sp-2);
+  justify-content: flex-end;
+}
+.drawer__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(13, 31, 23, 0.42);
+  z-index: 89;
+  backdrop-filter: blur(2px);
+}
+
+/* ---- skel: shimmer skeleton ---- */
+.skel {
+  background: var(--surface-sunken);
+  border-radius: var(--r-sm);
+  animation: skel-shimmer 1.6s ease-in-out infinite;
+  min-height: 12px;
+}
+@keyframes skel-shimmer {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 1; }
+}
+
+/* ---- emptyState: centered empty-panel message ---- */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--sp-2);
+  padding: var(--sp-7) var(--sp-5);
+  color: var(--text-muted);
+  font-size: var(--fs-ui);
+}
+.emptyState__hint {
+  font-size: var(--fs-sm);
+  color: var(--text-subtle);
+}
+
