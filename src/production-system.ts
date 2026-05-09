@@ -442,7 +442,7 @@ export class ProductionSystem {
       .map((product) => this.publicProduct(product));
   }
 
-  async createCheckout(sessionId, { items, deliveryMethod }) {
+  async createCheckout(sessionId, { items, deliveryMethod, shippingAddress }) {
     const patient = this.requirePatient(sessionId, { requireConsent: true });
     const checkedItems = this.checkItems(items);
     const expiresAt = new Date(
@@ -507,6 +507,7 @@ export class ProductionSystem {
         items: orderItems,
         totalCents,
         deliveryMethod: deliveryMethod || "Retirada combinada",
+        shippingAddress: normalizeShippingAddress(shippingAddress),
         status: "awaiting_payment",
         reservationId,
         paymentId,
@@ -536,6 +537,22 @@ export class ProductionSystem {
       throw error;
     }
     this.state.payments.push(payment);
+
+    // Auto-persist the shipping address on the patient profile so the next
+    // checkout pre-fills the form. Skip when no address was supplied (pickup
+    // flows) or when the address didn't change (avoids spurious audit noise).
+    const normalizedAddrForSave = normalizeShippingAddress(shippingAddress);
+    if (
+      normalizedAddrForSave &&
+      JSON.stringify(patient.shippingAddress || null) !== JSON.stringify(normalizedAddrForSave)
+    ) {
+      patient.shippingAddress = normalizedAddrForSave;
+      this.audit("patient_shipping_address_saved", patient.id, {
+        memberCode: patient.memberCode,
+        source: "checkout",
+      });
+    }
+
     this.audit("checkout_created", patient.id, { orderId, reservationId, paymentId });
     this.persist();
     return { order: this.publicOrder(this.orderById(orderId)), payment };
@@ -1613,8 +1630,29 @@ export class ProductionSystem {
       inviteResetAt: patient.inviteResetAt || "",
       lastLoginAt: patient.lastLoginAt || null,
       lastSessionExpiresAt: patient.lastSessionExpiresAt || null,
+      shippingAddress: patient.shippingAddress || null,
       eligibility: this.patientEligibility(patient),
     };
+  }
+
+  /**
+   * Patient self-service profile update. Today only the shipping address is
+   * patient-editable; future fields can be added by extending the allow-list
+   * below. Requires a valid patient session and LGPD consent (the address is
+   * personal data; no consent → no save).
+   */
+  updatePatientProfile(sessionId, patch = {}) {
+    const patient = this.requirePatient(sessionId, { requireConsent: true });
+    const next = { ...patient };
+    if (patch.shippingAddress !== undefined) {
+      next.shippingAddress = normalizeShippingAddress(patch.shippingAddress);
+    }
+    Object.assign(patient, next);
+    this.audit("patient_profile_updated", patient.id, {
+      memberCode: patient.memberCode,
+      fields: Object.keys(patch || {}),
+    });
+    return this.publicPatient(patient);
   }
 
   patientByCredentials({ memberCode, inviteCode }) {
@@ -2095,6 +2133,31 @@ function normalize(value) {
     .trim()
     .toUpperCase()
     .replace(/[\s-]/g, "");
+}
+
+/**
+ * Normalize a shipping address payload submitted at checkout.
+ * Returns a frozen, trimmed object with empty strings as fallbacks. The
+ * cep/state are kept loose (no regex) — patient-facing validation happens
+ * in the UI; server-side we only persist what arrived.
+ */
+function normalizeShippingAddress(value) {
+  if (!value || typeof value !== "object") return null;
+  const trim = (v) => String(v == null ? "" : v).trim();
+  const out = {
+    cep: trim(value.cep),
+    street: trim(value.street),
+    number: trim(value.number),
+    complement: trim(value.complement),
+    neighborhood: trim(value.neighborhood),
+    city: trim(value.city),
+    state: trim(value.state).toUpperCase().slice(0, 2),
+    recipient: trim(value.recipient),
+    notes: trim(value.notes),
+  };
+  // If every meaningful field is empty, treat as null (pickup-style flow).
+  const hasAny = out.cep || out.street || out.number || out.city || out.state;
+  return hasAny ? out : null;
 }
 
 function slug(value) {
