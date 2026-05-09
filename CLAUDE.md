@@ -44,8 +44,11 @@ When adding a new endpoint:
 
 1. Create `app/api/<your-path>/route.js`.
 2. `import { getSystem } from "@/src/system-instance"` (or relative).
-3. Use `request.cookies.get('av_session')` to read the session; pass to
-   `system.<method>()` for RBAC enforcement.
+3. Use `readSessionCookie(request.headers.get('cookie'))` from
+   `src/route-helpers.ts` to read the session; pass to `system.<method>()`
+   for RBAC enforcement. Do NOT read the cookie name directly — it is
+   `__Host-av_session` in production and `av_session` in dev, and
+   `sessionCookieName()` / `readSessionCookie()` already encapsulate that.
 4. Return `Response.json(...)` with explicit status codes.
 5. Don't bypass middleware.ts; it owns origin + protected-page checks.
 
@@ -100,3 +103,49 @@ and self-restarts on crash. Pre-seeded with the dev-mode secrets that
 
 Dev quick-access patient: `scripts/add-dev-user.mjs` creates `TIAGO/TIAGO`
 idempotently. Run after `npm run dev:reset` wipes the SQLite file.
+
+## Admin / Equipe design system
+
+The internal team experience (`/equipe/*` and `/admin`) follows the
+**Direction B (Stripe Workbench)** dialect documented in
+`docs/superpowers/design.md` §2.2 and codified in
+`docs/superpowers/specs/2026-05-09-admin-design-system.md`.
+
+Mockups live under `docs/superpowers/specs/admin-revamp-mockups/`.
+Implementation ledger: `thoughts/ledgers/CONTINUITY_CLAUDE-admin-revamp.md`.
+
+### Design tokens (in `app/globals.css`)
+
+- Spacing: `--sp-1` (4px) through `--sp-10` (72px) — 8-px grid
+- Surface roles: `--surface-{base,elevated,sunken,hover,active}`
+- Border roles: `--border-{default,subtle,emphasis,strong,focus}`
+- Text roles: `--text-{primary,secondary,tertiary,quaternary}`
+- Status roles: `--status-{success,warn,danger,info,neutral}-{bg,text,dot}`
+- Type: `--fs-ui` (13px admin density), `--lh-snug` (1.35)
+- Motion: `--ease-out-quad`, `--duration-{fast,base,slow}`
+- Radii (locked globally with paciente): `--r-sm 3 / --r-md 5 / --r-lg 7`
+
+### Utility classes
+
+- `.adm-page`, `.adm-stack-1..7`, `.adm-row`, `.adm-grid-{2,3,4}col`,
+  `.adm-empty-state`, `.adm-skeleton`
+
+### Promoted primitives
+
+- `.surface` / `.surface--elevated` / `.surface--bordered-left-{ok|warn|danger|info|neutral}`
+- `.dataTable` (replaces local table.adm overrides)
+- `.toolbar` (status-strip pattern)
+- `.btn--{primary,ghost,danger,mini,icon}` (NOT new local button styles)
+- `.pill` with `--success/--warn/--danger/--info/--neutral` modifiers
+- `.chip` (compact filter / count chip)
+- `.skel` (shimmer loader, respects `prefers-reduced-motion`)
+- `.emptyState` (with `--sm`, `--lg` modifiers)
+- `.drawer` / `.drawer__head` / `.drawer__body` / `.drawer__overlay`
+- `.codeBlock` (mono command snippet)
+
+### Anti-patterns to avoid
+
+- DO NOT add new local `.btnGhost` / `.statusPill` / `.cmdBlock` etc. — extend the global primitive instead
+- DO NOT introduce new hardcoded `padding: NNpx` — use `var(--sp-N)` tokens (8-px grid)
+- DO NOT use display font (`Outfit`) for small UI text below 18px — use Inter (`--font-ui`)
+- DO NOT add motion that animates layout (width/height/top/left)
