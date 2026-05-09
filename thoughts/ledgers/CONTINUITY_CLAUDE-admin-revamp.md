@@ -1,6 +1,6 @@
 # Session: admin-revamp
 Updated: 2026-05-09T01:30:00Z
-Status: **SHIPPED** (16 commits 10bfc1f → f426572 on `feat/paciente-revamp-b`)
+Status: **SHIPPED** — 5 cycles converged on `feat/paciente-revamp-b`
 
 ## Goal
 Full visual revamp of the internal team experience (`/equipe/*` and
@@ -107,9 +107,18 @@ all pass green.
   - [x] Migrate Brand + TeamCommand topbar to next/link (commit `f426572`)
   - [x] Reconciled MEMORY.md — added `project_admin_revamp_shipped.md`
         memory entry (separate initiative from closed Calm Clinical Modern)
-- Now: [→] SHIPPED — awaiting user visual sign-off via http://127.0.0.1:4184/equipe
-        (login: equipe@apoiar.local / apoio-equipe-dev)
+- Now: [→] CLOSED — 5 cycles converged. Awaiting user signoff via http://127.0.0.1:4184/equipe.
 - Next: (none — initiative closed)
+
+## Cycles (post-Phase-8 convergence)
+
+- **Cycle 1** — 6 commits — 37-defect fix pass (cultivo split, +Produto/+Lote working, fake SKUs removed, KPI deltas real)
+- **Cycle 2** — 6 commits — design-system codification (84→4 hardcoded paddings, functional tokens, utility classes, empty + skeleton states)
+- **Cycle 3** — 14 commits (7 consolidate + 4 fix + 3 docs/tests) — primitives consolidated (11→2 pill files, 6→0 ghost btn reimpls), accents restored, OrderDrawer pill mapped to status, 38 new tests
+- **Cycle 4** — 7 commits — i18n (real plurals, diacritics in CommandPalette/Kanban), a11y (focus trap, truncation), single useToast hook, more tokens
+- **Cycle 5** — N commits (final) — refresh dedupe, colgroup migration, sr-only count announcer, px discipline lint, ledger close-out + handoff
+
+**Final state:** ~50 commits, 136+ tests, build green, all 7 internal routes shipping Direction B (Stripe Workbench) chrome.
 
 ## Open Questions (all resolved)
 - ~~UNCONFIRMED: Mounting `/admin` under `TeamShell`~~ → RESOLVED Phase 7:
