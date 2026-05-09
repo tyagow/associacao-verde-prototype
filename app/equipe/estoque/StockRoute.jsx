@@ -365,7 +365,7 @@ function LegacyManagementDrawers({
           id="product-form"
           className="inline-form compact-management-form"
           onSubmit={(event) =>
-            submitForm(event, "product-create", "Produto criado no catalogo privado.")
+            submitForm(event, "product-create", "Produto criado no catálogo privado.")
           }
         >
           <label>
@@ -387,7 +387,7 @@ function LegacyManagementDrawers({
             />
           </label>
           <label>
-            Preco R$
+            Preço R$
             <input
               name="priceReais"
               type="number"
@@ -418,7 +418,7 @@ function LegacyManagementDrawers({
             />
           </label>
           <label>
-            Alerta minimo
+            Alerta mínimo
             <input
               name="lowStockThreshold"
               type="number"
@@ -439,7 +439,7 @@ function LegacyManagementDrawers({
             Nota interna
             <input
               name="internalNote"
-              placeholder="Restricao, lote, receita, cuidado operacional"
+              placeholder="Restrição, lote, receita, cuidado operacional"
               disabled={!isTeam || busy === "product-create"}
             />
           </label>
@@ -455,7 +455,7 @@ function LegacyManagementDrawers({
           id="product-update-form"
           className="inline-form compact-management-form"
           onSubmit={(event) =>
-            submitForm(event, "product-update", "Produto atualizado no catalogo privado.")
+            submitForm(event, "product-update", "Produto atualizado no catálogo privado.")
           }
         >
           <label>
@@ -468,7 +468,7 @@ function LegacyManagementDrawers({
             />
           </label>
           <label>
-            Preco R$
+            Preço R$
             <input
               name="priceReais"
               type="number"
@@ -523,7 +523,7 @@ function LegacyManagementDrawers({
             />
           </label>
           <label className="wide-field">
-            Observacao
+            Observação
             <input
               name="note"
               placeholder="Entrada conferida no estoque"
@@ -670,7 +670,7 @@ async function api(path, options = {}) {
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(payload.error || "Erro na requisicao.");
+    throw new Error(payload.error || "Erro na requisição.");
   }
   return payload;
 }
