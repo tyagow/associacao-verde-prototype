@@ -305,8 +305,7 @@ function supportCases(dashboard, filters, seg = "all", sessionEmail = "") {
       if (seg === "mine") {
         if (!sessionEmail) return false;
         return item.tickets.some(
-          (ticket) =>
-            ticket.assignedTo === sessionEmail || ticket.assigneeEmail === sessionEmail,
+          (ticket) => ticket.assignedTo === sessionEmail || ticket.assigneeEmail === sessionEmail,
         );
       }
       if (seg === "sla4") {

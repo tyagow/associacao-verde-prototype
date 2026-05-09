@@ -74,9 +74,7 @@ test("PageHead renders title, meta, and actions slots", () => {
 });
 
 test("PageHead with only a title omits the right rail entirely", () => {
-  const html = renderToStaticMarkup(
-    React.createElement(PageHead, { title: "Estoque" }),
-  );
+  const html = renderToStaticMarkup(React.createElement(PageHead, { title: "Estoque" }));
   assert.match(html, /<h1[^>]*>Estoque<\/h1>/);
   // No meta span and no actions wrapper when neither is provided.
   assert.doesNotMatch(html, /class="[^"]*right/);
