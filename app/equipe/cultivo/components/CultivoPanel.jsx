@@ -63,7 +63,7 @@ export default function CultivoPanel({ batches }) {
                   <td className="right num">{batch.plants}</td>
                   <td className="right num">{batch.estimatedGrams ?? batch.harvested ?? "—"}</td>
                   <td>
-                    <span className={`pill ${tone}`.trim()}>{statusLabel(batch.status)}</span>
+                    <span className={`pill ${tone}`.trim()}>{stageLabel(batch.status)}</span>
                   </td>
                 </tr>
               );
@@ -82,7 +82,7 @@ function batchLabel(batch) {
   return `CV-${tail || "0000"}`;
 }
 
-function statusLabel(status) {
+export function stageLabel(status) {
   return (
     {
       growing: "vegetativo",

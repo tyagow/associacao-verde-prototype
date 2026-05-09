@@ -11,7 +11,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import TeamShell from "../components/TeamShell";
 import PageHead from "../components/PageHead";
 import StatusStrip from "../components/StatusStrip";
-import CultivoPanel from "./components/CultivoPanel.jsx";
+import CultivoPanel, { stageLabel } from "./components/CultivoPanel.jsx";
 import { pluralize, pluralWord } from "../components/pluralize.js";
 
 export default function CultivoRoute() {
@@ -427,17 +427,6 @@ export default function CultivoRoute() {
         </p>
       </div>
     </TeamShell>
-  );
-}
-
-function stageLabel(status) {
-  return (
-    {
-      growing: "vegetativo",
-      harvested: "colhido",
-      dried: "seco",
-      stocked: "estocado",
-    }[status] || status
   );
 }
 
