@@ -216,9 +216,11 @@ export default function PatientPortal() {
         },
       });
       setCart({});
-      // Refresh session so we pick up the auto-saved shipping address from
-      // the backend (createCheckout persists it on patient.shippingAddress).
-      await Promise.all([refreshSession(), loadCatalog(), loadOrders()]);
+      // refreshSession() already pulls catalog + orders for patient role and
+      // re-hydrates the auto-saved shipping address (createCheckout persists
+      // it on patient.shippingAddress). Calling loadCatalog/loadOrders
+      // separately would triple-fetch.
+      await refreshSession();
       showToast(`Pix gerado para ${result.order.id}. Estoque reservado ate o vencimento.`);
     } catch (error) {
       showToast(error.message);

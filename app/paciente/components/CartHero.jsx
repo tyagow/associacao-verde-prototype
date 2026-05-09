@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./CartHero.module.css";
 
 const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
@@ -82,48 +82,63 @@ export default function CartHero({
     if (addressMissing) setAddressOpen(true);
   }, [addressMissing]);
 
-  // CEP autocomplete via viacep.com.br. Triggered when the user types a
-  // CEP that normalizes to 8 digits. We only fill empty fields so we do not
-  // overwrite anything the user already typed (or the saved address from
-  // their patient profile).
+  // Pin latest addr + handler in refs so the CEP effect can depend solely
+  // on the CEP string. Without this we'd either suppress react-hooks/
+  // exhaustive-deps or refetch on every keystroke.
+  const addrRef = useRef(addr);
+  const onShippingAddressChangeRef = useRef(onShippingAddressChange);
+  useEffect(() => {
+    addrRef.current = addr;
+    onShippingAddressChangeRef.current = onShippingAddressChange;
+  });
+
+  // CEP autocomplete via viacep.com.br. Debounced 250ms; aborts in-flight
+  // requests when the CEP changes again or the component unmounts. Only
+  // fills empty fields so we never overwrite typed/saved values.
   useEffect(() => {
     const raw = String(addr.cep || "").replace(/\D/g, "");
     if (raw.length !== 8) {
-      if (cepLookupState !== "idle") setCepLookupState("idle");
-      return;
+      setCepLookupState((current) => (current === "idle" ? current : "idle"));
+      return undefined;
     }
-    let cancelled = false;
-    setCepLookupState("loading");
-    fetch(`https://viacep.com.br/ws/${raw}/json/`)
-      .then((response) => (response.ok ? response.json() : Promise.reject(response)))
-      .then((data) => {
-        if (cancelled) return;
-        if (!data || data.erro) {
-          setCepLookupState("error");
-          return;
-        }
-        const next = { ...addr };
-        let changed = false;
-        const fill = (key, value) => {
-          if (!next[key] && value) {
-            next[key] = value;
-            changed = true;
+    const controller = new AbortController();
+    const debounceId = window.setTimeout(() => {
+      setCepLookupState("loading");
+      fetch(`https://viacep.com.br/ws/${raw}/json/`, { signal: controller.signal })
+        .then((response) => (response.ok ? response.json() : Promise.reject(response)))
+        .then((data) => {
+          if (!data || data.erro) {
+            setCepLookupState("error");
+            return;
           }
-        };
-        fill("street", data.logradouro);
-        fill("neighborhood", data.bairro);
-        fill("city", data.localidade);
-        fill("state", (data.uf || "").toUpperCase());
-        if (changed && onShippingAddressChange) onShippingAddressChange(next);
-        setCepLookupState("ok");
-      })
-      .catch(() => {
-        if (!cancelled) setCepLookupState("error");
-      });
+          const current = addrRef.current || {};
+          const next = { ...current };
+          let changed = false;
+          const fill = (key, value) => {
+            if (!next[key] && value) {
+              next[key] = value;
+              changed = true;
+            }
+          };
+          fill("street", data.logradouro);
+          fill("neighborhood", data.bairro);
+          fill("city", data.localidade);
+          fill("state", (data.uf || "").toUpperCase());
+          if (changed && onShippingAddressChangeRef.current) {
+            onShippingAddressChangeRef.current(next);
+          }
+          setCepLookupState("ok");
+        })
+        .catch((error) => {
+          // AbortError fires on unmount / debounce reset — not user-visible.
+          if (error?.name === "AbortError") return;
+          setCepLookupState("error");
+        });
+    }, 250);
     return () => {
-      cancelled = true;
+      window.clearTimeout(debounceId);
+      controller.abort();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [addr.cep]);
   // If the cart has items and the address is incomplete, open the fieldset
   // automatically — the patient cannot generate Pix until they fill it, so

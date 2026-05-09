@@ -1643,15 +1643,22 @@ export class ProductionSystem {
    */
   updatePatientProfile(sessionId, patch = {}) {
     const patient = this.requirePatient(sessionId, { requireConsent: true });
-    const next = { ...patient };
+    const allowList = new Set(["shippingAddress"]);
+    const touched = [];
     if (patch.shippingAddress !== undefined) {
-      next.shippingAddress = normalizeShippingAddress(patch.shippingAddress);
+      patient.shippingAddress = normalizeShippingAddress(patch.shippingAddress);
+      touched.push("shippingAddress");
     }
-    Object.assign(patient, next);
+    // Reject unknown patch keys silently — defense against client typos or
+    // a malicious client sneaking unsanitized fields onto the patient record.
+    const ignored = Object.keys(patch || {}).filter((key) => !allowList.has(key));
+    if (touched.length === 0) return this.publicPatient(patient);
     this.audit("patient_profile_updated", patient.id, {
       memberCode: patient.memberCode,
-      fields: Object.keys(patch || {}),
+      fields: touched,
+      ignored,
     });
+    this.persist();
     return this.publicPatient(patient);
   }
 
