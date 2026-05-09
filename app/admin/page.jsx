@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import TeamShell from "../equipe/components/TeamShell";
 import PageHead from "../equipe/components/PageHead";
 import StatusStrip from "../equipe/components/StatusStrip";
@@ -37,11 +37,7 @@ export default function AdminPage() {
   const [selectedAuditEvent, setSelectedAuditEvent] = useState(null);
   const [activeSegment, setActiveSegment] = useState("gates");
 
-  useEffect(() => {
-    load();
-  }, []);
-
-  async function load() {
+  const load = useCallback(async () => {
     try {
       const [sessionPayload, dashboardPayload, readinessPayload] = await Promise.all([
         api("/api/session").catch(() => null),
@@ -57,7 +53,11 @@ export default function AdminPage() {
       setStatus("acesso restrito");
       setError(loadError.message);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   async function onCreateUser(event) {
     event.preventDefault();
