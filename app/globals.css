@@ -409,6 +409,10 @@ p:last-child { margin-bottom: 0; }
   color: var(--muted);
 }
 
+/* Cycle 4 (B2): tiny helper for the cultivo route's footer hint —
+   replaces an inline style={{ fontSize: 12 }} on the .muted paragraph. */
+.cultivo-help { font-size: var(--fs-xs); }
+
 /* The kicker is the editorial signature: a thin uppercased eyebrow.
    It always sits above a serif title. */
 .kicker {

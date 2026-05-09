@@ -14,6 +14,7 @@ import TeamShell from "../components/TeamShell";
 import PageHead from "../components/PageHead";
 import StatusStrip from "../components/StatusStrip";
 import CultivoPanel from "../estoque/components/CultivoPanel.jsx";
+import { pluralize } from "../components/pluralize.js";
 
 export default function CultivoRoute() {
   const [session, setSession] = useState(null);
@@ -100,7 +101,7 @@ export default function CultivoRoute() {
     >
       <PageHead
         title="Entrada e cultivo"
-        meta={`${totals.active} lote(s) em curso · ${totals.total} no historico`}
+        meta={`${pluralize(totals.active, "lote", "lotes")} em curso · ${totals.total} no histórico`}
         actions={
           <a className="btn ghost mini" href="/equipe/estoque">
             Ir para estoque
@@ -140,8 +141,8 @@ export default function CultivoRoute() {
         ) : (
           <CultivoPanel batches={batches} />
         )}
-        <p className="muted" style={{ fontSize: 12 }}>
-          Para criar lotes, avancar semana, registrar colheita, secagem ou mover para o estoque, use
+        <p className="muted cultivo-help">
+          Para criar lotes, avançar semana, registrar colheita, secagem ou mover para o estoque, use
           o painel "Entrada e cultivo" em <a href="/equipe/estoque">/equipe/estoque</a>.
         </p>
       </div>

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./ActivityFeed.module.css";
 import { ACTION_COPY } from "./auditCopy.js";
+import { pluralize } from "./pluralize.js";
 
 const POLL_INTERVAL_MS = 5000;
 const MAX_EVENTS = 40;
@@ -68,7 +69,9 @@ export default function ActivityFeed({ initialEvents = [] }) {
       <header className={styles.head}>
         <h3 className={styles.title}>Atividade recente</h3>
         <span className={styles.meta}>
-          {status === "ao vivo" ? `ao vivo · ${events.length} evento(s)` : status}
+          {status === "ao vivo"
+            ? `ao vivo · ${pluralize(events.length, "evento", "eventos")}`
+            : status}
         </span>
       </header>
       {events.length === 0 ? (

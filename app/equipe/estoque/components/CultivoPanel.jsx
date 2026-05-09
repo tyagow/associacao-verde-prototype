@@ -7,6 +7,7 @@
    create / advance / harvest / dry / move-to-stock actions live in the
    <details> drawer in StockRoute.jsx. */
 
+import { pluralize } from "../../components/pluralize.js";
 import styles from "./CultivoPanel.module.css";
 
 const STAGE_TONE = { growing: "warn", harvested: "warn", dried: "ok", stocked: "" };
@@ -17,7 +18,7 @@ export default function CultivoPanel({ batches }) {
     <section className="panel" aria-label="Cultivo ativo">
       <header className="ph">
         <h3>Cultivo em curso</h3>
-        <span className="meta">{active.length} lote(s) em andamento</span>
+        <span className="meta">{pluralize(active.length, "lote", "lotes")} em andamento</span>
       </header>
       {active.length === 0 ? (
         <div className={styles.empty}>

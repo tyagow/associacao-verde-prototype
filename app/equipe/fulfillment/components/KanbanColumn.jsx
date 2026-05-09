@@ -3,6 +3,7 @@
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import OrderCard from "./OrderCard.jsx";
+import { pluralize } from "../../components/pluralize.js";
 import styles from "./KanbanColumn.module.css";
 
 /**
@@ -30,7 +31,10 @@ export default function KanbanColumn({ status, label, tone = "muted", orders, on
           <span className={`${styles.dot} ${toneClass}`} aria-hidden />
           {label}
         </h3>
-        <span className={`${styles.pillN} ${toneClass}`} aria-label={`${orders.length} pedido(s)`}>
+        <span
+          className={`${styles.pillN} ${toneClass}`}
+          aria-label={pluralize(orders.length, "pedido", "pedidos")}
+        >
           {orders.length}
         </span>
       </header>

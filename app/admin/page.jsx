@@ -370,7 +370,7 @@ function ReleaseEvidenceBanner({ releaseGate, blockerCount }) {
         <p>
           {releaseGate?.ok
             ? "Todos os gates de produção estão completos."
-            : `${blockerCount} bloqueio(s) impedem declarar produção pronta.`}
+            : `${blockerCount} ${blockerCount === 1 ? "bloqueio impede" : "bloqueios impedem"} declarar produção pronta.`}
         </p>
         <p className="muted">Verificado em {formatDateTime(releaseGate?.checkedAt)}.</p>
       </div>

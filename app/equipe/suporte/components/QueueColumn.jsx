@@ -1,5 +1,6 @@
 "use client";
 
+import { pluralize } from "../../components/pluralize.js";
 import styles from "./QueueColumn.module.css";
 
 /**
@@ -17,7 +18,7 @@ export default function QueueColumn({ cases, selectedPatientId, onSelect }) {
     <aside className={styles.qcol} aria-label="Fila de suporte">
       <header className={styles.head}>
         <h3>Casos · Reserva</h3>
-        <span className={styles.count}>{cases.length} caso(s)</span>
+        <span className={styles.count}>{pluralize(cases.length, "caso", "casos")}</span>
       </header>
       <div className={styles.list}>
         {cases.length === 0 ? (

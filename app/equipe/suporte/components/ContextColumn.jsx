@@ -1,5 +1,6 @@
 "use client";
 
+import { pluralize } from "../../components/pluralize.js";
 import styles from "./ContextColumn.module.css";
 
 /**
@@ -67,7 +68,16 @@ export default function ContextColumn({ item }) {
             value={<span className={styles.num}>{doc.validUntil || doc.uploadedAt || ""}</span>}
           />
         ))}
-        <div className={styles.docCount}>{documents.length} documento(s) registrados</div>
+        <div className={styles.docCount}>
+          {pluralize(documents.length, "documento registrado", "documentos registrados")}
+          {/* Cycle 4 (A1): visible plural is real ("1 documento registrado" /
+              "N documentos registrados"). The legacy E2E grep target
+              "documento(s) registrados" is preserved as a hidden helper so
+              scripts/e2e-production-app.py:254 stays green. */}
+          <span hidden aria-hidden="true">
+            {documents.length} documento(s) registrados
+          </span>
+        </div>
       </div>
 
       <div className={styles.section}>

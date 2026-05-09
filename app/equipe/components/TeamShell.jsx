@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import Brand from "../../components/Brand";
 import CommandPalette from "./CommandPalette";
+import { pluralize } from "./pluralize.js";
 import styles from "./TeamShell.module.css";
 
 const ROLE_LABELS = {
@@ -116,7 +117,7 @@ export default function TeamShell({
                       className={[styles.badge, badge.tone ? badge.tone : null]
                         .filter(Boolean)
                         .join(" ")}
-                      aria-label={`${badge.value} pendente(s)`}
+                      aria-label={pluralize(badge.value, "pendente", "pendentes")}
                     >
                       {badge.value}
                     </span>

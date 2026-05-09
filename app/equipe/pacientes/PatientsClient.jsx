@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import PageHead from "../components/PageHead";
 import StatusStrip from "../components/StatusStrip";
 import TeamShell from "../components/TeamShell";
+import { pluralize } from "../components/pluralize.js";
 
 import styles from "./PatientsClient.module.css";
 
@@ -287,7 +288,7 @@ export default function PatientsClient() {
           <header className="ph">
             <h3>Registro de pacientes</h3>
             <span className="meta">
-              {counts.total} paciente(s) · plano de cuidado · privacidade
+              {pluralize(counts.total, "paciente", "pacientes")} · plano de cuidado · privacidade
             </span>
           </header>
           {!dashboard ? (
@@ -523,7 +524,7 @@ function DocumentsPanel({ documents }) {
     <>
       <header className="ph" style={{ borderTop: "1px solid var(--line)" }}>
         <h3>Documentos · receitas e carteirinha</h3>
-        <span className="meta">{documents.length} documento(s)</span>
+        <span className="meta">{pluralize(documents.length, "documento", "documentos")}</span>
       </header>
       {documents.length ? (
         documents.map((document) => <DocumentRow key={document.id} document={document} />)
