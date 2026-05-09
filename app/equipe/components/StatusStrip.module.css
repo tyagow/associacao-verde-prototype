@@ -1,0 +1,139 @@
+/* Phase 0 — Status strip primitive (Direction B).
+ * Translated from docs/superpowers/specs/admin-revamp-mockups/_shell.css
+ * (.statusStrip / .countChip / .seg / .filterIn) into module form. */
+
+.statusStrip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  margin-bottom: 16px;
+}
+
+.chips {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.countChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--r-pill);
+  background: var(--soft);
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 500;
+}
+.countChip strong {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+.countChip.warn {
+  background: var(--warn-soft);
+  color: var(--warn-ink);
+}
+.countChip.danger {
+  background: var(--danger-soft);
+  color: #7c2419;
+}
+.countChip.ok {
+  background: var(--green-tint);
+  color: var(--green-deep);
+}
+
+.segmented {
+  display: inline-flex;
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  background: var(--paper);
+  margin-left: auto;
+}
+.segmented button {
+  height: 28px;
+  padding: 0 12px;
+  font: 600 12px var(--font-ui);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: var(--muted);
+  border-right: 1px solid var(--line);
+}
+.segmented button:last-child {
+  border-right: 0;
+}
+.segmented button.on {
+  background: var(--ink);
+  color: var(--paper);
+}
+.segmented .num {
+  font-weight: 500;
+  opacity: 0.8;
+  margin-left: 4px;
+}
+
+.filters {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filterInput {
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  font: inherit;
+  font-size: 12px;
+  min-width: 220px;
+  background: var(--paper);
+  color: var(--ink);
+}
+.filterInput:focus {
+  outline: 2px solid var(--ink);
+  outline-offset: -1px;
+}
+select.filterInput {
+  padding-right: 24px;
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 12px,
+    calc(100% - 9px) 12px;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.refresh {
+  height: 28px;
+  padding: 0 10px;
+  font: 600 12px var(--font-ui);
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.refresh:hover {
+  background: var(--paper-warm);
+}
+
+@media (max-width: 1024px) {
+  .segmented {
+    margin-left: 0;
+  }
+}
