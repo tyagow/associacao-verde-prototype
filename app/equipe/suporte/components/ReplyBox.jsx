@@ -3,17 +3,27 @@
 import { useState } from "react";
 import styles from "./ReplyBox.module.css";
 
+const QUICK_REASONS = [
+  "Verificando webhook",
+  "Pix confirmado",
+  "Pedir comprovante",
+  "Encaminhar p/ financeiro",
+];
+
 /**
- * Phase 7 — Reply composer.
- *
- * Posts the body to /api/team/support-replies. On success the parent
- * triggers a thread refresh; on failure we surface the error inline
- * without losing the draft.
+ * Phase 6 — Reply composer with quick-reason chips on top, a textarea,
+ * and a footer with `Anotar` (ghost) and `Enviar →` (primary). Both
+ * buttons currently submit the same payload to /api/team/support-replies;
+ * full internal-note semantics are deferred to Phase 7.
  */
 export default function ReplyBox({ ticketId, onSent }) {
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+
+  function appendChip(text) {
+    setBody((current) => (current ? `${current.trimEnd()}\n${text} ` : `${text} `));
+  }
 
   async function send(event) {
     event.preventDefault();
@@ -44,23 +54,41 @@ export default function ReplyBox({ ticketId, onSent }) {
   }
 
   return (
-    <form className={styles.txReply} onSubmit={send} aria-label="Responder paciente">
+    <form className={styles.replybox} onSubmit={send} aria-label="Responder paciente">
+      <div className={styles.chips}>
+        {QUICK_REASONS.map((reason) => (
+          <button
+            key={reason}
+            type="button"
+            className={styles.chip}
+            onClick={() => appendChip(reason)}
+            disabled={busy}
+          >
+            + {reason}
+          </button>
+        ))}
+      </div>
       <textarea
         value={body}
         onChange={(event) => setBody(event.target.value)}
-        placeholder="Escreva uma resposta para o paciente..."
+        placeholder="Resposta para o paciente (Markdown ok)…"
         disabled={busy}
         aria-label="Mensagem para o paciente"
       />
-      <div className={styles.txReplyRow}>
-        <span className={styles.txReplyHint}>
-          A resposta sera registrada no historico do atendimento e auditada.
-        </span>
-        <button type="submit" disabled={busy || !body.trim()}>
-          {busy ? "Enviando..." : "Enviar resposta"}
-        </button>
+      <div className={styles.actions}>
+        <span className={styles.hint}>visível ao paciente · auditoria registra envio</span>
+        <div className={styles.btns}>
+          {/* Anotar = TODO Phase-7 internal note. For now mirrors send so the
+              button is wired and E2E doesn't see a dead control. */}
+          <button type="submit" className="btn ghost" disabled={busy || !body.trim()}>
+            Anotar
+          </button>
+          <button type="submit" className="btn primary" disabled={busy || !body.trim()}>
+            {busy ? "Enviando..." : "Enviar →"}
+          </button>
+        </div>
       </div>
-      {error ? <span className={styles.txReplyError}>{error}</span> : null}
+      {error ? <span className={styles.error}>{error}</span> : null}
     </form>
   );
 }

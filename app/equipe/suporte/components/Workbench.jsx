@@ -1,30 +1,27 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import PageHead from "../../components/PageHead";
+import StatusStrip from "../../components/StatusStrip";
 import QueueColumn from "./QueueColumn";
 import CasePanel from "./CasePanel";
+import ContextColumn from "./ContextColumn";
 import Thread from "./Thread";
 import ReplyBox from "./ReplyBox";
 import styles from "./Workbench.module.css";
 
 /**
- * Phase 7 — Support workbench (LEFT queue + RIGHT case panel + thread).
- *
- * Owns:
- *   - dashboard fetch + filter state
- *   - selected patient/ticket
- *   - thread fetch (per-ticket, via /api/team/support-thread)
- *   - ticket status updates (POST /api/team/support-requests)
- *   - reply post-send refresh
+ * Phase 6 — Support workbench. 3-column layout (Queue 320 / Case flex / Context 320).
  *
  * Preserves the E2E selectors and texts from the legacy page:
- *   #support-surface, [data-filter='supportQuery'],
+ *   #support-surface, #support-status, [data-filter='supportQuery'],
  *   [data-filter='supportStatus'], "Ultimo login", "Reserva",
  *   "documento(s) registrados", "Suporte ao paciente",
  *   "Duvida sobre renovacao", "Revisao de acesso".
  */
 export default function Workbench({ dashboard, onDashboardRefresh, error, status }) {
   const [filters, setFilters] = useState({ supportQuery: "", supportStatus: "all" });
+  const [seg, setSeg] = useState("all"); // 'all' | 'mine' | 'sla4'
   const [selectedPatientId, setSelectedPatientId] = useState("");
   const [selectedTicketId, setSelectedTicketId] = useState("");
   const [thread, setThread] = useState({ ticket: null, messages: [] });
@@ -47,7 +44,6 @@ export default function Workbench({ dashboard, onDashboardRefresh, error, status
     );
   }, [selectedCase, selectedTicketId]);
 
-  // Auto-pick the first case when filtering changes the list.
   useEffect(() => {
     if (cases.length === 0) return;
     if (!cases.some((item) => item.patient.id === selectedPatientId)) {
@@ -55,9 +51,6 @@ export default function Workbench({ dashboard, onDashboardRefresh, error, status
     }
   }, [cases, selectedPatientId]);
 
-  // Reset selected ticket when patient changes. On mobile, also scroll the
-  // case panel into view so the user doesn't have to scroll down past the
-  // queue strip after picking a case (Phase 12 mobile stack UX).
   useEffect(() => {
     setSelectedTicketId("");
     if (!userSelectedRef.current) return;
@@ -67,7 +60,6 @@ export default function Workbench({ dashboard, onDashboardRefresh, error, status
     if (!isMobile) return;
     const node = caseSectionRef.current;
     if (!node || typeof node.scrollIntoView !== "function") return;
-    // Use rAF so the layout settles after state change before scrolling.
     window.requestAnimationFrame(() => {
       node.scrollIntoView({ behavior: "smooth", block: "start" });
     });
@@ -130,116 +122,122 @@ export default function Workbench({ dashboard, onDashboardRefresh, error, status
     }
   }
 
-  const openTickets = dashboard?.supportTickets?.filter((t) => t.status !== "resolved").length || 0;
+  const tickets = dashboard?.supportTickets || [];
+  const openCount = tickets.filter((t) => t.status === "open").length;
+  const waitingPatient = tickets.filter((t) => t.status === "in_progress").length;
+  const today = new Date().toISOString().slice(0, 10);
+  const resolvedToday = tickets.filter((t) => {
+    if (t.status !== "resolved") return false;
+    const day = (t.resolvedAt || t.updatedAt || "").slice(0, 10);
+    return day === today;
+  }).length;
+  const reviewCount = tickets.filter(
+    (t) => t.type === "access_recovery" && t.status !== "resolved",
+  ).length;
+  const renewCount = tickets.filter(
+    (t) => t.status !== "resolved" && /renova/i.test(`${t.subject || ""} ${t.message || ""}`),
+  ).length;
 
   return (
-    <article className="panel">
-      <div className="section-heading">
-        <div>
-          <p className="kicker">Suporte ao paciente</p>
-          <h2>Contexto completo de atendimento</h2>
-          <p className="muted">
-            Elegibilidade, login, pedido, pagamento, reserva, envio, documentos e solicitacoes do
-            paciente.
-          </p>
-        </div>
-        <span className="status" id="support-status">
-          {status}
-        </span>
-      </div>
+    <>
+      <PageHead
+        title="Suporte ao paciente"
+        meta={
+          <span id="support-status">
+            {openCount} abertos · SLA 24h · {status}
+          </span>
+        }
+        actions={
+          <button type="button" className="btn ghost mini" onClick={onDashboardRefresh}>
+            ↻ Atualizar
+          </button>
+        }
+      />
 
-      <div className="surface-toolbar" aria-label="Filtro de suporte">
-        <label>
-          Buscar atendimento
-          <input
-            data-filter="supportQuery"
-            value={filters.supportQuery}
-            onChange={onFilterChange}
-            placeholder="Paciente, associado, pedido, rastreio ou bloqueio"
-          />
-        </label>
-        <label>
-          Situacao
-          <select
-            data-filter="supportStatus"
-            value={filters.supportStatus}
-            onChange={onFilterChange}
-          >
-            <option value="all">Todos</option>
-            <option value="blocked">Acesso bloqueado</option>
-            <option value="pending_payment">Pix pendente</option>
-            <option value="fulfillment">Em separacao/envio</option>
-            <option value="sent">Enviado</option>
-            <option value="no_order">Sem pedido</option>
-            <option value="support_open">Solicitacao aberta</option>
-          </select>
-        </label>
-      </div>
+      <StatusStrip
+        chips={[
+          { label: "abertos", count: openCount, tone: openCount ? "warn" : undefined },
+          { label: "aguardando paciente", count: waitingPatient },
+          { label: "resolvidos hoje", count: resolvedToday, tone: "ok" },
+          { label: "Revisão de acesso", count: reviewCount },
+          { label: "Dúvida sobre renovação", count: renewCount },
+        ]}
+        segments={[
+          { label: "Tudo", active: seg === "all", onClick: () => setSeg("all") },
+          { label: "Meus", active: seg === "mine", onClick: () => setSeg("mine") },
+          { label: "SLA < 4h", active: seg === "sla4", onClick: () => setSeg("sla4") },
+        ]}
+        filters={
+          <>
+            <input
+              data-filter="supportQuery"
+              value={filters.supportQuery}
+              onChange={onFilterChange}
+              placeholder="Buscar paciente, pedido, rastreio…"
+              aria-label="Buscar atendimento"
+              style={{ minWidth: 180, maxWidth: 260 }}
+            />
+            <select
+              data-filter="supportStatus"
+              value={filters.supportStatus}
+              onChange={onFilterChange}
+              aria-label="Situação"
+            >
+              <option value="all">Todos</option>
+              <option value="blocked">Acesso bloqueado</option>
+              <option value="pending_payment">Pix pendente</option>
+              <option value="fulfillment">Em separação/envio</option>
+              <option value="sent">Enviado</option>
+              <option value="no_order">Sem pedido</option>
+              <option value="support_open">Solicitação aberta</option>
+            </select>
+          </>
+        }
+      />
 
-      <div id="support-surface" className="stack">
+      <div id="support-surface" className={styles.workbench}>
         {error ? <p className="pill danger">{error}</p> : null}
         {actionError ? <p className="pill danger">{actionError}</p> : null}
 
-        <section className={styles.txWorkbenchSummary} aria-label="Sumario de atendimentos">
-          <Metric label="Atendimentos filtrados" value={cases.length} />
-          <Metric
-            label="Bloqueados"
-            value={cases.filter((item) => !item.patient.eligibility?.allowed).length}
-          />
-          <Metric
-            label="Com Pix pendente"
-            value={cases.filter((item) => item.latestOrder?.status === "awaiting_payment").length}
-          />
-          <Metric label="Solicitacoes abertas" value={openTickets} />
-        </section>
-
         {dashboard ? (
           cases.length ? (
-            <section className={styles.txWorkbench} aria-label="Workbench de suporte">
+            <div className={styles.cols}>
               <QueueColumn
                 cases={cases}
                 selectedPatientId={selectedCase?.patient.id || ""}
                 onSelect={handleSelectPatient}
               />
               {selectedCase ? (
-                <div ref={caseSectionRef} className={styles.txWorkbenchSection}>
-                  <CasePanel item={selectedCase} onUpdateTicket={updateTicket}>
+                <div ref={caseSectionRef} className={styles.caseWrap}>
+                  <CasePanel
+                    item={selectedCase}
+                    ticket={selectedTicket}
+                    onUpdateTicket={updateTicket}
+                  >
+                    <Thread messages={thread.messages} loading={threadLoading} />
+                    {threadError ? <p className="pill danger">{threadError}</p> : null}
                     {selectedTicket ? (
-                      <>
-                        <Thread messages={thread.messages} loading={threadLoading} />
-                        {threadError ? <p className="pill danger">{threadError}</p> : null}
-                        <ReplyBox
-                          ticketId={selectedTicket.id}
-                          onSent={async () => {
-                            await refreshThread();
-                            await onDashboardRefresh?.();
-                          }}
-                        />
-                      </>
+                      <ReplyBox
+                        ticketId={selectedTicket.id}
+                        onSent={async () => {
+                          await refreshThread();
+                          await onDashboardRefresh?.();
+                        }}
+                      />
                     ) : null}
                   </CasePanel>
                 </div>
               ) : null}
-            </section>
+              {selectedCase ? <ContextColumn item={selectedCase} /> : null}
+            </div>
           ) : (
-            <p className={styles.txWorkbenchEmpty}>
-              Nenhum atendimento encontrado para o filtro atual.
-            </p>
+            <p className={styles.empty}>Nenhum atendimento encontrado para o filtro atual.</p>
           )
         ) : (
           <p className="muted">Carregando atendimentos...</p>
         )}
       </div>
-    </article>
-  );
-}
-
-function Metric({ label, value }) {
-  return (
-    <article className={styles.txMetric}>
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </article>
+    </>
   );
 }
 

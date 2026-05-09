@@ -1,64 +1,52 @@
-/* Phase 7 — Conversation thread (patient + team messages, chronological). */
+/* Phase 6 — Conversation thread (alternating bubbles). */
 
-.txThread {
+.thread {
+  flex: 1;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: var(--sp-2);
-  padding: var(--sp-3) 0;
-  border-top: 1px solid var(--line-soft);
+  gap: 12px;
+  overflow: auto;
+  min-height: 240px;
 }
 
-.txThreadHead {
-  font-size: var(--fs-xs);
-  letter-spacing: var(--tracking-overline);
-  text-transform: uppercase;
+.empty {
   color: var(--muted);
+  font-size: 13px;
 }
 
-.txThreadEmpty {
-  color: var(--muted);
-  font-size: var(--fs-sm);
-}
-
-.txMessage {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: var(--sp-2) var(--sp-3);
+.msg {
+  max-width: 78%;
+  padding: 10px 12px;
   border-radius: var(--r-md);
-  max-width: 88%;
-  border: 1px solid var(--line-soft);
-}
-
-.txMessage.patient {
-  align-self: flex-start;
-  background: var(--paper-warm);
-}
-
-.txMessage.team {
-  align-self: flex-end;
-  background: var(--green-tint);
-  border-color: var(--green-tint);
-}
-
-.txMessage strong {
-  font-size: var(--fs-xs);
-  color: var(--muted);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.txMessage p {
-  margin: 0;
-  color: var(--ink);
-  font-size: var(--fs-sm);
+  font-size: 13px;
   line-height: 1.5;
+}
+
+.fromPat {
+  background: var(--paper-warm);
+  border: 1px solid var(--line);
+  align-self: flex-start;
+  border-top-left-radius: var(--r-sm);
+  color: var(--ink);
+}
+
+.fromEq {
+  background: var(--ink);
+  color: var(--paper);
+  align-self: flex-end;
+  border-top-right-radius: var(--r-sm);
+}
+
+.who {
+  font-size: 11px;
+  opacity: 0.7;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.msg p {
+  margin: 0;
   white-space: pre-wrap;
   word-break: break-word;
-}
-
-.txMessage time {
-  font-size: var(--fs-xs);
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
 }

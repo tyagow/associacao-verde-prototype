@@ -1,51 +1,27 @@
-/* Phase 7 — Two-pane support workbench layout. */
+/* Phase 6 — 3-column support workbench. */
 
-.txWorkbench {
-  display: grid;
-  grid-template-columns: minmax(280px, 360px) 1fr;
-  gap: var(--sp-4);
-  align-items: stretch;
-  min-height: 0;
-}
-
-.txWorkbenchSection {
+.workbench {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-4);
+  gap: var(--sp-3);
   min-width: 0;
 }
 
-.txWorkbenchSummary {
+.cols {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: 320px minmax(0, 1fr) 320px;
   gap: var(--sp-3);
+  align-items: stretch;
+  min-height: 720px;
 }
 
-.txMetric {
+.caseWrap {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: var(--sp-3) var(--sp-4);
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-  background: var(--paper);
+  min-width: 0;
 }
 
-.txMetric span {
-  font-size: var(--fs-xs);
-  color: var(--muted);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.txMetric strong {
-  font-family: var(--font-display);
-  font-size: var(--fs-h2);
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-}
-
-.txWorkbenchEmpty {
+.empty {
   padding: var(--sp-5);
   text-align: center;
   color: var(--muted);
@@ -55,29 +31,14 @@
 }
 
 @media (max-width: 1024px) {
-  .txWorkbench {
+  .cols {
     grid-template-columns: 1fr;
-  }
-  .txWorkbenchSummary {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-height: 0;
   }
 }
 
-/* Phase 12 — mobile stack: queue collapses above the case panel and the
- * case panel becomes the focused surface. Selecting a case scrolls down
- * to it (handled in Workbench.jsx). The summary metrics shrink to 2-up
- * with reduced padding so they fit narrow screens without truncation. */
 @media (max-width: 720px) {
-  .txWorkbench {
-    gap: var(--sp-3);
-  }
-  .txWorkbenchSection {
+  .caseWrap {
     scroll-margin-top: var(--sp-4);
-  }
-  .txMetric {
-    padding: var(--sp-2) var(--sp-3);
-  }
-  .txMetric strong {
-    font-size: var(--fs-h3, 18px);
   }
 }

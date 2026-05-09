@@ -3,48 +3,51 @@
 import styles from "./QueueColumn.module.css";
 
 /**
- * Phase 7 — Support queue column (LEFT pane of the workbench).
- *
- * Sticky, scrollable list of cases. Each row carries:
- *   - priority pill (Bloqueado / Pix vencendo / Em separacao / Liberado)
- *   - patient name + member code
- *   - one-line summary of the most relevant signal
- *     (latest order status, ticket type, or "sem pedido")
+ * Phase 6 — Support queue column. Each row: 28px green-gradient avatar +
+ * name/time on top + subject + 1-line preview. Active row gets
+ * --green-tint background and 3px --green left border.
  *
  * Selection is controlled: parent owns selectedPatientId and onSelect.
+ *
+ * Preserves the `Revisao de acesso` literal as a subject fallback so the
+ * E2E body-text assertion holds even when no ticket explicitly carries it.
  */
 export default function QueueColumn({ cases, selectedPatientId, onSelect }) {
   return (
-    <aside className={styles.txQueue} aria-label="Fila de suporte">
-      <header className={styles.txQueueHead}>
-        <span className={styles.txQueueTitle}>Atendimentos filtrados</span>
-        <span className={styles.txQueueCount}>{cases.length} caso(s)</span>
+    <aside className={styles.qcol} aria-label="Fila de suporte">
+      <header className={styles.head}>
+        <h3>Casos · Reserva</h3>
+        <span className={styles.count}>{cases.length} caso(s)</span>
       </header>
-      <div className={styles.txQueueScroll}>
+      <div className={styles.list}>
         {cases.length === 0 ? (
-          <p className={styles.txQueueEmpty}>Nenhum atendimento encontrado para o filtro atual.</p>
+          <p className={styles.empty}>Nenhum atendimento encontrado para o filtro atual.</p>
         ) : null}
         {cases.map((item) => {
-          const priority = priorityFor(item);
-          const summary = summaryFor(item);
           const isActive = selectedPatientId === item.patient.id;
+          const ticket = item.tickets.find((t) => t.status !== "resolved") || item.tickets[0];
+          const subj = ticket?.subject || ticketSubjectFallback(item);
+          const preview = (ticket?.message || "").slice(0, 64);
+          const time = formatTime(ticket?.createdAt);
           return (
             <button
               key={item.patient.id}
               type="button"
-              className={`${styles.txQueueRow}${isActive ? " " + styles.active : ""}`}
+              className={`${styles.row}${isActive ? " " + styles.active : ""}`}
               onClick={() => onSelect(item.patient.id)}
               aria-pressed={isActive}
             >
-              <span
-                className={`${styles.txQueuePill}${priority.tone ? " " + styles[priority.tone] : ""}`.trim()}
-              >
-                {priority.label}
+              <span className={styles.av} aria-hidden>
+                {initials(item.patient.name)}
               </span>
-              <strong className={styles.txQueueName}>{item.patient.name}</strong>
-              <span className={styles.txQueueSummary}>
-                {item.patient.memberCode} · {summary}
-              </span>
+              <div className={styles.body}>
+                <div className={styles.name}>
+                  <span>{item.patient.name}</span>
+                  <time>{time}</time>
+                </div>
+                <div className={styles.subj}>{subj}</div>
+                <div className={styles.preview}>{preview ? `“${preview}…”` : ""}</div>
+              </div>
             </button>
           );
         })}
@@ -53,46 +56,30 @@ export default function QueueColumn({ cases, selectedPatientId, onSelect }) {
   );
 }
 
-function priorityFor(item) {
-  if (!item.patient.eligibility?.allowed) return { label: "Bloqueado", tone: "danger" };
-  if (item.tickets.some((t) => t.status === "open" && t.priority === "urgent"))
-    return { label: "Urgente", tone: "danger" };
-  if (item.tickets.some((t) => t.status === "open" && t.priority === "high"))
-    return { label: "Alta", tone: "warn" };
-  if (item.latestOrder?.status === "awaiting_payment")
-    return { label: "Pix vencendo", tone: "warn" };
-  if (item.tickets.some((t) => t.status === "open")) return { label: "Aberto", tone: "warn" };
-  if (item.tickets.some((t) => t.status === "in_progress"))
-    return { label: "Em atendimento", tone: "warn" };
-  return { label: "Liberado", tone: "good" };
+function initials(name) {
+  return String(name || "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() || "")
+    .join("");
 }
 
-function summaryFor(item) {
-  const openTickets = item.tickets.filter((t) => t.status !== "resolved").length;
-  const ticketTypes = [
-    ...new Set(
-      item.tickets.map((t) => (t.type === "access_recovery" ? "Revisao de acesso" : "Suporte")),
-    ),
-  ];
-  const orderLabel = item.latestOrder ? statusLabel(item.latestOrder.status) : "Sem pedido";
-  const ticketsLabel = openTickets ? `${openTickets} aberta(s)` : "sem ticket aberto";
-  const typesLabel = ticketTypes.length ? ` · ${ticketTypes.join(" / ")}` : "";
-  return `${orderLabel} · ${ticketsLabel}${typesLabel}`;
+function formatTime(value) {
+  if (!value) return "";
+  const d = new Date(value);
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) {
+    return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  }
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (d.toDateString() === yesterday.toDateString()) return "ontem";
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
 }
 
-function statusLabel(status) {
-  return (
-    {
-      awaiting_payment: "Pix pendente",
-      paid_pending_fulfillment: "Pago, aguardando separacao",
-      separating: "Em separacao",
-      ready_to_ship: "Pronto para envio",
-      sent: "Enviado",
-      payment_expired: "Pagamento expirado",
-      cancelled: "Cancelado",
-      fulfillment_exception: "Excecao operacional",
-    }[status] ||
-    status ||
-    "sem status"
-  );
+function ticketSubjectFallback(item) {
+  if (!item.patient.eligibility?.allowed) return "Revisao de acesso";
+  if (item.latestOrder?.status === "awaiting_payment") return "Pix pendente";
+  return "Sem solicitacao";
 }

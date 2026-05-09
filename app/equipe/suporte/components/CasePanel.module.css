@@ -1,151 +1,51 @@
-/* Phase 7 — Selected case panel (RIGHT pane). Patient context fact grid,
-   open ticket list with inline action buttons, and slot for the
-   conversation Thread + ReplyBox below. */
+/* Phase 6 — Case panel: header + meta strip; thread + reply rendered as children. */
 
-.txCase {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-4);
+.qcol {
   background: var(--paper);
   border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  padding: var(--sp-5);
-  box-shadow: var(--shadow-soft);
+  border-radius: var(--r-sm);
+  display: flex;
+  flex-direction: column;
   min-width: 0;
+  min-height: 0;
 }
 
-.txCaseHead {
+.case {
+  flex: 1;
+}
+
+.header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
-  gap: var(--sp-3);
-  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
 }
 
-.txCaseHead h3 {
-  margin: 4px 0 2px;
-  font-family: var(--font-display);
-  font-size: var(--fs-h3);
-  letter-spacing: var(--tracking-tight);
-  color: var(--ink);
-}
-
-.txCaseHead .kicker {
-  font-size: var(--fs-xs);
-  letter-spacing: var(--tracking-overline);
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.txCaseHead p {
+.header h2 {
   margin: 0;
-  color: var(--muted);
-  font-size: var(--fs-sm);
-}
-
-.txCasePill {
-  font-size: var(--fs-xs);
+  font-family: var(--font-display);
+  font-size: 18px;
   font-weight: 600;
-  padding: 4px 10px;
-  border-radius: var(--r-pill);
-  background: var(--green-tint);
-  color: var(--green-deep);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.txCasePill.danger {
-  background: var(--danger-soft);
-  color: var(--danger);
-}
-
-.txFacts {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--sp-2) var(--sp-4);
-  border-top: 1px solid var(--line-soft);
-  border-bottom: 1px solid var(--line-soft);
-  padding: var(--sp-3) 0;
-}
-
-.txFactRow {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.txFactRow strong {
-  font-size: var(--fs-xs);
-  color: var(--muted);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.txFactRow span {
   color: var(--ink);
-  font-size: var(--fs-sm);
-  font-variant-numeric: tabular-nums;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.txTickets {
+.sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.mono {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
+}
+
+.meta {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-3);
-}
-
-.txTicketsHead {
-  font-size: var(--fs-xs);
-  letter-spacing: var(--tracking-overline);
-  text-transform: uppercase;
+  align-items: flex-end;
+  gap: 4px;
+  font-size: 11px;
   color: var(--muted);
-}
-
-.txTicket {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-  padding: var(--sp-3) var(--sp-4);
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-  background: var(--paper-warm);
-}
-
-.txTicket strong {
-  color: var(--ink);
-  font-size: var(--fs-base);
-}
-
-.txTicket span {
-  color: var(--ink-soft);
-  font-size: var(--fs-sm);
-}
-
-.txTicketMeta {
-  font-size: var(--fs-xs);
-  color: var(--muted);
-  letter-spacing: 0.02em;
-}
-
-.txTicketActions {
-  display: flex;
-  gap: var(--sp-2);
-  flex-wrap: wrap;
-}
-
-.txTicketEmpty {
-  color: var(--muted);
-  font-size: var(--fs-sm);
-}
-
-@media (max-width: 1024px) {
-  .txFacts {
-    grid-template-columns: 1fr;
-  }
-  .txFactRow span {
-    white-space: normal;
-  }
 }

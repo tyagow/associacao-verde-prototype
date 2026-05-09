@@ -1,0 +1,76 @@
+/* Phase 6 — Right-rail context column. */
+
+.qcol {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ctx {
+  padding: 0;
+}
+
+.section {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.section:last-child {
+  border-bottom: 0;
+}
+
+.section h4 {
+  margin: 0 0 8px;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  padding: 4px 0;
+  gap: 8px;
+}
+
+.lbl {
+  color: var(--muted);
+}
+
+.mono {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, monospace);
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.link {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--green-deep);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.docCount {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.history {
+  font-size: 12px;
+  color: var(--ink-soft);
+  margin-top: 6px;
+}
+
+.history:first-of-type {
+  margin-top: 0;
+}

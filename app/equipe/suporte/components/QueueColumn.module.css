@@ -1,54 +1,49 @@
-/* Phase 7 — Support queue column. Sticky list of cases on the LEFT pane.
-   Mirrors the mock's queue-row pattern with priority pill, member code,
-   and a one-line summary. .tx-* namespace via CSS Modules. */
+/* Phase 6 — Queue column: 28px green-gradient avatar + name/time + subject + preview. */
 
-.txQueue {
+.qcol {
   display: flex;
   flex-direction: column;
   background: var(--paper);
   border: 1px solid var(--line);
-  border-radius: var(--r-lg);
+  border-radius: var(--r-sm);
   overflow: hidden;
-  align-self: stretch;
   min-height: 0;
 }
 
-.txQueueHead {
+.head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  padding: var(--sp-3) var(--sp-4);
-  border-bottom: 1px solid var(--line-soft);
-  background: var(--paper-warm);
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
 }
 
-.txQueueTitle {
-  font-size: var(--fs-sm);
+.head h3 {
+  margin: 0;
+  font-size: 13px;
   font-weight: 600;
   color: var(--ink);
-  letter-spacing: -0.005em;
 }
 
-.txQueueCount {
-  font-size: var(--fs-xs);
+.count {
+  font-size: 11px;
   color: var(--muted);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
-.txQueueScroll {
+.list {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
   max-height: calc(100vh - 280px);
 }
 
-.txQueueRow {
+.row {
   display: grid;
-  grid-template-columns: auto 1fr;
-  grid-template-rows: auto auto;
-  gap: 4px var(--sp-2);
-  padding: var(--sp-3) var(--sp-4);
+  grid-template-columns: 28px 1fr;
+  gap: 10px;
+  padding: 10px 14px;
   border: 0;
   border-bottom: 1px solid var(--line-soft);
   background: transparent;
@@ -58,78 +53,77 @@
   color: var(--ink);
 }
 
-.txQueueRow:hover {
+.row:hover {
   background: var(--paper-warm);
 }
 
-.txQueueRow.active {
+.row.active {
   background: var(--green-tint);
-  border-left: 3px solid var(--green-deep);
-  padding-left: calc(var(--sp-4) - 3px);
+  border-left: 3px solid var(--green);
+  padding-left: 11px;
 }
 
-.txQueueRow:last-child {
-  border-bottom: 0;
-}
-
-.txQueuePill {
-  grid-row: 1;
-  grid-column: 1;
-  align-self: center;
-  font-size: var(--fs-xs);
-  font-weight: 600;
-  padding: 2px 8px;
+.av {
+  width: 28px;
+  height: 28px;
   border-radius: var(--r-pill);
-  background: var(--soft);
-  color: var(--muted);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  background: linear-gradient(135deg, var(--green), var(--green-deep));
+  color: var(--paper);
+  display: grid;
+  place-items: center;
+  font: 700 11px var(--font-display);
 }
 
-.txQueuePill.warn {
-  background: var(--warn-soft);
-  color: var(--warn-ink);
-}
-
-.txQueuePill.danger {
-  background: var(--danger-soft);
-  color: var(--danger);
-}
-
-.txQueuePill.good {
-  background: var(--green-tint);
-  color: var(--green-deep);
-}
-
-.txQueueName {
-  grid-row: 1;
-  grid-column: 2;
-  font-weight: 600;
-  color: var(--ink);
-  font-size: var(--fs-base);
+.body {
   min-width: 0;
+}
+
+.name {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ink);
+  min-width: 0;
+}
+
+.name span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.txQueueSummary {
-  grid-row: 2;
-  grid-column: 1 / -1;
-  font-size: var(--fs-xs);
+.name time {
+  font-size: 11px;
   color: var(--muted);
-  line-height: 1.4;
+  font-weight: 400;
+  flex: none;
 }
 
-.txQueueEmpty {
+.subj {
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.preview {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.empty {
   padding: var(--sp-5) var(--sp-4);
   color: var(--muted);
-  font-size: var(--fs-sm);
+  font-size: 13px;
   text-align: center;
 }
 
 @media (max-width: 1024px) {
-  .txQueueScroll {
+  .list {
     max-height: 360px;
   }
 }
