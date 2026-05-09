@@ -19,7 +19,7 @@ import styles from "./UserRow.module.css";
  *   onStatusChange   (userId, status) => void
  *   onPasswordReset  (event, userId) => void
  */
-export default function UserRow({ user, onStatusChange, onPasswordReset }) {
+export default function UserRow({ user, onStatusChange, onPasswordReset, compact = false }) {
   const [openDrawer, setOpenDrawer] = useState(null);
   const isActive = user.status === "active";
 
@@ -35,6 +35,25 @@ export default function UserRow({ user, onStatusChange, onPasswordReset }) {
   function confirmReactivate() {
     onStatusChange(user.id, "active");
     setOpenDrawer(null);
+  }
+
+  if (compact) {
+    return (
+      <tr data-user-id={user.id || ""}>
+        <td>
+          <div className={styles.identity}>
+            <strong>{user.name || user.email}</strong>
+            <span className={styles.email}>{user.email}</span>
+          </div>
+        </td>
+        <td>
+          <span className={`${styles.rolePill} ${styles[`role_${user.role}`] || ""}`.trim()}>
+            {roleLabel(user.role)}
+          </span>
+        </td>
+        <td className={styles.cellTime}>{formatDateTime(user.lastLoginAt)}</td>
+      </tr>
+    );
   }
 
   return (

@@ -12,9 +12,9 @@
 .dialog {
   width: min(640px, 100%);
   max-height: min(80vh, 720px);
-  background: #fff;
+  background: var(--paper, #fff);
   border: 1px solid var(--line, #e3ebe6);
-  border-radius: var(--r-lg, 18px);
+  border-radius: 3px;
   box-shadow: 0 24px 64px -28px rgba(13, 31, 23, 0.4);
   display: grid;
   grid-template-rows: auto auto 1fr;

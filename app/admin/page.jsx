@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Brand from "../components/Brand";
-import ReleaseProgress from "./components/ReleaseProgress";
+import TeamShell from "../equipe/components/TeamShell";
+import PageHead from "../equipe/components/PageHead";
+import StatusStrip from "../equipe/components/StatusStrip";
 import GateCard from "./components/GateCard";
 import GateDetail from "./components/GateDetail";
 import AuditTimeline from "./components/AuditTimeline";
@@ -13,6 +14,7 @@ import adminStyles from "./admin.module.css";
 const initialFilters = { adminQuery: "", adminStatus: "all" };
 
 const GATE_TAGS = {
+  "Pix provider": "pix provider",
   "Webhook Pix": "webhook drill",
   "Aceite do provider": "provider approval",
   "Deploy/domain/logs": "deployment check",
@@ -24,6 +26,7 @@ const GATE_TAGS = {
 };
 
 export default function AdminPage() {
+  const [session, setSession] = useState(null);
   const [dashboard, setDashboard] = useState(null);
   const [readiness, setReadiness] = useState(null);
   const [filters, setFilters] = useState(initialFilters);
@@ -32,6 +35,7 @@ export default function AdminPage() {
   const [toast, setToast] = useState("");
   const [selectedGate, setSelectedGate] = useState(null);
   const [selectedAuditEvent, setSelectedAuditEvent] = useState(null);
+  const [activeSegment, setActiveSegment] = useState("gates");
 
   useEffect(() => {
     load();
@@ -39,10 +43,12 @@ export default function AdminPage() {
 
   async function load() {
     try {
-      const [dashboardPayload, readinessPayload] = await Promise.all([
+      const [sessionPayload, dashboardPayload, readinessPayload] = await Promise.all([
+        api("/api/session").catch(() => null),
         api("/api/team/dashboard"),
         api("/api/team/readiness"),
       ]);
+      setSession(sessionPayload?.session || sessionPayload || null);
       setDashboard(dashboardPayload);
       setReadiness(readinessPayload);
       setStatus("equipe autenticada");
@@ -99,12 +105,15 @@ export default function AdminPage() {
     }
   }
 
-  async function onTeamUserStatus(userId, status) {
+  async function onTeamUserStatus(userId, statusValue) {
     try {
-      await api("/api/team/users/status", { method: "POST", body: { userId, status } });
+      await api("/api/team/users/status", {
+        method: "POST",
+        body: { userId, status: statusValue },
+      });
       await load();
       showToast(
-        status === "active"
+        statusValue === "active"
           ? "Usuario da equipe reativado."
           : "Usuario da equipe desativado e sessoes revogadas.",
       );
@@ -146,161 +155,209 @@ export default function AdminPage() {
     [dashboard, filters],
   );
 
+  const gates = readiness?.gates || [];
+  const releaseGate = readiness?.releaseGate;
+  const passing = gates.filter((g) => g.status === "ok").length;
+  const warning = gates.filter((g) => g.status === "pending" || g.status === "warn").length;
+  const totalGates = gates.length;
+  const blockedReleases = releaseGate?.ok ? 0 : 1;
+
   return (
-    <>
-      <header className="topbar">
-        <Brand />
-        <nav aria-label="Areas do sistema">
-          <a className="ghost" href="/paciente">
-            Paciente
-          </a>
-          <a className="ghost" href="/equipe">
-            Comando
-          </a>
-          <a className="ghost" href="/equipe/pacientes">
-            Pacientes
-          </a>
-          <a className="ghost" href="/equipe/estoque">
-            Estoque
-          </a>
-          <a className="ghost" href="/equipe/pedidos">
-            Pedidos
-          </a>
-          <a className="ghost" href="/equipe/fulfillment">
-            Fulfillment
-          </a>
-          <a className="ghost" href="/equipe/suporte">
-            Suporte
-          </a>
-          <a className="ghost active" href="/admin">
-            Admin
-          </a>
-        </nav>
-      </header>
+    <TeamShell session={session} dashboard={dashboard} currentRoute="/admin">
+      <PageHead
+        title="Admin e compliance"
+        meta={
+          <>
+            Readiness do ambiente · {blockedReleases} release
+            {blockedReleases === 1 ? "" : "s"} bloqueado
+            <span id="admin-status" style={{ marginLeft: 8 }}>
+              · {status}
+            </span>
+          </>
+        }
+        actions={
+          <button type="button" className="ghost mini" onClick={load}>
+            ↻ Atualizar
+          </button>
+        }
+      />
 
-      <main>
-        <div className="app-layout">
-          <aside className="side-nav" aria-label="Rotas da equipe">
-            <a href="/equipe">Comando da equipe</a>
-            <a href="/equipe/pacientes">Pacientes e receitas</a>
-            <a href="/equipe/estoque">Produtos, estoque e cultivo</a>
-            <a href="/equipe/pedidos">Pedidos e Pix</a>
-            <a href="/equipe/fulfillment">Fulfillment e envio</a>
-            <a href="/equipe/suporte">Suporte ao paciente</a>
-            <a className="active" href="/admin">
-              Admin e compliance
-            </a>
-          </aside>
+      <StatusStrip
+        chips={[
+          {
+            label: "release gate",
+            count: blockedReleases,
+            tone: blockedReleases ? "warn" : "ok",
+          },
+          { label: "gates configurados", count: totalGates },
+          { label: "verdes", count: passing, tone: "ok" },
+          { label: "amarelos", count: warning, tone: "warn" },
+        ]}
+        segments={[
+          {
+            label: "Gates",
+            active: activeSegment === "gates",
+            onClick: () => setActiveSegment("gates"),
+          },
+          {
+            label: "Auditoria",
+            active: activeSegment === "auditoria",
+            onClick: () => setActiveSegment("auditoria"),
+          },
+          {
+            label: "Usuários",
+            active: activeSegment === "users",
+            onClick: () => setActiveSegment("users"),
+          },
+        ]}
+        filters={
+          <>
+            <input
+              data-filter="adminQuery"
+              value={filters.adminQuery}
+              onChange={onFilterChange}
+              placeholder="Buscar gate, evento, usuário…"
+              aria-label="Buscar auditoria"
+            />
+            <select
+              data-filter="adminStatus"
+              value={filters.adminStatus}
+              onChange={onFilterChange}
+              aria-label="Tipo de evento"
+            >
+              <option value="all">Todos</option>
+              <option value="team_user">Equipe</option>
+              <option value="payment">Pagamentos</option>
+              <option value="patient">Pacientes</option>
+              <option value="order">Pedidos</option>
+              <option value="support">Suporte</option>
+            </select>
+          </>
+        }
+      />
 
-          <section className="surface-stack">
+      {error ? (
+        <div id="admin-surface" className={adminStyles.surface}>
+          <p className="pill danger">{error}</p>
+        </div>
+      ) : (
+        <div id="admin-surface" className={adminStyles.surface}>
+          <ReleaseEvidenceBanner releaseGate={releaseGate} blockerCount={totalGates - passing} />
+
+          <h2 className={adminStyles.h2Section}>Release gates · Readiness do ambiente</h2>
+
+          <section className={adminStyles.gateGrid} aria-label="Gates de readiness">
+            {gates.map((gate) => {
+              const detail = buildDetailForGate(gate, readiness);
+              const tag = GATE_TAGS[gate.label] || "";
+              return (
+                <GateCard
+                  key={gate.label}
+                  id={gate.label}
+                  label={gate.label}
+                  detail={detail.summary || gate.detail}
+                  tone={toneFor(gate)}
+                  pillText={gate.status === "ok" ? "verde" : "amarelo"}
+                  tag={tag}
+                  caption={detail.summary && detail.summary !== gate.detail ? detail.summary : ""}
+                  command={detail.runHint || ""}
+                  footerText={`${tag} · ${formatDateTime(gate.checkedAt || readiness?.checkedAt)}`}
+                  footerCta={
+                    <span className="ghost mini" aria-hidden>
+                      {gate.status === "ok" ? "Re-rodar" : "Anexar"}
+                    </span>
+                  }
+                  selected={selectedGate === gate.label}
+                  onSelect={(id) => setSelectedGate(id === selectedGate ? null : id)}
+                />
+              );
+            })}
+          </section>
+
+          {selectedGate ? (
+            <GateDetailForGate
+              gate={gates.find((g) => g.label === selectedGate)}
+              readiness={readiness}
+              onClose={() => setSelectedGate(null)}
+              onProviderEvidence={onProviderEvidence}
+              onBackupScheduleEvidence={onBackupScheduleEvidence}
+            />
+          ) : null}
+
+          <section id="auditoria" className={adminStyles.twoCol}>
             <article className="panel">
-              <div className="section-heading">
+              <header className="panel-heading">
                 <div>
-                  <p className="kicker">Admin e compliance</p>
-                  <h2>Readiness, permissoes e auditoria</h2>
-                  <p className="muted">
-                    Controle a liberacao operacional por evidencias reais: Pix, provider, deploy,
-                    backups, usuarios e trilha de auditoria.
-                  </p>
+                  <p className="kicker">Auditoria recente</p>
+                  <h3>Eventos de seguranca e operacao</h3>
                 </div>
-                <span className="status" id="admin-status">
-                  {status}
-                </span>
-              </div>
-
-              <div className="surface-toolbar" aria-label="Filtros de auditoria">
-                <label>
-                  Buscar auditoria
-                  <input
-                    data-filter="adminQuery"
-                    value={filters.adminQuery}
-                    onChange={onFilterChange}
-                    placeholder="Acao, ator, paciente, pedido"
-                  />
-                </label>
-                <label>
-                  Tipo
-                  <select
-                    data-filter="adminStatus"
-                    value={filters.adminStatus}
-                    onChange={onFilterChange}
-                  >
-                    <option value="all">Todos</option>
-                    <option value="team_user">Equipe</option>
-                    <option value="payment">Pagamentos</option>
-                    <option value="patient">Pacientes</option>
-                    <option value="order">Pedidos</option>
-                    <option value="support">Suporte</option>
-                  </select>
-                </label>
-              </div>
-
-              {error ? (
-                <div id="admin-surface" className="stack">
-                  <p className="pill danger">{error}</p>
-                </div>
-              ) : (
-                <div id="admin-surface" className="stack">
-                  <section className="route-summary">
-                    <Metric label="Usuarios equipe" value={dashboard?.teamUsers?.length || 0} />
-                    <Metric label="Eventos auditoria" value={dashboard?.auditLog?.length || 0} />
-                    <Metric
-                      label="Docs receita"
-                      value={dashboard?.prescriptionDocuments?.length || 0}
-                    />
-                  </section>
-
-                  <ReadinessSection
-                    readiness={readiness}
-                    selectedGate={selectedGate}
-                    onSelectGate={setSelectedGate}
-                    onProviderEvidence={onProviderEvidence}
-                    onBackupScheduleEvidence={onBackupScheduleEvidence}
-                  />
-
-                  <section className="panel">
-                    <div className="panel-heading">
-                      <div>
-                        <p className="kicker">Usuarios da equipe</p>
-                        <h3>Acesso operacional</h3>
-                      </div>
-                    </div>
-                    <TeamUsersTable
-                      users={dashboard?.teamUsers || []}
-                      onCreateUser={onCreateUser}
-                      onStatusChange={onTeamUserStatus}
-                      onPasswordReset={onTeamUserPassword}
-                    />
-                  </section>
-
-                  <section className="panel">
-                    <div className="panel-heading">
-                      <div>
-                        <p className="kicker">Auditoria recente</p>
-                        <h3>Eventos de seguranca e operacao</h3>
-                      </div>
-                    </div>
-                    <AuditTimeline
-                      events={audit}
-                      filter={filters.adminStatus}
-                      filters={buildAuditFilterChips(dashboard?.auditLog || [])}
-                      onFilter={(value) =>
-                        setFilters((current) => ({ ...current, adminStatus: value }))
-                      }
-                      onSelect={(event) => setSelectedAuditEvent(event)}
-                    />
-                  </section>
-                </div>
-              )}
+              </header>
+              <AuditTimeline
+                events={audit}
+                filter={filters.adminStatus}
+                filters={buildAuditFilterChips(dashboard?.auditLog || [])}
+                onFilter={(value) => setFilters((current) => ({ ...current, adminStatus: value }))}
+                onSelect={(event) => setSelectedAuditEvent(event)}
+              />
             </article>
+
+            <aside className="panel">
+              <header className="panel-heading">
+                <div>
+                  <p className="kicker">Usuários da equipe</p>
+                  <h3>Acesso operacional</h3>
+                </div>
+              </header>
+              <TeamUsersTable
+                compact
+                users={dashboard?.teamUsers || []}
+                onCreateUser={onCreateUser}
+                onStatusChange={onTeamUserStatus}
+                onPasswordReset={onTeamUserPassword}
+              />
+            </aside>
           </section>
         </div>
-      </main>
+      )}
+
       <div className={`toast ${toast ? "show" : ""}`} id="toast" role="status" aria-live="polite">
         {toast}
       </div>
       <AuditEventModal event={selectedAuditEvent} onClose={() => setSelectedAuditEvent(null)} />
-    </>
+    </TeamShell>
+  );
+}
+
+function ReleaseEvidenceBanner({ releaseGate, blockerCount }) {
+  const checks = releaseGate?.checks || [];
+  return (
+    <section
+      className={`${adminStyles.releaseEvidence} ${releaseGate?.ok ? adminStyles.releaseEvidenceGood : adminStyles.releaseEvidenceWarn}`}
+      aria-label="Resumo do release gate"
+    >
+      <div>
+        <span>release gate</span>
+        <strong>
+          {releaseGate?.ok
+            ? "Release liberado por evidencias"
+            : "Release bloqueado por evidencias pendentes"}
+        </strong>
+        <p>
+          {releaseGate?.ok
+            ? "Todos os gates de producao estao completos."
+            : `${blockerCount} bloqueio(s) impedem declarar producao pronta.`}
+        </p>
+        <p className="muted">Verificado em {formatDateTime(releaseGate?.checkedAt)}.</p>
+      </div>
+      <dl>
+        {checks.map((check) => (
+          <div key={check.name}>
+            <dt>{check.name}</dt>
+            <dd>{check.ok ? "ok" : "pendente"}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
   );
 }
 
@@ -324,106 +381,6 @@ function buildAuditFilterChips(auditLog) {
   ];
 }
 
-function ReadinessSection({
-  readiness,
-  selectedGate,
-  onSelectGate,
-  onProviderEvidence,
-  onBackupScheduleEvidence,
-}) {
-  const gates = readiness?.gates || [];
-  const releaseGate = readiness?.releaseGate;
-  const passing = gates.filter((gate) => gate.status === "ok").length;
-  const total = gates.length;
-  const blockers = gates.filter((gate) => gate.status !== "ok").map((gate) => gate.label);
-  const releaseChecks = releaseGate?.checks || [];
-  const selected = selectedGate ? gates.find((gate) => gate.label === selectedGate) || null : null;
-  return (
-    <>
-      <ReleaseProgress
-        passing={passing}
-        total={total}
-        blockers={blockers}
-        checkedAt={releaseGate?.checkedAt ? formatDateTime(releaseGate.checkedAt) : null}
-      />
-
-      <section
-        className={`admin-evidence-panel ${releaseGate?.ok ? "good" : "warn"}`}
-        aria-label="Resumo do release gate"
-      >
-        <div>
-          <span>release gate</span>
-          <strong>
-            {releaseGate?.ok
-              ? "Release liberado por evidencias"
-              : "Release bloqueado por evidencias pendentes"}
-          </strong>
-          <p>
-            {releaseGate?.ok
-              ? "Todos os gates de producao estao completos."
-              : `${blockers.length} bloqueio(s) impedem declarar producao pronta.`}
-          </p>
-          <p className="muted">Verificado em {formatDateTime(releaseGate?.checkedAt)}.</p>
-        </div>
-        <dl>
-          {releaseChecks.map((check) => (
-            <div key={check.name}>
-              <dt>{check.name}</dt>
-              <dd>{check.ok ? "ok" : "pendente"}</dd>
-            </div>
-          ))}
-        </dl>
-      </section>
-
-      <div className="panel-heading">
-        <div>
-          <p className="kicker">Readiness do ambiente</p>
-          <h3>Gates de producao</h3>
-          <p className="muted">
-            Clique em um gate para ver evidencias e registrar provas. As escritas continuam indo
-            para os mesmos endpoints `/api/team/readiness/*`.
-          </p>
-        </div>
-      </div>
-
-      {gates.length ? (
-        <section className={adminStyles.readinessGrid} aria-label="Gates de readiness">
-          {gates.map((gate) => {
-            const gateDetail = buildDetailForGate(gate, readiness);
-            const caption = gateDetail.summary || "";
-            return (
-              <GateCard
-                key={gate.label}
-                id={gate.label}
-                label={gate.label}
-                detail={gate.detail}
-                tone={toneFor(gate)}
-                pillText={gate.status === "ok" ? "Passa" : "Pendente"}
-                tag={GATE_TAGS[gate.label] || ""}
-                caption={caption !== gate.detail ? caption : ""}
-                selected={selectedGate === gate.label}
-                onSelect={(id) => onSelectGate(id === selectedGate ? null : id)}
-              />
-            );
-          })}
-        </section>
-      ) : (
-        <p className="muted">Readiness nao carregado.</p>
-      )}
-
-      {selected ? (
-        <GateDetailForGate
-          gate={selected}
-          readiness={readiness}
-          onClose={() => onSelectGate(null)}
-          onProviderEvidence={onProviderEvidence}
-          onBackupScheduleEvidence={onBackupScheduleEvidence}
-        />
-      ) : null}
-    </>
-  );
-}
-
 function toneFor(gate) {
   if (gate.status === "ok") return "good";
   if (gate.status === "blocked" || gate.status === "danger") return "danger";
@@ -438,6 +395,7 @@ function GateDetailForGate({
   onProviderEvidence,
   onBackupScheduleEvidence,
 }) {
+  if (!gate) return null;
   const tone = toneFor(gate);
   const detail = buildDetailForGate(gate, readiness);
   return (
@@ -476,6 +434,15 @@ function GateDetailForGate({
 
 function buildDetailForGate(gate, readiness) {
   switch (gate.label) {
+    case "Pix provider": {
+      return {
+        tag: "pix provider",
+        summary: gate.detail || "Pix provider configurado.",
+        runHint: "PAYMENT_PROVIDER=asaas npm run readiness:pix-provider",
+        meta: [],
+        evidence: [],
+      };
+    }
     case "Webhook Pix": {
       const evidence = readiness?.webhookDrill;
       if (!evidence) {
@@ -877,15 +844,6 @@ function BackupScheduleForm({ evidence, restoreDrillSha256, onSubmit }) {
         Registrar backup offsite
       </button>
     </form>
-  );
-}
-
-function Metric({ label, value }) {
-  return (
-    <article className="queue-card">
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </article>
   );
 }
 

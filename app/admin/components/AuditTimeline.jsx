@@ -6,19 +6,8 @@ import { groupAuditEvents, GROUP_ORDER, GROUP_LABEL } from "./groupAuditEvents.j
 export { groupAuditEvents } from "./groupAuditEvents.js";
 
 /**
- * Grouped audit timeline. Replaces the stacked card list with three buckets:
- *   - today    (events with timestamp >= local midnight today)
- *   - yesterday (events between local midnight today and local midnight yesterday)
- *   - earlier  (everything older)
- *
- * Each group is sorted descending by timestamp.
- *
- * Props:
- *   events    audit events ({at, action, actor, details})
- *   filter    current filter chip ("all" or an action substring)
- *   onFilter  (filter) => void
- *   onSelect  (event) => void  -> opens payload modal
- *   filters   list of {value, label, count?} chips to render
+ * Grouped audit timeline. Three buckets (today / yesterday / earlier) with
+ * tone-coded dots. Each row uses the .tev recipe (time · dot · body).
  */
 export default function AuditTimeline({
   events = [],
@@ -72,21 +61,27 @@ export default function AuditTimeline({
             </header>
             <ol className={styles.events}>
               {list.map((event) => (
-                <li key={`${event.at}-${event.action}-${event.actor}`} className={styles.event}>
+                <li
+                  key={`${event.at}-${event.action}-${event.actor}`}
+                  className={styles.tev}
+                  data-tone={toneForEvent(event)}
+                >
                   <button
                     type="button"
-                    className={styles.eventButton}
+                    className={styles.tevButton}
                     onClick={() => onSelect && onSelect(event)}
                   >
                     <time className={styles.time}>{formatTime(event.at)}</time>
-                    <div className={styles.eventBody}>
-                      <p className={styles.action}>{event.action}</p>
-                      <p className={styles.actor}>{event.actor}</p>
-                      <p className={styles.preview}>{previewDetails(event.details)}</p>
+                    <span className={styles.dot} aria-hidden />
+                    <div className={styles.body}>
+                      <div className={styles.what}>{event.action}</div>
+                      <div className={styles.meta}>
+                        <span>{event.actor}</span>
+                        {previewDetails(event.details) ? (
+                          <span> · {previewDetails(event.details)}</span>
+                        ) : null}
+                      </div>
                     </div>
-                    <span className={styles.openHint} aria-hidden="true">
-                      Detalhes
-                    </span>
                   </button>
                 </li>
               ))}
@@ -96,6 +91,15 @@ export default function AuditTimeline({
       })}
     </div>
   );
+}
+
+function toneForEvent(event) {
+  const action = String(event?.action || "").toLowerCase();
+  if (action.includes("failed") || action.includes("blocked") || action.includes("security_alert"))
+    return "danger";
+  if (action.includes("support") || action.includes("team_user") || action.includes("pending"))
+    return "warn";
+  return "ok";
 }
 
 function formatTime(value) {
@@ -112,9 +116,9 @@ function formatTime(value) {
 }
 
 function previewDetails(details) {
-  if (!details || typeof details !== "object") return "Sem detalhes estruturados";
+  if (!details || typeof details !== "object") return "";
   const entries = Object.entries(details);
-  if (!entries.length) return "Sem detalhes estruturados";
+  if (!entries.length) return "";
   return entries
     .slice(0, 2)
     .map(([key, value]) => `${key}: ${formatPreviewValue(value)}`)

@@ -12,8 +12,10 @@ import styles from "./GateCard.module.css";
  *   tone     "good" | "warn" | "danger" | "pending"
  *   pillText label for the right-side pill
  *   tag      optional lowercase descriptor (e.g. "webhook drill") rendered as a small overline
- *   caption  optional secondary line under detail (e.g. evidence summary). Always rendered when
- *            provided so E2E and a11y can reach the text without expanding the card.
+ *   caption  optional secondary line under detail (e.g. evidence summary)
+ *   command  optional inline cmd hint, rendered as <code> block
+ *   footerText optional footer text (e.g. "<tag> · <timestamp>")
+ *   footerCta  optional ghost CTA on the right of the footer
  *   selected whether this card is currently expanded
  *   onSelect click handler (id)
  */
@@ -25,6 +27,9 @@ export default function GateCard({
   pillText,
   tag,
   caption,
+  command,
+  footerText,
+  footerCta,
   selected,
   onSelect,
 }) {
@@ -41,20 +46,27 @@ export default function GateCard({
       data-tone={tone}
       data-gate={id}
     >
-      <div className={styles.body}>
-        {tag ? <span className={styles.tag}>{tag}</span> : null}
+      {tag ? <span className={styles.tag}>{tag}</span> : null}
+      <div className={styles.titleRow}>
         <strong className={styles.label}>{label}</strong>
-        <small className={styles.detail}>{detail}</small>
-        {caption ? <small className={styles.caption}>{caption}</small> : null}
+        <span className={pillClass}>{pillText || labelFor(tone)}</span>
       </div>
-      <span className={pillClass}>{pillText || labelFor(tone)}</span>
+      <small className={styles.detail}>{detail}</small>
+      {caption ? <small className={styles.caption}>{caption}</small> : null}
+      {command ? <code className={styles.cmd}>{command}</code> : null}
+      {footerText || footerCta ? (
+        <span className={styles.footer}>
+          {footerText ? <span>{footerText}</span> : <span />}
+          {footerCta || null}
+        </span>
+      ) : null}
     </button>
   );
 }
 
 function labelFor(tone) {
-  if (tone === "good") return "Passa";
+  if (tone === "good") return "verde";
   if (tone === "danger") return "Bloqueio";
-  if (tone === "warn") return "Pendente";
+  if (tone === "warn") return "amarelo";
   return "Pendente";
 }
