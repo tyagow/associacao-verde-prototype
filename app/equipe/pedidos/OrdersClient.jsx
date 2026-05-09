@@ -283,6 +283,8 @@ export default function OrdersClient() {
           </>
         }
         onRefresh={loadDashboard}
+        resultCount={combinedRows.length}
+        resultLabel="pedidos visíveis"
       />
 
       {message ? <p className="status">{message}</p> : null}

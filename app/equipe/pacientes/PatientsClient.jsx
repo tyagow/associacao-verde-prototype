@@ -276,6 +276,8 @@ export default function PatientsClient() {
           />
         }
         onRefresh={() => loadDashboard().catch(() => {})}
+        resultCount={worklist.length}
+        resultLabel="pacientes visíveis"
       />
 
       <div className={styles.twoCol}>

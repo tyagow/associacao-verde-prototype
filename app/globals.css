@@ -4041,3 +4041,18 @@ textarea {
   color: var(--status-danger-text, #b54343);
 }
 
+/* Cycle 5 (M3) — sr-only utility: visually hidden but reachable to
+   screen readers. Used by StatusStrip's filtered-count announcer and
+   any other live-region message that should not occupy visual space. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+

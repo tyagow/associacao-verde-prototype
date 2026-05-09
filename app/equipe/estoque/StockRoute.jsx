@@ -255,6 +255,8 @@ export default function StockRoute() {
           </>
         }
         onRefresh={() => loadAll().catch((nextError) => setError(nextError.message))}
+        resultCount={filteredProducts.length}
+        resultLabel="produtos visíveis"
       />
 
       {message ? <p className="status">{message}</p> : null}

@@ -23,6 +23,8 @@ export default function StatusStrip({
   segments = [],
   filters = null,
   onRefresh,
+  resultCount,
+  resultLabel = "resultados visíveis",
   className,
 }) {
   return (
@@ -31,6 +33,15 @@ export default function StatusStrip({
       role="region"
       aria-label="Status e filtros"
     >
+      {/* Cycle 5 (M3): announce filtered result count to screen readers
+          without occupying visual space. Polite live region updates as
+          consumers re-render with new resultCount values. */}
+      {typeof resultCount === "number" ? (
+        <div role="status" aria-live="polite" className="sr-only">
+          {resultCount} {resultLabel}
+        </div>
+      ) : null}
+
       {chips.length > 0 ? (
         <div className={styles.chips}>
           {chips.map((chip, idx) => (
