@@ -1,14 +1,10 @@
+/* Layout for the orders ledger table.
+   Visual chrome (zebra, hover, sticky thead) comes from the global
+   `table.adm` rules in app/globals.css. Selected-row highlight lives
+   in OrderRow.module.css since it's per-row. */
 .table {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
 }
 .table tbody tr {
   cursor: pointer;
-}
-.table tbody tr:hover {
-  background: var(--paper-warm);
-}
-.selected {
-  background: var(--green-tint);
 }
