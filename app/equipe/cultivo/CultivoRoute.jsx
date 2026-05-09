@@ -67,12 +67,18 @@ export default function CultivoRoute() {
       })),
     [products],
   );
+  // Action drawer can only act on non-stocked batches (stocked = funnel
+  // complete; advance/harvest/dry/stock all reject). Filter the select
+  // to actionable batches so the operator never picks a dead one and
+  // hits an API rejection.
   const batchOptions = useMemo(
     () =>
-      (dashboard?.cultivationBatches || []).map((batch) => ({
-        value: batch.id,
-        label: `${batch.strain} - semana ${batch.week} - ${batch.status}`,
-      })),
+      (dashboard?.cultivationBatches || [])
+        .filter((batch) => batch.status !== "stocked")
+        .map((batch) => ({
+          value: batch.id,
+          label: `${batch.strain} · semana ${batch.week} · ${stageLabel(batch.status)}`,
+        })),
     [dashboard],
   );
 
@@ -406,6 +412,17 @@ export default function CultivoRoute() {
         </p>
       </div>
     </TeamShell>
+  );
+}
+
+function stageLabel(status) {
+  return (
+    {
+      growing: "vegetativo",
+      harvested: "colhido",
+      dried: "seco",
+      stocked: "estocado",
+    }[status] || status
   );
 }
 
