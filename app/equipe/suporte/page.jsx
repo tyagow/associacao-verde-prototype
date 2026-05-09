@@ -86,6 +86,7 @@ export default function SupportPage() {
         onDashboardRefresh={loadDashboard}
         error={error}
         status={status}
+        session={session}
       />
     </TeamShell>
   );

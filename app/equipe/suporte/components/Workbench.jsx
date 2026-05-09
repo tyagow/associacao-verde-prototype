@@ -19,9 +19,10 @@ import styles from "./Workbench.module.css";
  *   "documento(s) registrados", "Suporte ao paciente",
  *   "Duvida sobre renovacao", "Revisao de acesso".
  */
-export default function Workbench({ dashboard, onDashboardRefresh, error, status }) {
+export default function Workbench({ dashboard, onDashboardRefresh, error, status, session }) {
   const [filters, setFilters] = useState({ supportQuery: "", supportStatus: "all" });
   const [seg, setSeg] = useState("all"); // 'all' | 'mine' | 'sla4'
+  const sessionEmail = session?.user?.email || session?.email || "";
   const [selectedPatientId, setSelectedPatientId] = useState("");
   const [selectedTicketId, setSelectedTicketId] = useState("");
   const [thread, setThread] = useState({ ticket: null, messages: [] });
@@ -31,7 +32,10 @@ export default function Workbench({ dashboard, onDashboardRefresh, error, status
   const caseSectionRef = useRef(null);
   const userSelectedRef = useRef(false);
 
-  const cases = useMemo(() => supportCases(dashboard, filters), [dashboard, filters]);
+  const cases = useMemo(
+    () => supportCases(dashboard, filters, seg, sessionEmail),
+    [dashboard, filters, seg, sessionEmail],
+  );
   const selectedCase =
     cases.find((item) => item.patient.id === selectedPatientId) || cases[0] || null;
   const selectedTicket = useMemo(() => {
@@ -164,7 +168,9 @@ export default function Workbench({ dashboard, onDashboardRefresh, error, status
         ]}
         segments={[
           { label: "Tudo", active: seg === "all", onClick: () => setSeg("all") },
-          { label: "Meus", active: seg === "mine", onClick: () => setSeg("mine") },
+          ...(sessionEmail
+            ? [{ label: "Meus", active: seg === "mine", onClick: () => setSeg("mine") }]
+            : []),
           { label: "SLA < 4h", active: seg === "sla4", onClick: () => setSeg("sla4") },
         ]}
         filters={
@@ -241,10 +247,12 @@ export default function Workbench({ dashboard, onDashboardRefresh, error, status
   );
 }
 
-function supportCases(dashboard, filters) {
+function supportCases(dashboard, filters, seg = "all", sessionEmail = "") {
   if (!dashboard) return [];
   const query = normalize(filters.supportQuery);
   const status = filters.supportStatus;
+  const fourHoursMs = 4 * 60 * 60 * 1000;
+  const now = Date.now();
   return dashboard.patients
     .map((patient) => {
       const orders = dashboard.orders.filter(
@@ -292,7 +300,27 @@ function supportCases(dashboard, filters) {
             item.latestOrder?.shipment?.trackingCode,
           ].join(" "),
         ).includes(query),
-    );
+    )
+    .filter((item) => {
+      if (seg === "mine") {
+        if (!sessionEmail) return false;
+        return item.tickets.some(
+          (ticket) =>
+            ticket.assignedTo === sessionEmail || ticket.assigneeEmail === sessionEmail,
+        );
+      }
+      if (seg === "sla4") {
+        return item.tickets.some((ticket) => {
+          if (ticket.status !== "open") return false;
+          const opened = ticket.openedAt || ticket.createdAt || ticket.updatedAt;
+          if (!opened) return false;
+          const t = new Date(opened).getTime();
+          if (Number.isNaN(t)) return false;
+          return now - t > fourHoursMs;
+        });
+      }
+      return true;
+    });
 }
 
 function normalize(value) {

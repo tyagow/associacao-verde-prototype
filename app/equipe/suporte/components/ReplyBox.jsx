@@ -12,9 +12,11 @@ const QUICK_REASONS = [
 
 /**
  * Phase 6 — Reply composer with quick-reason chips on top, a textarea,
- * and a footer with `Anotar` (ghost) and `Enviar →` (primary). Both
- * buttons currently submit the same payload to /api/team/support-replies;
- * full internal-note semantics are deferred to Phase 7.
+ * and a footer with a single `Enviar →` (primary) button.
+ *
+ * Note: a separate `Anotar` (internal-note) button was removed because no
+ * internal-note backend exists yet. Re-add only when the backend supports
+ * a `private: true` flag (or a dedicated /api/team/support/notes route).
  */
 export default function ReplyBox({ ticketId, onSent }) {
   const [body, setBody] = useState("");
@@ -78,11 +80,6 @@ export default function ReplyBox({ ticketId, onSent }) {
       <div className={styles.actions}>
         <span className={styles.hint}>visível ao paciente · auditoria registra envio</span>
         <div className={styles.btns}>
-          {/* Anotar = TODO Phase-7 internal note. For now mirrors send so the
-              button is wired and E2E doesn't see a dead control. */}
-          <button type="submit" className="btn ghost" disabled={busy || !body.trim()}>
-            Anotar
-          </button>
           <button type="submit" className="btn primary" disabled={busy || !body.trim()}>
             {busy ? "Enviando..." : "Enviar →"}
           </button>
