@@ -6,6 +6,23 @@ import styles from "./OrderCard.module.css";
 
 const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
+// Map card tone → global .surface--bordered-left-* primitive (left accent).
+const TONE_BORDER = {
+  urgent: "surface--bordered-left-warn",
+  danger: "surface--bordered-left-danger",
+  ok: "surface--bordered-left-ok",
+  info: "surface--bordered-left-info",
+};
+
+// Map status pill tone → global .pill--* modifier.
+const PILL_TONE = {
+  ok: "pill--good",
+  warn: "pill--warn",
+  danger: "pill--danger",
+  info: "pill--info",
+  "": "pill--neutral",
+};
+
 /**
  * Phase 5 (revamp) — fulfillment card, b-fulfillment.html visual.
  *
@@ -42,7 +59,7 @@ export default function OrderCard({ order, onPrintLabel }) {
     <article
       ref={setNodeRef}
       style={style}
-      className={`${styles.kcard} ${tone ? styles[tone] : ""} ${isDragging ? styles.dragging : ""}`.trim()}
+      className={`${styles.kcard} ${TONE_BORDER[tone] || ""} ${isDragging ? styles.dragging : ""}`.trim()}
       data-order-id={order.id}
       data-status={order.status}
       {...attributes}
@@ -50,7 +67,9 @@ export default function OrderCard({ order, onPrintLabel }) {
     >
       <div className={styles.top}>
         <span className={styles.id}>{shortId(order.id)}</span>
-        <span className={`pill ${status.tone || ""}`.trim()}>{status.label}</span>
+        <span className={`pill ${PILL_TONE[status.tone] || PILL_TONE[""]}`.trim()}>
+          {status.label}
+        </span>
       </div>
       <div className={styles.name}>{order.patientName || "Paciente"}</div>
       {meta ? <div className={styles.meta}>{meta}</div> : null}
@@ -94,7 +113,8 @@ function statusPill(order) {
     case "paid_pending_fulfillment":
       return { label: "SLA hoje", tone: "warn" };
     case "separating":
-      return { label: "em separacao", tone: "warn" };
+      // Spec 2026-05-09 §3: "in progress" → info, not warn (warn = needs human).
+      return { label: "em separacao", tone: "info" };
     case "ready_to_ship":
       return { label: "etiqueta gerada", tone: "ok" };
     case "sent":

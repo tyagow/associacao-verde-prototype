@@ -24,15 +24,8 @@
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
 }
 
-.urgent {
-  border-left: 3px solid var(--warn);
-}
-.danger {
-  border-left: 3px solid var(--danger);
-}
-.ok {
-  border-left: 3px solid var(--green);
-}
+/* Status accents (.urgent / .danger / .ok) now come from the global
+   .surface--bordered-left-* primitive in app/globals.css. */
 
 .top {
   display: flex;
