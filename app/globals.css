@@ -72,7 +72,9 @@
   --fs-h1:    32px;
   --fs-hero:  48px;
   --lh-tight: 1.15;
+  --lh-snug:  1.35;   /* table cells, nav items, pills */
   --lh-body:  1.55;
+  --fs-ui:    13px;   /* admin default body (denser than marketing 14px) */
   --tracking-tight:   -0.018em;
   --tracking-overline: 0.14em;
 
@@ -147,6 +149,25 @@
   --status-neutral-bg:   var(--soft);
   --status-neutral-text: var(--ink-soft);
   --status-neutral-dot:  var(--muted-2);
+  --status-info-bg:      #e8eef9;
+  --status-info-text:    #1f3a78;
+  --status-info-border:  #c7d3e9;
+  --status-info-dot:     #2f57b8;
+
+  /* ---- spec-aligned aliases (admin design system) ---- */
+  --surface:           var(--surface-base);
+  --surface-hover:     var(--soft);
+  --surface-active:    var(--ink);
+  --surface-on-active: var(--paper);
+  --border:            var(--border-default);
+  --border-strong:     var(--border-emphasis);
+  --text:              var(--text-primary);
+  --text-muted:        var(--text-secondary);
+  --text-subtle:       var(--text-tertiary);
+  --text-faint:        var(--text-quaternary);
+  --text-link:         var(--green-deep);
+  --text-link-hover:   var(--ink);
+  --focus-ring:        0 0 0 2px var(--paper), 0 0 0 4px var(--ink);
 }
 
 /* ---------------------------------------------------------------------
