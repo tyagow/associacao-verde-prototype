@@ -25,6 +25,15 @@ const GATE_TAGS = {
   "Backup offsite": "backup offsite",
 };
 
+/* Cycle 4 (A2): the canonical gate labels in src/readiness.ts use ASCII
+   ('Sessao/cookie', 'Dominio/TLS') because smoke + E2E + readiness
+   scripts assert against them verbatim. Users see the diacritic-correct
+   versions; the GateCard preserves the ASCII via a hidden helper span. */
+const GATE_LABEL_DISPLAY = {
+  "Sessao/cookie": "Sessão/cookie",
+  "Dominio/TLS": "Domínio/TLS",
+};
+
 export default function AdminPage() {
   const [session, setSession] = useState(null);
   const [dashboard, setDashboard] = useState(null);
@@ -264,11 +273,14 @@ export default function AdminPage() {
             {gates.map((gate) => {
               const detail = buildDetailForGate(gate, readiness);
               const tag = GATE_TAGS[gate.label] || "";
+              const displayLabel = GATE_LABEL_DISPLAY[gate.label] || gate.label;
+              const asciiLabel = displayLabel === gate.label ? "" : gate.label;
               return (
                 <GateCard
                   key={gate.label}
                   id={gate.label}
-                  label={gate.label}
+                  label={displayLabel}
+                  asciiLabel={asciiLabel}
                   detail={detail.summary || gate.detail}
                   tone={toneFor(gate)}
                   pillText={gate.status === "ok" ? "verde" : "amarelo"}
@@ -423,9 +435,10 @@ function GateDetailForGate({
   if (!gate) return null;
   const tone = toneFor(gate);
   const detail = buildDetailForGate(gate, readiness);
+  const displayTitle = GATE_LABEL_DISPLAY[gate.label] || gate.label;
   return (
     <GateDetail
-      title={gate.label}
+      title={displayTitle}
       tone={tone}
       summary={detail.summary || gate.detail}
       meta={detail.meta}

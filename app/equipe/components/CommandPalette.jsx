@@ -25,7 +25,7 @@ const STORAGE_STARRED = "tx.cmdk.starred.v1";
 const RECENT_LIMIT = 8;
 
 const NAV_ITEMS = [
-  { id: "nav:command", label: "Comando da operacao", href: "/equipe", hint: "/equipe" },
+  { id: "nav:command", label: "Comando da operação", href: "/equipe", hint: "/equipe" },
   { id: "nav:patients", label: "Pacientes", href: "/equipe/pacientes", hint: "/equipe/pacientes" },
   { id: "nav:stock", label: "Estoque", href: "/equipe/estoque", hint: "/equipe/estoque" },
   { id: "nav:orders", label: "Pedidos e Pix", href: "/equipe/pedidos", hint: "/equipe/pedidos" },
@@ -158,7 +158,7 @@ export default function CommandPalette({ open, onOpenChange, dashboard }) {
           <Command.Input
             value={query}
             onValueChange={setQuery}
-            placeholder="Buscar pacientes, pedidos, acoes ou areas..."
+            placeholder="Buscar pacientes, pedidos, ações ou áreas…"
             className={styles.txInput}
             autoFocus
           />
@@ -201,7 +201,7 @@ export default function CommandPalette({ open, onOpenChange, dashboard }) {
             </Command.Group>
           ) : null}
 
-          <Command.Group heading="Areas" className={styles.txGroup}>
+          <Command.Group heading="Áreas" className={styles.txGroup}>
             {items.navigation.map((item) => (
               <PaletteItem
                 key={item.id}
@@ -214,7 +214,7 @@ export default function CommandPalette({ open, onOpenChange, dashboard }) {
           </Command.Group>
 
           {items.actions.length > 0 ? (
-            <Command.Group heading="Acoes" className={styles.txGroup}>
+            <Command.Group heading="Ações" className={styles.txGroup}>
               {items.actions.map((item) => (
                 <PaletteItem
                   key={item.id}
@@ -316,7 +316,7 @@ function buildItems(dashboard) {
   const patients = (dashboard?.patients || []).slice(0, 30).map((patient) => ({
     id: `patient:${patient.id}`,
     label: patient.name || patient.memberCode || patient.id,
-    hint: [patient.memberCode, patient.eligibility?.allowed ? "elegivel" : "bloqueado"]
+    hint: [patient.memberCode, patient.eligibility?.allowed ? "elegível" : "bloqueado"]
       .filter(Boolean)
       .join(" · "),
     href: `/equipe/pacientes#${encodeURIComponent(patient.memberCode || patient.id)}`,

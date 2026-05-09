@@ -17,7 +17,7 @@ import styles from "./Kanban.module.css";
 
 const COLUMNS = [
   { status: "paid_pending_fulfillment", label: "Aguardando separar", tone: "warn" },
-  { status: "separating", label: "Em separacao", tone: "warn" },
+  { status: "separating", label: "Em separação", tone: "warn" },
   { status: "ready_to_ship", label: "Pronto p/ envio", tone: "ok" },
   { status: "sent", label: "Enviados hoje", tone: "muted" },
 ];

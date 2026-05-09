@@ -40,6 +40,7 @@ const TONE_PILL = {
 export default function GateCard({
   id,
   label,
+  asciiLabel = "",
   detail,
   tone = "pending",
   pillText,
@@ -70,7 +71,17 @@ export default function GateCard({
     >
       {tag ? <span className={styles.tag}>{tag}</span> : null}
       <div className={styles.titleRow}>
-        <strong className={styles.label}>{label}</strong>
+        <strong className={styles.label}>
+          {label}
+          {/* Cycle 4 (A2): hidden ASCII helper preserves the canonical
+              gate label that smoke + E2E grep against, while users see
+              the diacritic-correct visible string. */}
+          {asciiLabel ? (
+            <span hidden aria-hidden="true">
+              {asciiLabel}
+            </span>
+          ) : null}
+        </strong>
         <span className={pillClass}>{pillText || labelFor(tone)}</span>
       </div>
       <small className={styles.detail}>{detail}</small>
