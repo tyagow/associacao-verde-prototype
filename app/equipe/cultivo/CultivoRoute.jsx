@@ -101,6 +101,12 @@ export default function CultivoRoute() {
       await api("/api/team/cultivation-batches", { method: "POST", body: payload });
       form.reset();
     });
+    // After a successful create, the operator's natural next move is to
+    // advance/harvest/dry/stock the batch they just made. Pivot the
+    // drawer focus there: close Criar, open Avançar. (Smart-default
+    // ref already fired on first paint and won't re-fire on its own.)
+    if (detailsCreateRef.current) detailsCreateRef.current.open = false;
+    if (detailsActionRef.current) detailsActionRef.current.open = true;
   }
 
   async function submitCultivationAction(action) {
