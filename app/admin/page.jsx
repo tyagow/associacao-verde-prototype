@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import TeamShell from "../equipe/components/TeamShell";
 import PageHead from "../equipe/components/PageHead";
 import StatusStrip from "../equipe/components/StatusStrip";
+import { useToast } from "../equipe/components/useToast.jsx";
 import GateCard from "./components/GateCard";
 import GateDetail from "./components/GateDetail";
 import AuditTimeline from "./components/AuditTimeline";
@@ -41,7 +42,7 @@ export default function AdminPage() {
   const [filters, setFilters] = useState(initialFilters);
   const [status, setStatus] = useState("carregando…");
   const [error, setError] = useState("");
-  const [toast, setToast] = useState("");
+  const { showToast, ToastSurface } = useToast();
   const [selectedGate, setSelectedGate] = useState(null);
   const [selectedAuditEvent, setSelectedAuditEvent] = useState(null);
   const [activeSegment, setActiveSegment] = useState("gates");
@@ -151,12 +152,6 @@ export default function AdminPage() {
     const { filter } = event.currentTarget.dataset;
     const { value } = event.currentTarget;
     setFilters((current) => ({ ...current, [filter]: value }));
-  }
-
-  function showToast(message) {
-    setToast(message || "Erro na requisição.");
-    window.clearTimeout(showToast.timeout);
-    showToast.timeout = window.setTimeout(() => setToast(""), 3200);
   }
 
   const audit = useMemo(
@@ -349,9 +344,7 @@ export default function AdminPage() {
         </div>
       )}
 
-      <div className={`toast ${toast ? "show" : ""}`} id="toast" role="status" aria-live="polite">
-        {toast}
-      </div>
+      <ToastSurface />
       <AuditEventModal event={selectedAuditEvent} onClose={() => setSelectedAuditEvent(null)} />
     </TeamShell>
   );

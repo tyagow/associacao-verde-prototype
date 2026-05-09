@@ -23,6 +23,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import TeamShell from "../components/TeamShell";
 import PageHead from "../components/PageHead";
 import StatusStrip from "../components/StatusStrip";
+import { useToast } from "../components/useToast.jsx";
 import Kanban from "./components/Kanban.jsx";
 
 const FULFILLMENT_STATUSES = new Set([
@@ -38,7 +39,7 @@ export default function FulfillmentPage() {
   const [dashboard, setDashboard] = useState(null);
   const [statusText, setStatusText] = useState("carregando");
   const [error, setError] = useState("");
-  const [toast, setToast] = useState("");
+  const { showToast, ToastSurface } = useToast();
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [slaFilter, setSlaFilter] = useState("all"); // 'all' | 'today' | 'late'
@@ -117,14 +118,6 @@ export default function FulfillmentPage() {
     }
     return buckets;
   }, [orders]);
-
-  function showToast(message) {
-    setToast(message || "Erro na requisicao.");
-    if (typeof window !== "undefined") {
-      window.clearTimeout(showToast.timeout);
-      showToast.timeout = window.setTimeout(() => setToast(""), 3200);
-    }
-  }
 
   async function persistMove({ orderId, status }) {
     try {
@@ -264,9 +257,7 @@ export default function FulfillmentPage() {
         )}
       </div>
 
-      <div className={`toast ${toast ? "show" : ""}`} id="toast" role="status" aria-live="polite">
-        {toast}
-      </div>
+      <ToastSurface />
     </TeamShell>
   );
 }
