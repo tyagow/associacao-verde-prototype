@@ -1,6 +1,8 @@
+import Link from "next/link";
+
 export default function Brand() {
   return (
-    <a className="brand" href="/" aria-label="Apoiar Brasil">
+    <Link className="brand" href="/" aria-label="Apoiar Brasil">
       <img
         className="brand-logo"
         src="/brand/logo-apoiar-preto.png"
@@ -8,6 +10,6 @@ export default function Brand() {
         width="192"
         height="68"
       />
-    </a>
+    </Link>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import Brand from "../components/Brand";
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import TeamShell from "./components/TeamShell";
@@ -153,15 +154,15 @@ export default function TeamCommand() {
         <header className="topbar">
           <Brand />
           <nav aria-label="Entrada da equipe">
-            <a className="ghost" href="/">
+            <Link className="ghost" href="/">
               Inicio
-            </a>
-            <a className="ghost" href="/paciente">
+            </Link>
+            <Link className="ghost" href="/paciente">
               Paciente
-            </a>
-            <a className="ghost active" href="/equipe" aria-current="page">
+            </Link>
+            <Link className="ghost active" href="/equipe" aria-current="page">
               Equipe
-            </a>
+            </Link>
           </nav>
         </header>
         <main>
