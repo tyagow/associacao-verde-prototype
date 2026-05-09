@@ -61,7 +61,10 @@ export default function PriorityQueue({ rows = [], onExport }) {
             {rows.length === 0 ? (
               <tr>
                 <td colSpan={7} className={styles.empty}>
-                  Sem itens prioritarios na leitura atual.
+                  <div className="adm-empty-state" style={{ border: 0, background: "transparent", padding: 0, minHeight: 0 }}>
+                    <span className="adm-empty-state__title">Nenhum pedido aguardando agora</span>
+                    <span className="adm-empty-state__hint">A fila prioritaria fica calma quando todos os pedidos correm dentro do SLA.</span>
+                  </div>
                 </td>
               </tr>
             ) : (

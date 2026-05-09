@@ -5,27 +5,27 @@
 .statusStrip {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--sp-3);
   flex-wrap: wrap;
-  padding: 10px 14px;
-  background: var(--paper);
-  border: 1px solid var(--line);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--surface-base);
+  border: 1px solid var(--border-default);
   border-radius: var(--r-sm);
-  margin-bottom: 16px;
+  margin-bottom: var(--sp-4);
 }
 
 .chips {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-2);
   flex-wrap: wrap;
 }
 
 .countChip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 3px 10px;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-3);
   border-radius: var(--r-pill);
   background: var(--soft);
   color: var(--ink-soft);

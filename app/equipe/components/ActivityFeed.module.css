@@ -12,12 +12,12 @@
 }
 
 .head {
-  padding: 10px 14px;
+  padding: var(--sp-3) var(--sp-4);
   border-bottom: 1px solid var(--line);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--sp-2);
 }
 
 .title {
@@ -35,15 +35,15 @@
 .feed {
   list-style: none;
   margin: 0;
-  padding: 6px 0;
+  padding: var(--sp-2) 0;
   overflow-y: auto;
 }
 
 .feed li {
   display: grid;
   grid-template-columns: 60px 1fr;
-  gap: 8px;
-  padding: 10px 14px;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
   border-bottom: 1px solid var(--line-soft);
 }
 
@@ -77,8 +77,8 @@
 }
 
 .empty {
-  padding: 22px 14px;
+  padding: var(--sp-6) var(--sp-4);
   text-align: center;
   font-size: 13px;
-  color: var(--muted);
+  color: var(--text-tertiary);
 }

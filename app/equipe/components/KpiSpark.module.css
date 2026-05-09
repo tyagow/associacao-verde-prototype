@@ -3,8 +3,8 @@
 .cell {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 14px 18px;
+  gap: var(--sp-1);
+  padding: var(--sp-4) var(--sp-5);
   border-right: 1px solid var(--line-soft);
   min-width: 0;
 }

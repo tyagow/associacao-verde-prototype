@@ -25,14 +25,14 @@
   grid-area: side;
   background: var(--paper-warm);
   border-right: 1px solid var(--line);
-  padding: 14px 12px;
+  padding: var(--sp-4) var(--sp-3);
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: var(--sp-5);
 }
 
 .sidebar .brand {
-  padding: 6px 8px;
+  padding: var(--sp-2);
 }
 
 .navGroup {
@@ -46,14 +46,14 @@
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--muted);
-  padding: 8px 10px 4px;
+  padding: var(--sp-2) var(--sp-3) var(--sp-1);
 }
 
 .navLink {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 7px 10px;
+  padding: var(--sp-2) var(--sp-3);
   border-radius: var(--r-sm);
   font-size: 13px;
   color: var(--ink-soft);
@@ -99,17 +99,17 @@
   margin-top: auto;
   font-size: 11px;
   color: var(--muted);
-  padding: 8px 10px;
+  padding: var(--sp-2) var(--sp-3);
   border-top: 1px solid var(--line);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-2);
   flex-wrap: wrap;
 }
 .footerBand .actions {
   display: inline-flex;
-  gap: 6px;
+  gap: var(--sp-2);
 }
 .footerBand button {
   background: transparent;
@@ -131,8 +131,8 @@
   border-bottom: 1px solid var(--line);
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 0 24px;
+  gap: var(--sp-4);
+  padding: 0 var(--sp-6);
 }
 
 .breadcrumb {
@@ -140,7 +140,7 @@
   color: var(--muted);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-2);
   min-width: 220px;
 }
 .breadcrumb strong {
@@ -156,7 +156,7 @@
   max-width: 480px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-2);
   background: var(--soft);
   border: 1px solid var(--line);
   border-radius: var(--r-sm);
@@ -192,8 +192,8 @@
   margin-left: auto;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 10px;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-3);
   border: 1px solid var(--line);
   border-radius: var(--r-pill);
   background: var(--paper);
@@ -208,7 +208,7 @@
 /* ---------- main ---------- */
 .main {
   grid-area: main;
-  padding: 22px 28px 32px;
+  padding: var(--sp-6) var(--sp-7) var(--sp-7);
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -227,10 +227,10 @@
   .sidebar {
     flex-direction: row;
     flex-wrap: wrap;
-    gap: 4px;
+    gap: var(--sp-1);
     border-right: 0;
     border-bottom: 1px solid var(--line);
-    padding: 10px 12px;
+    padding: var(--sp-3);
   }
   .sidebar .brand {
     width: 100%;
@@ -238,11 +238,11 @@
   .navGroup {
     flex-direction: row;
     flex-wrap: wrap;
-    gap: 4px;
+    gap: var(--sp-1);
   }
   .navhead {
     width: 100%;
-    padding: 4px 6px 0;
+    padding: var(--sp-1) var(--sp-2) 0;
   }
   .navLink {
     flex: 0 0 auto;
@@ -253,7 +253,7 @@
     border-top: 1px dashed var(--line-soft);
   }
   .main {
-    padding: 18px 20px 28px;
+    padding: var(--sp-5) var(--sp-5) var(--sp-7);
   }
 }
 
@@ -265,8 +265,8 @@
   }
   .topbar {
     flex-wrap: wrap;
-    gap: 8px;
-    padding: 8px 12px;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-3);
     height: auto;
     min-height: 52px;
   }
@@ -299,6 +299,6 @@
     white-space: nowrap;
   }
   .main {
-    padding: 14px 12px 24px;
+    padding: var(--sp-4) var(--sp-3) var(--sp-6);
   }
 }
