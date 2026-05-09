@@ -1719,7 +1719,11 @@ textarea {
 
 .patient-pedido-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
+  /* 360px cart rail (was 320px) — gives price + quantity + remove enough
+     room to sit on one comfortable line at typical desktop widths and
+     reads less pinched on 1600px+ monitors where the catalog is now
+     also clamped by --shell-max. */
+  grid-template-columns: minmax(0, 1fr) 360px;
   gap: var(--sp-6);
   align-items: start;
 }
@@ -1980,7 +1984,12 @@ textarea {
   white-space: normal;
 }
 
-@media (max-width: 1120px) {
+/* Collapse to single column at 1080px (was 1120px). 13" laptops at
+   1280×800 with browser chrome land near 1100px usable width — lowering
+   the breakpoint by 40px keeps them in the comfortable 2-column layout
+   while still collapsing on smaller windows before the cart rail pinches
+   the catalog grid. */
+@media (max-width: 1080px) {
   .patient-pedido-layout,
   .patient-pedido-layout.cart-collapsed {
     grid-template-columns: 1fr;
@@ -2005,11 +2014,11 @@ textarea {
 @media (max-width: 720px) {
   .patient-pedido-layout,
   .patient-pedido-layout.cart-collapsed {
-    gap: 16px;
+    gap: var(--sp-4);
   }
 
   .patient-current-order {
-    margin-bottom: 4px;
+    margin-bottom: var(--sp-1);
   }
 
   /* Cart summary loses its sticky/right-rail behavior at this width and
@@ -2698,8 +2707,6 @@ textarea {
 .row-action-drawer button,
 .row-drawer-form button { align-self: end; }
 
-.action-form,
-.compact-management-form,
 .invite-reset-form,
 .team-password-reset,
 .order-cancel-inline,
@@ -2715,40 +2722,100 @@ textarea {
   margin-top: 0.75rem;
 }
 
+/* Cultivo (Direction B): action + compact forms — refined tonal surface,
+   token-driven 8-px grid spacing, hairline border. Keep grid behavior. */
+.action-form,
+.compact-management-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: var(--sp-3) var(--sp-4);
+  align-items: end;
+  padding: var(--sp-4) var(--sp-5);
+  background: var(--paper);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-md);
+  margin-top: var(--sp-3);
+  font-size: var(--fs-ui);
+  line-height: var(--lh-snug);
+}
+
+/* Cultivo (Direction B): management drawers — collapsible sections that
+   read as a calm form stack. Soft hairlines, generous breathing room,
+   tonal hover instead of heavy ink. */
 .management-drawers {
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
+  gap: var(--sp-2);
 }
 
 .management-drawers details {
   background: var(--paper);
   border: 1px solid var(--line-soft);
-  border-radius: var(--r-sm);
+  border-radius: var(--r-md);
+  transition: border-color var(--duration-fast) var(--ease-out-quad),
+    background-color var(--duration-fast) var(--ease-out-quad);
+}
+
+.management-drawers details[open] {
+  background: var(--paper-warm);
+  border-color: var(--line);
 }
 
 .management-drawers details summary {
   cursor: pointer;
   list-style: none;
-  padding: 0.85rem 1.2rem;
+  padding: var(--sp-3) var(--sp-5);
+  font-family: var(--font-ui);
   font-weight: 600;
-  font-size: 0.92rem;
+  font-size: var(--fs-ui);
+  line-height: var(--lh-snug);
   color: var(--ink);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--sp-3);
+  border-radius: inherit;
+  transition: background-color var(--duration-fast) var(--ease-out-quad),
+    color var(--duration-fast) var(--ease-out-quad);
 }
+
+.management-drawers details summary:hover {
+  background: var(--soft);
+  color: var(--ink);
+}
+
+.management-drawers details summary:focus-visible {
+  outline: 2px solid var(--border-focus, var(--line-strong));
+  outline-offset: -2px;
+}
+
 .management-drawers details summary::-webkit-details-marker { display: none; }
+
 .management-drawers details summary::after {
-  content: "+";
-  font-size: 1.2rem;
+  content: "";
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  background: currentColor;
   color: var(--muted);
-  transition: transform 0.18s ease;
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><path d='M6 1.5v9M1.5 6h9' stroke='black' stroke-width='1.4' stroke-linecap='round'/></svg>") center/contain no-repeat;
+          mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><path d='M6 1.5v9M1.5 6h9' stroke='black' stroke-width='1.4' stroke-linecap='round'/></svg>") center/contain no-repeat;
+  transition: transform var(--duration-base) var(--ease-out-quad),
+    color var(--duration-fast) var(--ease-out-quad);
 }
-.management-drawers details[open] summary::after { transform: rotate(45deg); }
+
+.management-drawers details[open] summary::after {
+  transform: rotate(45deg);
+  color: var(--ink-soft);
+}
 
 .management-drawers details > *:not(summary) {
-  padding: 0 1.2rem 1.2rem;
+  padding: 0 var(--sp-5) var(--sp-5);
+  border-top: 1px solid var(--line-soft);
+  padding-top: var(--sp-4);
+  margin-top: var(--sp-1);
+  font-size: var(--fs-ui);
+  line-height: var(--lh-snug);
 }
 
 .invite-reset-result {
@@ -4024,7 +4091,10 @@ table.adm {
 }
 table.adm thead th {
   position: sticky;
-  top: 0;
+  /* Offset by the TeamShell topbar height (52px, see TeamShell.module.css
+     `.shell { grid-template-rows: 52px 1fr }`) so a sticky thead doesn't
+     slide UNDER the also-sticky topbar (z:5) on long ledger scrolls. */
+  top: 52px;
   z-index: 1;
   /* Mockup _tokens.css :: thead bg is `paper`, not `paper-warm`. The
      latter is reserved for even-row zebra so the header doesn't blend

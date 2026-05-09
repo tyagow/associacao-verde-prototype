@@ -574,3 +574,36 @@
     height: auto;
   }
 }
+
+/* Phone (<= 720px) — the floating MobileCheckoutBar is the source of
+   truth for "you have N items, R$X total, Gerar Pix". The static cart
+   card is therefore redundant on phones in the EMPTY state (it just
+   says "Carrinho vazio"). Hide the entire card when it contains the
+   empty-state block. The aside stays in the DOM (display:none keeps it
+   parseable) but takes no visual space, freeing the catalog to fill
+   the fold. The E2E literal "Resumo antes do Pix" lives on this same
+   aside but is only asserted AFTER an item is added (see
+   scripts/e2e-production-app.py line 128–129) — at that point the
+   cart is non-empty and the card is visible again.
+
+   In the LOADED state we still hide the in-cart "Gerar Pix" CTA on
+   phones (the floating bar's CTA is the visible one) but keep the
+   form intact so MobileCheckoutBar's requestSubmit still works. */
+@media (max-width: 720px) {
+  .cart:has(.emptyBlock) {
+    display: none;
+  }
+  .cart {
+    padding: var(--sp-4);
+    gap: var(--sp-3);
+  }
+  .cta {
+    display: none;
+  }
+  .ctaDisabled {
+    display: none;
+  }
+  /* The address-error hint and reassure copy still need to be visible
+     so screen readers + MobileCheckoutBar's blocked state are explained;
+     leave them rendering. */
+}

@@ -4,15 +4,31 @@
    margin-bottom: -1px. The 4th tab (Meu perfil) is right-aligned. */
 
 .bar {
+  /* Mirror PatientShell .shell --shell-max / --shell-gutter so the tab
+     strip background paints full-bleed but its tabs align to the same
+     centered column as the topbar content and main work area. Locally
+     defaulted so the file remains usable in isolation. */
+  --shell-max: 1320px;
+  --shell-gutter: var(--sp-6);
   display: flex;
   align-items: stretch;
   gap: var(--sp-1);
-  padding: var(--sp-2) var(--sp-7);
+  padding-block: var(--sp-2);
+  padding-inline: max(
+    var(--shell-gutter),
+    calc((100% - var(--shell-max)) / 2 + var(--shell-gutter))
+  );
   background: var(--paper);
   border-bottom: 1px solid var(--line);
   position: sticky;
   top: var(--topbar-height); /* matches --topbar-height (14px padding × 2 + content ≈ 56px) */
   z-index: 4;
+}
+
+@media (max-width: 1024px) {
+  .bar {
+    --shell-gutter: var(--sp-4);
+  }
 }
 
 .tabButton {
@@ -51,13 +67,28 @@
   margin-left: auto;
 }
 
-@media (max-width: 768px) {
+/* Phone — horizontal scroll with snap, hidden scrollbar. Portuguese tab
+   labels can overflow at 360–390px; let the strip slide horizontally
+   while each tab snaps to the leading edge. Scrollbar is hidden for
+   visual quiet but the strip remains keyboard-scrollable. */
+@media (max-width: 720px) {
   .bar {
-    padding: var(--sp-2) var(--sp-4);
+    --shell-gutter: var(--sp-3);
+    padding-block: var(--sp-2);
     overflow-x: auto;
     flex-wrap: nowrap;
     white-space: nowrap;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
     top: 0; /* On mobile the topbar wraps and isn't a fixed height; just keep tabs sticky to viewport. */
+  }
+  .bar::-webkit-scrollbar {
+    display: none;
+  }
+  .tabButton {
+    scroll-snap-align: start;
+    flex: 0 0 auto;
   }
   .tabEnd {
     margin-left: 0;

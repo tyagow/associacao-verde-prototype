@@ -72,6 +72,27 @@
 @media (max-width: 720px) {
   .hero {
     grid-template-columns: 1fr;
+    /* Welcome hero is huge by default (28px/32px padding, 26px display
+       title). On a 360px phone the dark green band ate ~30% of the
+       fold — patients want to see catalog above all else. Tighten
+       padding, drop title size one step, collapse the receipt pill. */
+    padding: var(--sp-4) var(--sp-4);
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-4);
+  }
+  .heroTitle {
+    font-size: 20px;
+    line-height: 1.25;
+  }
+  .heroLead {
+    font-size: var(--fs-sm, 12px);
+  }
+  .heroReceipt {
+    padding: var(--sp-2) var(--sp-3);
+    grid-auto-flow: row;
+    gap: 4px;
+    font-size: var(--fs-xs, 11px);
+    min-width: 0;
   }
 }
 
@@ -422,5 +443,42 @@
 @media (max-width: 1024px) {
   .grid {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}
+
+/* Phone — denser card layout. At 360–414px the default 220px minmax
+   would force one column; allowing 150px lets two cards sit side by
+   side. The price + Adicionar row stays on one line with smaller
+   button padding; if a chip ("Esgotado", "Últimas N") + price + CTA
+   can't co-exist horizontally, badges already render absolutely
+   positioned so the row only carries price + button. */
+@media (max-width: 720px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: var(--sp-3);
+  }
+  .body {
+    padding: var(--sp-3);
+  }
+  .thumb {
+    height: 96px;
+    font-size: 22px;
+  }
+  .body h3 {
+    font-size: 14px;
+  }
+  .price {
+    font-size: 14px;
+  }
+  .add {
+    padding: 6px var(--sp-2);
+    font-size: var(--fs-xs, 11px);
+  }
+  .row {
+    flex-wrap: nowrap;
+  }
+  .qty button {
+    width: 26px;
+    height: 28px;
   }
 }

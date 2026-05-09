@@ -4,6 +4,13 @@
    guide §1 — only the identity pill keeps 999px because it reads as a token. */
 
 .shell {
+  /* --shell-max defines the centered content column for the entire patient
+     surface. Topbar + tab strip stay full-bleed (background runs to the edge)
+     but their content rides this same column via auto-centered side padding,
+     so on 1920px+ monitors the storefront breathes inside a clamped width
+     while smaller laptops get the same gutters they had before. */
+  --shell-max: 1320px;
+  --shell-gutter: var(--sp-6);
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -14,7 +21,10 @@
   display: flex;
   align-items: center;
   gap: var(--sp-6);
-  padding: 14px var(--sp-7);
+  /* Auto-center the topbar content within --shell-max while letting the
+     white background paint full-bleed. The horizontal padding becomes
+     max(gutter, (100% - max) / 2 + gutter). */
+  padding: 14px max(var(--shell-gutter), calc((100% - var(--shell-max)) / 2 + var(--shell-gutter)));
   background: var(--paper);
   border-bottom: 1px solid var(--line);
   position: sticky;
@@ -127,20 +137,34 @@
 
 .work {
   flex: 1;
-  width: min(100%, 1200px);
+  width: 100%;
+  max-width: var(--shell-max);
   margin: 0 auto;
-  padding: var(--sp-6) var(--sp-7) var(--sp-7);
+  padding: var(--sp-6) var(--shell-gutter) var(--sp-7);
   display: flex;
   flex-direction: column;
   gap: var(--sp-4);
   min-width: 0;
 }
 
-@media (max-width: 768px) {
+/* Tablet — tighter side gutter so cards don't crowd the edge. */
+@media (max-width: 1024px) {
+  .shell {
+    --shell-gutter: var(--sp-4);
+  }
+}
+
+/* Hide the global topbar search on tablet+phone — CatalogSection has its
+   own search above the products grid, so the topbar input is redundant
+   and consumes scarce horizontal room. The slot stays in the DOM (input
+   still keyboard-reachable) for users who tab into it deliberately. */
+@media (max-width: 720px) {
+  .shell {
+    --shell-gutter: var(--sp-3);
+  }
   .topbar {
-    padding: 12px var(--sp-4);
-    flex-wrap: wrap;
-    gap: var(--sp-3);
+    padding-block: 10px;
+    gap: var(--sp-2);
   }
   .brandSlot {
     order: 1;
@@ -149,14 +173,19 @@
     order: 2;
     margin-left: auto;
   }
-  .searchSlot,
+  .searchSlot {
+    display: none;
+  }
   .spacer {
-    order: 3;
-    flex-basis: 100%;
-    width: 100%;
+    display: none;
+  }
+  .actions :global(button.ghost),
+  .actions :global(button) {
+    padding: 6px var(--sp-2);
+    font-size: var(--fs-sm, 12px);
   }
   .work {
-    padding: var(--sp-4);
+    padding: var(--sp-4) var(--shell-gutter);
     gap: var(--sp-4);
   }
 }
