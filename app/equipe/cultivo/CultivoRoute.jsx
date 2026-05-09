@@ -12,7 +12,7 @@ import TeamShell from "../components/TeamShell";
 import PageHead from "../components/PageHead";
 import StatusStrip from "../components/StatusStrip";
 import CultivoPanel from "../estoque/components/CultivoPanel.jsx";
-import { pluralize } from "../components/pluralize.js";
+import { pluralize, pluralWord } from "../components/pluralize.js";
 
 export default function CultivoRoute() {
   const [session, setSession] = useState(null);
@@ -181,19 +181,30 @@ export default function CultivoRoute() {
 
       <StatusStrip
         chips={[
-          { label: "lotes ativos", count: totals.active, tone: totals.active ? "ok" : undefined },
           {
-            label: "em crescimento",
+            label: pluralWord(totals.active, "lote ativo", "lotes ativos"),
+            count: totals.active,
+            tone: totals.active ? "ok" : undefined,
+          },
+          {
+            label: "vegetativo",
             count: totals.growing,
             tone: totals.growing ? "warn" : undefined,
           },
           {
-            label: "colhidos",
+            label: pluralWord(totals.harvested, "colhido", "colhidos"),
             count: totals.harvested,
             tone: totals.harvested ? "warn" : undefined,
           },
-          { label: "secos", count: totals.dried, tone: totals.dried ? "ok" : undefined },
-          { label: "estocados", count: totals.stocked },
+          {
+            label: pluralWord(totals.dried, "seco", "secos"),
+            count: totals.dried,
+            tone: totals.dried ? "ok" : undefined,
+          },
+          {
+            label: pluralWord(totals.stocked, "estocado", "estocados"),
+            count: totals.stocked,
+          },
         ]}
         onRefresh={() => loadAll().catch((nextError) => setError(nextError.message))}
       />
