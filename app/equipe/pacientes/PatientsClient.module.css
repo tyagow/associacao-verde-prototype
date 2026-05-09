@@ -116,8 +116,14 @@
   text-decoration: underline;
 }
 
-.focusedRow {
-  background: var(--bg-soft, #f6f8f6);
+/* The global zebra rule paints `tr:nth-child(even) td { background:
+   paper-warm }`. Win on both odd and even rows by setting the bg
+   directly on the td selector with the focusedRow class chained as
+   parent — adding `!important` because Next.js dev's CSS-module
+   ordering relative to globals.css is not deterministic enough to
+   rely on source-order tie-breaking alone. */
+.focusedRow > td {
+  background: var(--soft) !important;
 }
 
 /* ===== Plano de cuidado / privacidade rows ===== */
