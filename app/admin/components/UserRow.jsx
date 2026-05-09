@@ -85,7 +85,7 @@ export default function UserRow({ user, onStatusChange, onPasswordReset, compact
         <td className={styles.cellActions}>
           <button
             type="button"
-            className={styles.actionButton}
+            className="btn btn--ghost btn--sm"
             onClick={() => toggleDrawer("password")}
             aria-expanded={openDrawer === "password" ? "true" : "false"}
           >
@@ -93,7 +93,7 @@ export default function UserRow({ user, onStatusChange, onPasswordReset, compact
           </button>
           <button
             type="button"
-            className={styles.actionButton}
+            className="btn btn--ghost btn--sm"
             onClick={() => toggleDrawer("password")}
             aria-expanded={openDrawer === "password" ? "true" : "false"}
           >
@@ -102,7 +102,7 @@ export default function UserRow({ user, onStatusChange, onPasswordReset, compact
           {isActive ? (
             <button
               type="button"
-              className={`${styles.actionButton} ${styles.actionDanger}`}
+              className="btn btn--danger btn--sm"
               onClick={() => onStatusChange(user.id, "inactive")}
             >
               Desativar
@@ -110,7 +110,7 @@ export default function UserRow({ user, onStatusChange, onPasswordReset, compact
           ) : (
             <button
               type="button"
-              className={`${styles.actionButton} ${styles.actionPrimary}`}
+              className="btn btn--primary btn--sm"
               onClick={() => toggleDrawer("reactivate")}
               aria-expanded={openDrawer === "reactivate" ? "true" : "false"}
             >
@@ -134,12 +134,12 @@ export default function UserRow({ user, onStatusChange, onPasswordReset, compact
                 />
               </label>
               <div className={styles.drawerActions}>
-                <button type="submit" className={styles.drawerPrimary}>
+                <button type="submit" className="btn btn--primary">
                   Redefinir senha
                 </button>
                 <button
                   type="button"
-                  className={styles.drawerGhost}
+                  className="btn btn--ghost"
                   onClick={() => setOpenDrawer(null)}
                 >
                   Cancelar
@@ -158,12 +158,12 @@ export default function UserRow({ user, onStatusChange, onPasswordReset, compact
                 imediatamente.
               </p>
               <div className={styles.drawerActions}>
-                <button type="button" className={styles.drawerPrimary} onClick={confirmReactivate}>
+                <button type="button" className="btn btn--primary" onClick={confirmReactivate}>
                   Confirmar reativacao
                 </button>
                 <button
                   type="button"
-                  className={styles.drawerGhost}
+                  className="btn btn--ghost"
                   onClick={() => setOpenDrawer(null)}
                 >
                   Cancelar

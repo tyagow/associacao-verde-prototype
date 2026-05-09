@@ -116,49 +116,6 @@
   flex-wrap: wrap;
 }
 
-.actionButton {
-  appearance: none;
-  font: inherit;
-  font-size: 12px;
-  padding: var(--sp-2) var(--sp-3);
-  border-radius: var(--r-sm);
-  border: 1px solid var(--border-default, #e3ebe6);
-  background: #fff;
-  color: var(--text-primary, #0d1f17);
-  cursor: pointer;
-  transition:
-    background 140ms ease,
-    border-color 140ms ease,
-    color 140ms ease;
-}
-
-.actionButton:hover {
-  background: var(--paper-warm, #f7f9f6);
-}
-
-.actionButton:focus-visible {
-  outline: 2px solid var(--green, #1d8c52);
-  outline-offset: 2px;
-}
-
-.actionDanger {
-  color: var(--danger, #b03a2e);
-  border-color: var(--danger-line, #ecc3bd);
-}
-
-.actionDanger:hover {
-  background: var(--danger-soft, #fbe5e1);
-}
-
-.actionPrimary {
-  color: var(--green-deep, #135b35);
-  border-color: var(--green-soft, #c7e2d2);
-}
-
-.actionPrimary:hover {
-  background: var(--green-tint, #dff0e6);
-}
-
 .drawerRow td {
   background: var(--surface-sunken, #f7f9f6);
   padding: var(--sp-4) var(--sp-5);
@@ -195,36 +152,4 @@
   display: flex;
   gap: var(--sp-2);
   flex-wrap: wrap;
-}
-
-.drawerPrimary {
-  appearance: none;
-  font: inherit;
-  font-size: 12px;
-  padding: var(--sp-2) var(--sp-4);
-  border-radius: var(--r-sm);
-  background: var(--green, #1d8c52);
-  color: #fff;
-  border: 1px solid var(--green-deep, #135b35);
-  cursor: pointer;
-}
-
-.drawerPrimary:hover {
-  background: var(--green-deep, #135b35);
-}
-
-.drawerGhost {
-  appearance: none;
-  font: inherit;
-  font-size: 12px;
-  padding: var(--sp-2) var(--sp-4);
-  border-radius: var(--r-sm);
-  background: #fff;
-  color: var(--muted, #687970);
-  border: 1px solid var(--line, #e3ebe6);
-  cursor: pointer;
-}
-
-.drawerGhost:hover {
-  background: var(--paper-warm, #f7f9f6);
 }
