@@ -180,18 +180,39 @@ export default function Kanban({
     >
       {isMobile ? (
         <nav className={styles.txTabs} role="tablist" aria-label="Etapa de fulfillment">
-          {COLUMNS.map((column) => {
+          {COLUMNS.map((column, idx) => {
             const count = byColumn[column.status]?.length || 0;
             const isActive = activeTab === column.status;
+            // Cycle 4 (A4): roving tabindex + arrow-key navigation so the
+            // mobile tab strip follows the WAI-ARIA tablist pattern.
             return (
               <button
                 key={column.status}
                 type="button"
                 role="tab"
                 aria-selected={isActive}
+                tabIndex={isActive ? 0 : -1}
                 data-kanban-tab={column.status}
                 className={`${styles.txTab} ${isActive ? styles.txTabActive : ""}`.trim()}
                 onClick={() => setActiveTab(column.status)}
+                onKeyDown={(event) => {
+                  const last = COLUMNS.length - 1;
+                  if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+                    event.preventDefault();
+                    const nextIdx = idx === last ? 0 : idx + 1;
+                    setActiveTab(COLUMNS[nextIdx].status);
+                  } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+                    event.preventDefault();
+                    const nextIdx = idx === 0 ? last : idx - 1;
+                    setActiveTab(COLUMNS[nextIdx].status);
+                  } else if (event.key === "Home") {
+                    event.preventDefault();
+                    setActiveTab(COLUMNS[0].status);
+                  } else if (event.key === "End") {
+                    event.preventDefault();
+                    setActiveTab(COLUMNS[last].status);
+                  }
+                }}
               >
                 <span>{column.label}</span>
                 <span className={styles.txTabCount}>{count}</span>

@@ -22,6 +22,7 @@ import styles from "./AuditEventModal.module.css";
 export default function AuditEventModal({ event, onClose }) {
   const closeButtonRef = useRef(null);
   const previouslyFocusedRef = useRef(null);
+  const drawerRef = useRef(null);
 
   useEffect(() => {
     if (!event) return undefined;
@@ -31,6 +32,24 @@ export default function AuditEventModal({ event, onClose }) {
       if (e.key === "Escape") {
         e.stopPropagation();
         onClose && onClose();
+      } else if (e.key === "Tab" && drawerRef.current) {
+        // Cycle 4 (A5): keep Tab/Shift-Tab focus inside the drawer while
+        // the modal is open. Without this, Tab silently leaks back into
+        // the audit timeline behind the dialog — a common drawer-pattern
+        // regression after converting from a centered modal.
+        const focusables = drawerRef.current.querySelectorAll(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        );
+        if (!focusables.length) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
       }
     }
     window.addEventListener("keydown", onKey);
@@ -58,6 +77,7 @@ export default function AuditEventModal({ event, onClose }) {
     <>
       <div className="drawer__overlay" role="presentation" onClick={onClose} />
       <aside
+        ref={drawerRef}
         className="drawer"
         role="dialog"
         aria-modal="true"

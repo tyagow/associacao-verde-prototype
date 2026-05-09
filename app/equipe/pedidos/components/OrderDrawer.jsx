@@ -142,7 +142,7 @@ export default function OrderDrawer({
             return (
               <div key={idx} className={styles.li}>
                 <div className={styles.thumb}>{monogram(item.name)}</div>
-                <div>
+                <div title={item.name}>
                   <div className={styles.itemName}>{item.name}</div>
                   <div className={styles.itemMeta}>
                     {item.quantity}× {moneyFmt.format(unit / 100)}

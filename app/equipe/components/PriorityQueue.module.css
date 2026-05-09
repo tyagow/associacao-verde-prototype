@@ -40,14 +40,25 @@
   gap: 2px;
   min-width: 0;
 }
+/* Cycle 4 (A3): truncate long patient/product names instead of pushing
+   the SLA/Status/Valor columns into a horizontal scroll. The browser's
+   tooltip on hover still shows the full string. */
 .who .name {
   font-weight: 600;
   font-size: var(--fs-ui);
   color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
 }
 .who .meta {
   font-size: var(--fs-xs);
   color: var(--text-subtle);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
 }
 
 .action {

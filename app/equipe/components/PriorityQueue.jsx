@@ -97,8 +97,14 @@ export default function PriorityQueue({ rows = [], onExport }) {
                     <td className="mono">{row.id || "—"}</td>
                     <td>
                       <div className={styles.who}>
-                        <span className={styles.name}>{row.who?.name || "—"}</span>
-                        {row.who?.meta ? <span className={styles.meta}>{row.who.meta}</span> : null}
+                        <span className={styles.name} title={row.who?.name || ""}>
+                          {row.who?.name || "—"}
+                        </span>
+                        {row.who?.meta ? (
+                          <span className={styles.meta} title={row.who.meta}>
+                            {row.who.meta}
+                          </span>
+                        ) : null}
                       </div>
                     </td>
                     <td className="num">{row.sla || "—"}</td>

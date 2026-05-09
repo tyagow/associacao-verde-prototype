@@ -25,8 +25,15 @@
   font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
+/* Cycle 4 (A3): truncate long item names so the .li grid stays
+   2-line tall regardless of product label length. The full name
+   stays available via the title attribute on the parent div. */
 .itemName {
   font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 .itemMeta {
   color: var(--muted);

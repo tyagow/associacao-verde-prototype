@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import styles from "./StatusStrip.module.css";
 
 /**
@@ -66,16 +67,59 @@ export function CountChip({ label, count, tone }) {
 }
 
 export function Segmented({ segments }) {
+  /* Cycle 4 (A4): WAI-ARIA tablist pattern requires roving tabindex +
+     ArrowLeft/ArrowRight focus-and-activate semantics. Previously every
+     segment was in the natural tab order with no arrow handling, which
+     announced as a partial-pattern lie to screen readers. */
+  const containerRef = useRef(null);
+  const activeIndex = Math.max(
+    0,
+    segments.findIndex((seg) => seg.active),
+  );
+
+  function focusByIndex(idx) {
+    const root = containerRef.current;
+    if (!root) return;
+    const buttons = root.querySelectorAll('[role="tab"]');
+    const next = buttons[idx];
+    if (next) next.focus();
+  }
+
+  function handleKeyDown(idx, event) {
+    const last = segments.length - 1;
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+      event.preventDefault();
+      const nextIdx = idx === last ? 0 : idx + 1;
+      segments[nextIdx]?.onClick?.();
+      focusByIndex(nextIdx);
+    } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+      event.preventDefault();
+      const nextIdx = idx === 0 ? last : idx - 1;
+      segments[nextIdx]?.onClick?.();
+      focusByIndex(nextIdx);
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      segments[0]?.onClick?.();
+      focusByIndex(0);
+    } else if (event.key === "End") {
+      event.preventDefault();
+      segments[last]?.onClick?.();
+      focusByIndex(last);
+    }
+  }
+
   return (
-    <div className={styles.segmented} role="tablist">
+    <div className={styles.segmented} role="tablist" ref={containerRef}>
       {segments.map((seg, idx) => (
         <button
           key={idx}
           type="button"
           role="tab"
           aria-selected={seg.active ? "true" : "false"}
+          tabIndex={idx === activeIndex ? 0 : -1}
           className={seg.active ? "on" : undefined}
           onClick={seg.onClick}
+          onKeyDown={(event) => handleKeyDown(idx, event)}
         >
           <span>{seg.label}</span>
           {typeof seg.count === "number" ? <span className={styles.num}> {seg.count}</span> : null}
