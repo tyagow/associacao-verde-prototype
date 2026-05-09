@@ -465,7 +465,11 @@ export default function PatientPortal() {
                   onMarkPaid={loadOrders}
                   onCopyPix={copyPix}
                   onCancel={() => {
-                    setSupportPrefill(latestOrder?.id || "");
+                    setSupportPrefill({
+                      orderId: latestOrder?.id || "",
+                      subject: "Cancelar pedido em andamento",
+                      priority: "urgent",
+                    });
                     setCurrentTab("suporte");
                   }}
                 />

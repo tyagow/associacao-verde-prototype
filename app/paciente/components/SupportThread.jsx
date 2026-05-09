@@ -51,6 +51,10 @@ export default function SupportThread({
   const [priority, setPriority] = useState("normal");
   const [message, setMessage] = useState("");
   const [linkedOrderId, setLinkedOrderId] = useState("");
+  // Once the user clicks "Desvincular pedido" we suppress the latestOrder
+  // fallback so the hidden relatedOrderId field actually goes empty — visually
+  // unlinking and silently re-linking via fallback is a bait-and-switch.
+  const [unlinked, setUnlinked] = useState(false);
   // "Pristine" = user has not typed anything yet. We only auto-prefill while
   // pristine to avoid clobbering in-progress input when the parent re-emits a
   // hint (e.g. after navigating away and back).
@@ -75,9 +79,11 @@ export default function SupportThread({
     }
     if (hint.orderId) {
       setLinkedOrderId(hint.orderId);
+      setUnlinked(false);
     }
     if (!pristineRef.current) return;
     if (hint.subject) setSubject(hint.subject);
+    if (hint.priority) setPriority(hint.priority);
     if (hint.orderId) {
       const tag = `Pedido #${hint.orderId}`;
       setMessage((prev) => {
@@ -103,6 +109,7 @@ export default function SupportThread({
 
   function unlinkOrder() {
     setLinkedOrderId("");
+    setUnlinked(true);
   }
 
   function handleSubmit(event) {
@@ -115,6 +122,7 @@ export default function SupportThread({
     setPriority("normal");
     setMessage("");
     setLinkedOrderId("");
+    setUnlinked(false);
     pristineRef.current = true;
   }
 
@@ -184,7 +192,10 @@ export default function SupportThread({
               <select
                 name="priority"
                 value={priority}
-                onChange={(event) => setPriority(event.target.value)}
+                onChange={(event) => {
+                  markDirty();
+                  setPriority(event.target.value);
+                }}
               >
                 <option value="normal">Normal</option>
                 <option value="high">Alta</option>
@@ -211,11 +222,11 @@ export default function SupportThread({
             </span>
           </label>
 
-          {linkedOrderId || latestOrder ? (
+          {linkedOrderId || (!unlinked && latestOrder) ? (
             <input
               type="hidden"
               name="relatedOrderId"
-              value={linkedOrderId || latestOrder?.id || ""}
+              value={linkedOrderId || (!unlinked && latestOrder?.id) || ""}
             />
           ) : null}
 
