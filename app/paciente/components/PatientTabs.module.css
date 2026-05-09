@@ -7,8 +7,9 @@
   /* Mirror PatientShell .shell --shell-max / --shell-gutter so the tab
      strip background paints full-bleed but its tabs align to the same
      centered column as the topbar content and main work area. Locally
-     defaulted so the file remains usable in isolation. */
-  --shell-max: 1320px;
+     defaulted (1440px) to match PatientShell so the file remains usable
+     in isolation. */
+  --shell-max: 1440px;
   --shell-gutter: var(--sp-6);
   display: flex;
   align-items: stretch;

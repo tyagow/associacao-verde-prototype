@@ -7,9 +7,14 @@
   /* --shell-max defines the centered content column for the entire patient
      surface. Topbar + tab strip stay full-bleed (background runs to the edge)
      but their content rides this same column via auto-centered side padding,
-     so on 1920px+ monitors the storefront breathes inside a clamped width
-     while smaller laptops get the same gutters they had before. */
-  --shell-max: 1320px;
+     so on wide monitors the storefront breathes inside a clamped width while
+     smaller laptops get the same gutters they had before.
+
+     1440px baseline (was 1320): 1440 - 360 cart - 24 gap = 1056 catalog area
+     which fits 4 product cards at minmax(230px, 1fr) comfortably with room
+     to grow. On ≤1280px the entire viewport is below shell-max so the clamp
+     is inert and we keep the prior pixel-stable mid-screen rendering. */
+  --shell-max: 1440px;
   --shell-gutter: var(--sp-6);
   display: flex;
   flex-direction: column;

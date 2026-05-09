@@ -53,6 +53,7 @@
   font: 500 26px/1.2 var(--font-display, "Outfit", sans-serif);
   color: var(--ink);
   letter-spacing: -0.005em;
+  max-width: 28ch;
 }
 
 .heroLead {
@@ -360,7 +361,14 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  /* 220px (was 230px) lets the catalog fit 4 product cards at the cart-open
+     2-column layout when --shell-max=1440 and the cart rail is 400px:
+     1440 - 400 - 24 = 1016 catalog → floor(1016/220)=4 cols. At 1680
+     viewport with 420px cart: 1680 - 420 - 24 = 1236 → 5 cols. At
+     ≤1280 viewports (where shell-max clamp is inert) cards still render
+     identically because the column count was already determined by
+     auto-fill at the same breakpoint thresholds. */
+  grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
   gap: var(--sp-4);
 }
 

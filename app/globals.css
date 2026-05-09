@@ -2008,6 +2008,24 @@ textarea {
   }
 }
 
+/* Wide screens (>= 1440px) — give the cart rail room to breathe. At a
+   1440px+ inner column the catalog area still fits 4+ product cards even
+   with a 400px cart, and the rail's price + qty + remove line reads less
+   pinched. At >= 1680px push to 420px so the totals card and address
+   form feel proportional to the storefront grid. Below 1440 we keep the
+   shipped 360px rail so 13"–15" laptops render exactly as before. */
+@media (min-width: 1440px) {
+  .patient-pedido-layout {
+    grid-template-columns: minmax(0, 1fr) 400px;
+  }
+}
+
+@media (min-width: 1680px) {
+  .patient-pedido-layout {
+    grid-template-columns: minmax(0, 1fr) 420px;
+  }
+}
+
 /* Mobile (<= 720px) — phone-friendly spacing on Pedido. The default
    grid-gap (var(--sp-6) = ~24px) is too generous on small screens and
    pushes the cart far below the catalog. */
