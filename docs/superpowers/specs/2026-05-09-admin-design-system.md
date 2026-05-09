@@ -1,5 +1,9 @@
 # Apoiar Brasil — Admin Design System (Direction B-2 / "Senior Workbench")
 
+**Status (2026-05-09):** Shipped across 30+ commits on `feat/paciente-revamp-b`.
+Tokens + utility layer + 10 promoted primitives are live; consumer migration
+is in progress.
+
 Date: 2026-05-09
 Owner: design-system
 Status: Draft for review (operator-grade redesign)
