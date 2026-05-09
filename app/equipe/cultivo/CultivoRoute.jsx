@@ -6,7 +6,7 @@
    the [data-cultivation-action] buttons (E2E selectors). StockRoute now
    only owns product + stock entry forms. */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import TeamShell from "../components/TeamShell";
 import PageHead from "../components/PageHead";
@@ -142,6 +142,24 @@ export default function CultivoRoute() {
     };
   }, [batches]);
 
+  // Smart-default for the management drawers: open the create form when
+  // there are zero batches (the only useful action), open the
+  // advance/harvest/dry/stock form when batches exist (the routine
+  // action). Apply imperatively via refs ONCE when dashboard data first
+  // arrives so React doesn't keep re-applying the `open` prop and
+  // overriding the user's manual toggles on later re-renders.
+  const detailsCreateRef = useRef(null);
+  const detailsActionRef = useRef(null);
+  const smartDefaultAppliedRef = useRef(false);
+  useEffect(() => {
+    if (smartDefaultAppliedRef.current) return;
+    if (dashboard == null) return;
+    smartDefaultAppliedRef.current = true;
+    const hasBatches = batchOptions.length > 0;
+    if (detailsCreateRef.current) detailsCreateRef.current.open = !hasBatches;
+    if (detailsActionRef.current) detailsActionRef.current.open = hasBatches;
+  }, [dashboard, batchOptions.length]);
+
   if (!isTeam) {
     return (
       <main>
@@ -225,12 +243,7 @@ export default function CultivoRoute() {
         )}
 
         <section className="management-drawers" aria-label="Ações de gestão de cultivo">
-          {/*
-            Smart default: when there are no batches yet, open the create
-            drawer (the only useful action); when batches exist, open the
-            advance/harvest/dry/stock drawer (the routine action).
-          */}
-          <details open={batchOptions.length === 0}>
+          <details ref={detailsCreateRef}>
             <summary>Criar lote de cultivo</summary>
             <form
               id="cultivation-form"
@@ -283,7 +296,7 @@ export default function CultivoRoute() {
                 />
               </label>
               <button
-                className="primary"
+                className="btn btn--primary btn--mini"
                 type="submit"
                 disabled={!isTeam || busy === "cultivation-create"}
               >
@@ -292,7 +305,7 @@ export default function CultivoRoute() {
             </form>
           </details>
 
-          <details open={batchOptions.length > 0}>
+          <details ref={detailsActionRef}>
             <summary>Avançar, colher, secar ou estocar</summary>
             <form
               id="cultivation-update-form"
@@ -337,7 +350,7 @@ export default function CultivoRoute() {
                 </select>
               </label>
               <button
-                className="primary"
+                className="btn btn--ghost btn--mini"
                 type="button"
                 data-cultivation-action="advance"
                 disabled={!isTeam || !batchOptions.length || busy === "cultivation-advance"}
@@ -346,7 +359,7 @@ export default function CultivoRoute() {
                 Avançar semana
               </button>
               <button
-                className="primary"
+                className="btn btn--ghost btn--mini"
                 type="button"
                 data-cultivation-action="harvest"
                 disabled={!isTeam || !batchOptions.length || busy === "cultivation-harvest"}
@@ -355,7 +368,7 @@ export default function CultivoRoute() {
                 Colheita
               </button>
               <button
-                className="primary"
+                className="btn btn--ghost btn--mini"
                 type="button"
                 data-cultivation-action="dry"
                 disabled={!isTeam || !batchOptions.length || busy === "cultivation-dry"}
@@ -364,7 +377,7 @@ export default function CultivoRoute() {
                 Peso seco
               </button>
               <button
-                className="primary"
+                className="btn btn--ghost btn--mini"
                 type="button"
                 data-cultivation-action="stock"
                 disabled={
