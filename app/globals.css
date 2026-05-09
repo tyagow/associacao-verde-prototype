@@ -2724,7 +2724,7 @@ textarea {
 .management-drawers details {
   background: var(--paper);
   border: 1px solid var(--line-soft);
-  border-radius: var(--r-md);
+  border-radius: var(--r-sm);
 }
 
 .management-drawers details summary {
