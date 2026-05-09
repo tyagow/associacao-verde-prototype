@@ -67,20 +67,20 @@
   align-items: center;
   gap: var(--sp-2);
   align-self: start;
-  padding: 6px 10px;
+  padding: var(--sp-1) var(--sp-3);
   margin-bottom: var(--sp-2);
   background: var(--soft);
   border: 1px solid color-mix(in srgb, var(--green) 30%, transparent);
   border-radius: var(--r-md);
-  font-size: 12px;
+  font-size: var(--fs-ui, 13px);
   color: var(--ink);
 }
 
 .linkedOrderClose {
   background: transparent;
   border: 0;
-  padding: 0 2px;
-  font-size: 16px;
+  padding: 0 var(--sp-1);
+  font-size: var(--fs-base, 14px);
   line-height: 1;
   color: var(--muted);
   cursor: pointer;
