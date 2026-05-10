@@ -38,10 +38,11 @@ export default function ProductLedger({ children }) {
             <col style={{ width: 80 }} />
             <col style={{ width: 120 }} />
             <col style={{ width: 110 }} />
+            <col style={{ width: 56 }} />
           </colgroup>
           <thead>
             <tr>
-              <th>Identificador</th>
+              <th>SKU</th>
               <th>Produto</th>
               <th>Categoria</th>
               <th className="right">Estoque</th>
@@ -49,6 +50,7 @@ export default function ProductLedger({ children }) {
               <th className="right">Lotes</th>
               <th>Limiar</th>
               <th>Status</th>
+              <th aria-label="Ações" />
             </tr>
           </thead>
           <tbody>{children}</tbody>
