@@ -423,8 +423,8 @@ export default function CultivoRoute() {
         </section>
 
         <p className="muted cultivo-help">
-          Para gerenciar produtos, lotes de estoque e limites de alerta, abra a{" "}
-          <Link href="/equipe/estoque">página de estoque</Link>.
+          Para gerenciar produtos, lotes de estoque e limites de alerta, abra{" "}
+          <Link href="/equipe/estoque">Estoque</Link>.
         </p>
       </div>
     </TeamShell>
