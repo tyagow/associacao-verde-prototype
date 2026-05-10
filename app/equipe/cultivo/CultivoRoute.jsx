@@ -7,6 +7,7 @@
    only owns product + stock entry forms. */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 
 import TeamShell from "../components/TeamShell";
 import PageHead from "../components/PageHead";
@@ -207,9 +208,9 @@ export default function CultivoRoute() {
         title="Entrada e cultivo"
         meta={`${pluralize(totals.active, "lote", "lotes")} em curso · ${totals.total} no histórico`}
         actions={
-          <a className="btn ghost mini" href="/equipe/estoque">
+          <Link className="btn ghost mini" href="/equipe/estoque">
             Ir para estoque
-          </a>
+          </Link>
         }
       />
 
@@ -423,7 +424,7 @@ export default function CultivoRoute() {
 
         <p className="muted cultivo-help">
           Para gerenciar produtos, lotes de estoque e limites de alerta, abra{" "}
-          <a href="/equipe/estoque">/equipe/estoque</a>.
+          <Link href="/equipe/estoque">/equipe/estoque</Link>.
         </p>
       </div>
     </TeamShell>

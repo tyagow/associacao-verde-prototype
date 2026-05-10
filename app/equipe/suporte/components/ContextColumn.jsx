@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { pluralize } from "../../components/pluralize.js";
 import styles from "./ContextColumn.module.css";
 
@@ -47,9 +49,9 @@ export default function ContextColumn({ item }) {
                   : "sem reserva"
               }
             />
-            <a className={styles.link} href="/equipe/pedidos">
+            <Link className={styles.link} href="/equipe/pedidos">
               abrir pedido →
-            </a>
+            </Link>
           </>
         ) : (
           <>
