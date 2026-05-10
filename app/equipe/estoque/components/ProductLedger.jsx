@@ -42,7 +42,7 @@ export default function ProductLedger({ children }) {
           </colgroup>
           <thead>
             <tr>
-              <th>SKU</th>
+              <th>Identificador</th>
               <th>Produto</th>
               <th>Categoria</th>
               <th className="right">Estoque</th>
